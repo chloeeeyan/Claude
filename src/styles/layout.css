@@ -1,0 +1,146 @@
+/* Game screen: yellow HUD strip, a shelf of joker/tarot stickers, then the full-bleed blue table with the
+   scorer panel (visual anchor) on the left and the fanned hand along the bottom. */
+.app {
+  position: relative; display: grid; grid-template-rows: auto auto minmax(0, 1fr); min-height: 100vh; min-height: 100dvh;
+  --jh: clamp(92px, min(17vh, 11vw), 158px);   /* sticker height on the shelf */
+}
+
+/* ---- HUD ---- */
+.hud {
+  position: relative; z-index: 6; display: flex; align-items: center; gap: clamp(12px, 2vw, 28px); padding: 8px clamp(12px, 2vw, 24px);
+  background: radial-gradient(circle, rgba(255,140,0,.22) 0 28%, transparent 31%) 0 0/10px 10px, var(--yellow);
+  border-bottom: 4px solid var(--ink); box-shadow: 0 6px 0 rgba(17,17,17,.3);
+}
+.hud .logo { font-family: var(--comic); font-size: 28px; line-height: 1; color: var(--red); -webkit-text-stroke: 2.5px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); white-space: nowrap; rotate: -3deg; }
+.hud .lbl { color: var(--ink); font-size: 11px; letter-spacing: .12em; }
+.hud .lbl .en { display: inline; margin-right: 5px; color: var(--red-ink); font-size: 12px; }
+.hud-blind { display: grid; line-height: 1.15; background: var(--ink); color: var(--white); padding: 4px 14px 6px; rotate: -1.5deg; box-shadow: 4px 4px 0 var(--white); }
+.hud-blind .lbl { color: #c9c9c9; }
+.hud-blind .bn { font-family: var(--comic); font-size: 21px; color: var(--yellow); white-space: nowrap; }
+.hud-blind .bn.boss { color: var(--pink); }
+.hud-score { flex: 1; min-width: 0; max-width: 460px; display: grid; gap: 1px; }
+.hs-row { display: flex; align-items: baseline; gap: 8px; }
+#roundScore { font-family: var(--pop); font-size: 36px; line-height: 1; color: var(--white); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); font-variant-numeric: tabular-nums; }
+.hs-target { font-family: var(--pop); font-size: 19px; color: var(--ink); }
+.hs-target em { font-style: normal; color: var(--red-ink); }
+.hud .bar { margin-top: 3px; height: 11px; }
+.hud-money { display: flex; align-items: center; gap: 7px; }
+.hud-money b { font-family: var(--pop); font-weight: 400; font-size: 30px; line-height: 1; color: var(--ink); }
+.coin {
+  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-family: var(--pop); font-size: 18px; color: var(--ink);
+  background: radial-gradient(circle at 35% 30%, #fff6b0, #ffb300 70%); border: 3px solid var(--ink); box-shadow: 2px 2px 0 var(--ink);
+}
+.hud-ante { display: grid; justify-items: center; line-height: 1.05; }
+.hud-ante b { font-family: var(--pop); font-weight: 400; font-size: 24px; }
+.hud-tools { display: flex; gap: 6px; margin-left: auto; }
+.ic {
+  display: flex; gap: 4px; align-items: center; height: 36px; padding: 0 10px 0 7px; border-radius: 999px; border: 2.5px solid var(--ink);
+  background: var(--white); color: var(--ink); font-family: var(--comic); font-size: 13px; line-height: 1; cursor: pointer; box-shadow: 2px 2px 0 var(--ink);
+}
+.ic span { font-family: var(--pop); font-size: 14px; line-height: 1; }
+.ic:hover { background: var(--ink); color: var(--yellow); }
+.ic:active { translate: 2px 2px; box-shadow: none; }
+.ic.off { opacity: .45; }
+.ic.warn { background: var(--red); color: var(--white); padding: 0 12px; }
+
+/* ---- shelf ---- */
+.shelf { position: relative; z-index: 5; display: flex; align-items: flex-start; gap: clamp(14px, 3vw, 40px); padding: 10px clamp(12px, 2vw, 24px) 0; }
+.shelf-j { flex: 1; min-width: 0; }
+.shelf-c { flex: none; }
+.rowhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.rowhead span:first-child { font-size: 20px; }
+.rowhead span:first-child .en { display: inline-block; margin-right: 6px; font-size: 14px; color: var(--yellow); -webkit-text-stroke: 1px var(--ink); transform: skewX(-10deg) translateY(-2px); }
+.rowhead b { font-family: var(--pop); font-weight: 400; font-size: 18px; letter-spacing: .06em; color: var(--ink); -webkit-text-stroke: 0; text-shadow: none; margin-left: 6px; background: var(--white); border: 2px solid var(--ink); padding: 0 6px; }
+.rowhead .hint { background: var(--white); border: 2px solid var(--ink); padding: 1px 8px; color: var(--ink); }
+.jrow, .crow { display: flex; gap: 12px; padding: 12px 4px 6px; }
+
+.inspector {
+  position: absolute; left: clamp(12px, 2vw, 24px); top: calc(100% + 2px); z-index: 12; width: min(660px, calc(100% - 24px));
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; background: var(--white); border: var(--o) solid var(--ink); padding: 10px 14px; box-shadow: 6px 6px 0 var(--ink);
+}
+.inspector::before { content: ""; position: absolute; left: 40px; top: -14px; width: 22px; height: 14px; background: var(--ink); clip-path: polygon(0 100%, 50% 0, 100% 100%); }
+.inspector .in-t { flex: 1 1 220px; min-width: 0; }
+.inspector .in-t b { font-family: var(--comic); font-size: 21px; font-weight: 400; margin-right: 8px; }
+.inspector .in-t p { margin: 3px 0 0; font-size: 13px; }
+.inspector .in-a { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ---- table ---- */
+.table { position: relative; display: grid; grid-template-columns: minmax(200px, 250px) minmax(0, 1fr); gap: clamp(14px, 2.5vw, 32px); padding: 12px clamp(12px, 2vw, 24px) 14px; min-height: 0; }
+.table.full { grid-template-columns: minmax(0, 1fr); }
+.table.full .tleft { display: none; }
+.table.full .stage { max-width: 1180px; width: 100%; margin: 0 auto; }
+.tleft { display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 34px; min-height: 0; }
+.stage {
+  position: relative; min-height: 0; display: flex; flex-direction: column; gap: 10px; color: var(--white);
+  container-type: inline-size;
+  /* card width follows both the window height and the table's own width, so 8 cards always fit */
+  --cw: clamp(46px, min(12.5vh, calc((100cqw - 80px) / 8.2)), 100px);
+}
+
+/* scorer: the visual anchor of a round */
+.scorer { position: relative; display: grid; gap: 8px; background: var(--white); border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); padding: 18px 14px 16px; rotate: -1.5deg; }
+.scorer::before {
+  content: "THIS HAND · 这一手"; position: absolute; top: -17px; left: 12px; background: var(--red); color: var(--white);
+  font-family: var(--comic); font-size: 13px; line-height: 1.5; padding: 0 10px; border: 2.5px solid var(--ink); rotate: -4deg;
+}
+.scorer .hname { font-size: 25px; text-align: center; line-height: 1.2; min-height: 2.4em; display: grid; place-content: center; }
+.scorer .hname small { display: block; margin: 2px 0 0; }
+.scorer .cm { grid-template-columns: 1fr; gap: 4px; justify-items: stretch; }
+.scorer .cm span { font-size: clamp(30px, 5.5vh, 46px); padding: 2px 8px; }
+.scorer .cm .x { font-size: 28px; line-height: .9; }
+.scorer .total { font-size: 21px; min-height: 1.4em; }
+.cardnote { font-size: 12.5px; line-height: 1.5; background: var(--paper); border: 2px dashed var(--ink); padding: 5px 8px; }
+
+/* draw pile under the scorer */
+.pile { position: relative; align-self: center; width: 74px; aspect-ratio: 5/7; background: none; border: none; padding: 0; cursor: pointer; margin-bottom: 18px; }
+.pile .dback { position: absolute; inset: 0; width: 100%; border-radius: 7% / 5%; }
+.pile .dback:nth-child(1) { translate: -6px 6px; rotate: -5deg; }
+.pile .dback:nth-child(2) { translate: -3px 3px; rotate: -2deg; }
+.pile b { position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 2; font-family: var(--pop); font-weight: 400; font-size: 18px; background: var(--white); color: var(--ink); border: 2.5px solid var(--ink); padding: 0 6px; box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+.pile small { position: absolute; left: 50%; bottom: -20px; translate: -50% 0; font-family: var(--comic); font-size: 12px; color: var(--white); white-space: nowrap; }
+
+/* deck backs (cover and pile) */
+.dback { position: relative; width: 62px; aspect-ratio: 5/7; border: var(--o) solid var(--ink); border-radius: 6px; box-shadow: 3px 3px 0 var(--ink); display: grid; place-items: center; overflow: hidden; }
+.dback::after { content: ""; position: absolute; inset: 5px; border: 2px solid rgba(255,255,255,.85); border-radius: 3px; }
+.dback i { position: relative; z-index: 1; font-style: normal; width: 44%; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; background: var(--white); border: 2px solid var(--ink); font-size: 15px; color: var(--ink); }
+.d-red { background: repeating-linear-gradient(45deg, transparent 0 7px, rgba(255,255,255,.5) 7px 9px), repeating-linear-gradient(-45deg, transparent 0 7px, rgba(255,255,255,.5) 7px 9px), var(--red); }
+.d-blue { background: radial-gradient(circle, rgba(255,255,255,.55) 0 28%, transparent 31%) 0 0/8px 8px, var(--blue-deep); }
+.d-gold { background: radial-gradient(circle, rgba(255,138,0,.6) 0 28%, transparent 31%) 0 0/8px 8px, var(--yellow); }
+.d-black { background: radial-gradient(circle, rgba(255,214,10,.75) 0 18%, transparent 22%) 0 0/9px 9px, #1d1d1d; }
+.d-paint { background: conic-gradient(from 45deg, var(--pink) 0 25%, var(--yellow) 0 50%, var(--blue) 0 75%, var(--green) 0); }
+
+/* ---- play area ---- */
+.played-wrap { position: relative; flex: 1; min-height: calc(var(--cw) * 1.4 + 24px); display: flex; align-items: center; justify-content: center; }
+.played, .hand { display: grid; grid-template-columns: repeat(var(--n), var(--cw)); justify-content: center; gap: clamp(4px, 1vw, 12px); margin-inline: auto; }
+.hand { padding-top: 20px; }
+.hand .card { rotate: var(--rot, 0deg); top: var(--dy, 0px); transform-origin: 50% 100%; }
+.hand .card:hover:not(.sel) { translate: 0 -6%; }
+.hand .card.sel { translate: 0 -22%; }
+.stage.busy .hand .card { cursor: default; }
+.mat-hint {
+  position: relative; margin: 0; text-align: center; font-family: var(--comic); font-size: 20px; line-height: 1.5; color: var(--ink);
+  background: var(--white); border: var(--o) solid var(--ink); border-radius: 22px; padding: 8px 18px; box-shadow: 4px 4px 0 var(--ink);
+}
+.mat-hint::after { content: ""; position: absolute; left: 30px; bottom: -16px; width: 22px; height: 16px; background: var(--white); border: var(--o) solid var(--ink); border-top: none; border-left: none; clip-path: polygon(0 0, 100% 0, 0 100%); }
+
+.actions { position: relative; display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; }
+.sorts { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--white); }
+.foot { position: absolute; left: 0; bottom: 0; display: flex; gap: 10px; align-items: center; }
+.keys { font-size: 11px; color: #e3eaff; }
+
+/* boss reminder and one-time tips sit on the table */
+.bossbar {
+  position: absolute; left: 0; top: 0; z-index: 3; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; width: fit-content; max-width: 100%;
+  background: var(--ink); color: var(--white); border: var(--o) solid var(--ink); padding: 3px 12px; box-shadow: 3px 3px 0 var(--pink); rotate: -1deg;
+}
+.bossbar b { font-family: var(--pop); font-weight: 400; font-size: 17px; letter-spacing: .06em; color: var(--pink); }
+.bossbar span { font-size: 14px; }
+.coach {
+  position: absolute; right: 0; top: 0; z-index: 8; width: min(340px, calc(100% - 32px)); display: grid; gap: 6px;
+  background: var(--white); color: var(--ink); border: var(--o) solid var(--ink); box-shadow: 5px 5px 0 var(--ink); padding: 10px 12px; rotate: 1deg;
+}
+.coach b { font-family: var(--comic); font-weight: 400; font-size: 17px; color: var(--red); }
+.coach p { margin: 0; font-size: 14px; line-height: 1.55; }
+.coach .chip { justify-self: end; }
+.coach.inline { position: static; width: auto; rotate: 0deg; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 10px; }
+.coach.inline p { font-size: 13.5px; }

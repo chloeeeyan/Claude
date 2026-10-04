@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>鬼牌夜场</title>
+  <meta name="description" content="波普漫画风的扑克构筑小游戏：凑牌型、叠倍率、买小丑，打过 8 个底注。">
+  <meta name="theme-color" content="#1e5bff">
+  <meta property="og:title" content="鬼牌夜场 · DEAL · STACK · KA-BOOM!">
+  <meta property="og:description" content="凑牌型、叠倍率、买小丑，打过 8 个底注。">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="hud">
+      <span class="logo">鬼牌夜场</span>
+      <div class="hud-blind" id="blindBox"></div>
+      <div class="hud-score">
+        <span class="lbl"><i class="en">SCORE</i>本回合得分</span>
+        <div class="hs-row"><b id="roundScore">0</b><span class="hs-target">/ <em id="hudTarget">300</em></span></div>
+        <div class="bar"><i id="bar"></i></div>
+      </div>
+      <div class="hud-money" title="金钱"><span class="coin" aria-hidden="true">$</span><b id="sMoney">4</b></div>
+      <div class="hud-ante"><span class="lbl"><i class="en">ANTE</i>底注</span><b id="sAnte">1/8</b></div>
+      <nav class="hud-tools" aria-label="工具">
+        <button class="ic" data-act="help"><span>?</span>玩法</button>
+        <button class="ic" data-act="guide"><span>▤</span>图鉴</button>
+        <button class="ic" data-act="speed" id="speedBtn"><span>1×</span>速度</button>
+        <button class="ic" data-act="sound" id="soundBtn"><span>♪</span>音效</button>
+        <button class="ic" data-act="newgame" id="newBtn"><span>⟲</span>重开</button>
+      </nav>
+    </header>
+
+    <div class="shelf">
+      <section class="shelf-j">
+        <div class="rowhead"><span><i class="en">JOKERS</i>小丑 <b id="jcount">0/5</b></span><span class="hint">拖动换顺序 · 点开看详情</span></div>
+        <div class="jrow" id="jrow"></div>
+      </section>
+      <section class="shelf-c">
+        <div class="rowhead"><span><i class="en">TAROT</i>塔罗 <b id="ccount">0/2</b></span></div>
+        <div class="crow" id="crow"></div>
+      </section>
+      <div class="inspector" id="inspector" hidden></div>
+    </div>
+
+    <main class="table" id="table">
+      <div class="tleft">
+        <aside class="scorer" id="scorer" aria-live="polite">
+          <div class="hname" id="hname">选择最多 5 张牌</div>
+          <div class="cm"><span class="chips" id="chips">0</span><span class="x">×</span><span class="mult" id="mult">0</span></div>
+          <div class="total" id="total"></div>
+          <div class="cardnote" id="cardnote" hidden></div>
+        </aside>
+        <button class="pile" id="pile" data-act="deck"></button>
+      </div>
+      <section class="stage" id="stage"></section>
+    </main>
+  </div>
+
+  <div class="modal" id="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

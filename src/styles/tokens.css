@@ -1,0 +1,31 @@
+/* Pop Art comic look: ink outlines, hard offset shadows, Ben-Day dots, primary colours.
+   Single deliberate light theme (the night-blue cover is part of the art direction, not a dark mode). */
+:root {
+  --ink: #111111;
+  --white: #ffffff;
+  --paper: #fff8e1;
+  --muted: #5f5a50;
+  --red: #ff3b3b;
+  --red-ink: #d61f1f;
+  --blue: #1e5bff;
+  --blue-2: #5b8cff;
+  --blue-deep: #1238b8;
+  --yellow: #ffd60a;
+  --pink: #ff4fa3;
+  --green: #14b86a;
+  --purple: #7b2cff;
+  /* joker rarity colours */
+  --r1: var(--blue);
+  --r2: var(--pink);
+  --r3: var(--red);
+
+  /* one comic face for all Chinese text, one display face for numbers and Latin */
+  --comic: "ZCOOL KuaiLe", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --pop: "Luckiest Guy", "ZCOOL KuaiLe", Impact, sans-serif;
+  --body: "ZCOOL KuaiLe", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+
+  --o: 3px;   /* outline width */
+  --sh: 5px;  /* hard shadow offset */
+  --spd: 1;   /* animation speed multiplier, set from the speed setting */
+  color-scheme: light;
+}

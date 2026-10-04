@@ -1,0 +1,57 @@
+/* Joker = a little comic strip: avatar circle, caption bar, speech bubble. Tarots and planets share the frame. */
+.jk, .tc, .planet {
+  position: relative; flex: 0 0 112px; aspect-ratio: 5/7; padding: 7px 6px 6px; text-align: left; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  border: var(--o) solid var(--ink); box-shadow: var(--sh) var(--sh) 0 var(--ink); min-width: 0; rotate: var(--tilt, 0deg); transition: rotate .15s, translate .15s; color: var(--ink);
+}
+.jk { cursor: grab; touch-action: none; user-select: none; background: radial-gradient(circle, rgba(255,255,255,.28) 0 27%, transparent 30%) 0 0/8px 8px, var(--r1); }
+.jk.r2 { background-color: var(--r2); }
+.jk.r3 { background-color: var(--r3); }
+.ji {
+  position: relative; flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--white);
+  border: var(--o) solid var(--ink); font-family: var(--body); font-size: 25px; line-height: 1; color: var(--ink); box-shadow: 2px 2px 0 var(--ink);
+}
+/* rare jokers get a starburst behind the avatar */
+.jk.r3 .ji::before {
+  content: ""; position: absolute; inset: -10px; z-index: -1; background: var(--yellow); border: 2px solid var(--ink);
+  clip-path: polygon(50% 0, 60% 25%, 85% 10%, 76% 37%, 100% 45%, 77% 58%, 92% 85%, 64% 74%, 55% 100%, 44% 76%, 18% 92%, 25% 64%, 0 52%, 24% 40%, 12% 14%, 39% 25%);
+}
+.jk .jn, .tc .jn, .planet .jn {
+  position: relative; font-family: var(--comic); font-size: 14px; line-height: 1.15; text-align: center; padding: 2px 5px; align-self: stretch;
+  background: var(--yellow); color: var(--ink); border: 2px solid var(--ink); box-shadow: 2px 2px 0 var(--ink);
+}
+.jk .jd, .tc .jd, .planet .jd {
+  position: relative; align-self: stretch; font-size: 10.5px; line-height: 1.36; padding: 4px 6px; flex: 1; min-height: 0; overflow: hidden;
+  background: var(--white); color: var(--ink); border: 2px solid var(--ink); border-radius: 10px;
+}
+.jk .jd b, .tc .jd b { color: var(--red-ink); }
+.jk .tag, .tc .tag { position: absolute; top: -10px; right: -8px; z-index: 2; font-family: var(--comic); font-size: 11px; color: var(--white); background: var(--ink); padding: 0 5px; rotate: 6deg; line-height: 1.5; }
+.jrow .jk:nth-child(odd), .crow .tc:nth-child(odd) { --tilt: -2deg; }
+.jrow .jk:nth-child(even), .crow .tc:nth-child(even) { --tilt: 1.6deg; }
+.jk:hover, .tc:hover { --tilt: 0deg; translate: 0 -4px; }
+.jk.picked, .tc.picked { --tilt: 0deg; translate: 0 -12px; box-shadow: 0 0 0 4px var(--white), 0 0 0 7px var(--ink), 8px 12px 0 7px var(--ink); }
+.jk.dragging { z-index: 10; cursor: grabbing; box-shadow: 12px 16px 0 var(--ink); transition: none; }
+.jk.empty, .tc.empty {
+  aspect-ratio: auto; min-height: 72px; justify-content: center; text-align: center; rotate: 0deg; cursor: default; box-shadow: none;
+  background: rgba(255,255,255,.35); border: var(--o) dashed var(--ink); color: var(--ink); font-family: var(--comic); font-size: 14px;
+}
+.tc { cursor: pointer; background: radial-gradient(circle, rgba(255,255,255,.22) 0 27%, transparent 30%) 0 0/8px 8px, var(--purple); }
+.tc .ji {
+  width: 50px; height: 50px; font-size: 21px; background: var(--yellow); border-radius: 0; border: none; box-shadow: none;
+  clip-path: polygon(50% 0, 63% 32%, 98% 35%, 71% 57%, 80% 92%, 50% 73%, 20% 92%, 29% 57%, 2% 35%, 37% 32%);
+}
+.planet { overflow: hidden; gap: 4px; background: radial-gradient(circle, rgba(255,255,255,.2) 0 27%, transparent 30%) 0 0/8px 8px, var(--blue-deep); }
+.planet .lbl { position: relative; color: var(--white); font-family: var(--comic); font-size: 12px; letter-spacing: .14em; line-height: 1.2; }
+.orb {
+  position: relative; width: 34px; height: 34px; flex: none; border-radius: 50%; border: var(--o) solid var(--ink);
+  background: radial-gradient(circle, rgba(255,255,255,.45) 0 26%, transparent 30%) 0 0/6px 6px, radial-gradient(circle at 35% 32%, #ffe066, #ff8a00 70%);
+}
+.orb::after { content: ""; position: absolute; left: -14px; right: -14px; top: 38%; height: 9px; border: var(--o) solid var(--ink); border-top-color: transparent; border-radius: 50%; rotate: -16deg; }
+
+/* on the shelf, stickers are sized by height so they always fit one row */
+.shelf .jk, .shelf .tc { flex: none; height: var(--jh); width: auto; aspect-ratio: 5/7; min-height: 0; padding: 5px; gap: 4px; }
+.shelf .ji { width: calc(var(--jh) * .29); height: calc(var(--jh) * .29); font-size: calc(var(--jh) * .15); }
+.shelf .tc .ji { width: calc(var(--jh) * .32); height: calc(var(--jh) * .32); }
+.shelf .jn { font-size: 13px; padding: 1px 3px; }
+/* text that does not fit ends in an ellipsis, so it is obvious there is more on tap */
+.shelf .jd { font-size: 10px; line-height: 1.3; padding: 3px 5px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; }
+.shelf .jk.empty, .shelf .tc.empty { background: rgba(255,255,255,.1); border: 3px dashed rgba(255,255,255,.55); color: rgba(255,255,255,.8); font-size: 13px; box-shadow: none; }

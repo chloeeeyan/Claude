@@ -1,0 +1,86 @@
+/* Desktop windows: the whole game fits one screen; only the table scrolls if it really must. */
+@media (min-width: 900px) and (min-height: 560px) {
+  .app { height: 100vh; height: 100dvh; overflow: hidden; }
+  .stage { overflow-y: auto; overflow-x: clip; scrollbar-width: thin; }
+  .table.full .stage { padding: 4px 6px 8px; }
+}
+
+/* Short desktop windows (laptops around 1366×640): tighten everything a notch. */
+@media (min-width: 900px) and (max-height: 760px) {
+  .foot .keys { display: none; }
+  .hud { padding-block: 5px; }
+  .hud .logo { font-size: 24px; }
+  #roundScore { font-size: 30px; }
+  .shelf { padding-top: 6px; }
+  .jrow, .crow { padding-top: 10px; }
+  .stage { --cw: clamp(46px, min(11.6vh, calc((100cqw - 80px) / 8.2)), 100px); }
+  .played-wrap { min-height: calc(var(--cw) * 1.4 + 6px); }
+  .hand { padding-top: 12px; }
+  .tleft { gap: 22px; padding-top: 18px; }
+  .pile { width: 58px; margin-bottom: 16px; }
+  .scorer { padding: 14px 12px 10px; gap: 5px; }
+  .scorer .hname { font-size: 21px; min-height: 0; }
+  .scorer .cm span { font-size: clamp(26px, 5vh, 40px); }
+  .table.full .stage { gap: 8px; }
+  .panel-t { font-size: 26px; }
+  .panel-s, .coach.inline { padding-block: 4px; }
+  .shopgrid { gap: 14px; }
+  .item { gap: 5px; }
+  .item > .jk, .item > .tc, .item > .planet { width: 104px; }
+  .buy { padding: 2px 12px; }
+  .shopbar .btn { padding-block: 4px; }
+  .blinds .bc { padding: 10px 12px; }
+  .bc .t { font-size: 28px; }
+  .cv-main, .cvdk { gap: 7px; }
+  .cv-title { padding-top: clamp(62px, 11.5vh, 110px); }
+  .cv-fan { height: clamp(84px, 15vh, 150px); }
+  .cv-fan .card { width: clamp(54px, 9vh, 80px); }
+  .cv-logo { font-size: clamp(46px, 8.5vh, 80px); }
+  .cv-en { margin-top: 8px; }
+  .cvdk .dback { width: clamp(44px, 7.5vh, 70px); }
+}
+
+/* Narrow screens: stack and scroll. */
+@media (max-width: 899px) {
+  .hud { flex-wrap: wrap; row-gap: 8px; }
+  .hud-score { order: 5; flex-basis: 100%; max-width: none; }
+  .shelf { flex-direction: column; gap: 4px; }
+  .shelf-c { width: 100%; }
+  .table { grid-template-columns: 1fr; }
+  .tleft { flex-direction: row; align-items: center; gap: 18px; }
+  .tleft .scorer { flex: 1; }
+  .scorer { align-self: stretch; rotate: 0deg; }
+  .scorer .cm { grid-template-columns: 1fr auto 1fr; align-items: center; }
+  .scorer .hname { min-height: 0; }
+  .keys { display: none; }
+  .blinds, .cash2 { grid-template-columns: 1fr; }
+  .bc.cur, .nextcard { rotate: 0deg; }
+  .sfxword { font-size: 46px; }
+  .sfxword.big { font-size: 60px; }
+  .boom span { font-size: 24px; padding: 24px 26px; }
+  .cv { grid-template-columns: 1fr; gap: 26px; }
+  .cv-main { order: -1; }
+}
+
+/* Phones */
+@media (max-width: 620px) {
+  .hud .logo { display: none; }
+  .ic { padding: 0 8px 0 6px; font-size: 12px; }
+  .rowhead .hint { font-size: 11px; }
+  .jrow, .crow { gap: 8px; }
+  .shelf .jk, .shelf .tc { height: auto; aspect-ratio: auto; flex: 1 1 0; max-width: 92px; min-height: 82px; }
+  .shelf .jd, .shelf .tag { display: none; }
+  .shelf .ji { width: 34px; height: 34px; font-size: 18px; }
+  .hand { display: flex; justify-content: center; gap: 0; --cw: 60px; }
+  .hand .card { flex: 0 0 var(--cw); width: var(--cw); }
+  .hand .card + .card { margin-left: min(4px, calc((100% - var(--n) * var(--cw)) / (var(--n) - 1))); }
+  .btn { padding: 8px 14px; font-size: 20px; min-width: 92px; }
+  .panel-t { font-size: 26px; }
+  .cv-decks { flex-wrap: wrap; gap: 10px; }
+  .cvdk { flex: 0 0 30%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .bar i, .jk, .tc { transition: none; }
+  .card.deal, .boom, .sfxword, .pop { animation-duration: .01s !important; }
+}

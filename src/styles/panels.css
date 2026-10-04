@@ -1,0 +1,61 @@
+/* Comic panels on the table: blind select, cash-out, shop, star pack, end of run. */
+.panel-t { font-size: 34px; margin: 0; text-wrap: balance; color: var(--yellow); }
+.panel-t[data-en]::before {
+  content: attr(data-en); display: block; width: fit-content; margin-bottom: 2px; font-family: var(--pop); font-size: 14px; letter-spacing: .16em; line-height: 1.2;
+  color: var(--white); -webkit-text-stroke: 0; text-shadow: 2px 2px 0 var(--ink); transform: skewX(-10deg);
+}
+.panel-s { margin: 0; max-width: 62ch; width: fit-content; line-height: 1.6; background: var(--white); color: var(--ink); border: 2px solid var(--ink); padding: 6px 12px; box-shadow: 3px 3px 0 var(--ink); }
+.panel-s .seed { font-size: 12px; color: var(--muted); }
+.center { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; margin: auto 0; }
+
+/* blind select */
+.blinds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.bc { display: flex; flex-direction: column; gap: 6px; min-width: 0; background: var(--white); color: var(--ink); border: var(--o) solid var(--ink); padding: 14px; box-shadow: 6px 6px 0 var(--ink); }
+.bc.cur { background: radial-gradient(circle, rgba(255,180,0,.25) 0 28%, transparent 31%) 0 0/10px 10px, var(--white); rotate: -1.5deg; box-shadow: 0 0 0 4px var(--yellow), 0 0 0 7px var(--ink), 9px 9px 0 7px var(--ink); }
+.bc.done { opacity: .6; }
+.bc h3 { margin: 0; font-family: var(--comic); font-weight: 400; font-size: 26px; }
+.bc.boss h3 { color: var(--pink); -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; }
+.bc .t { font-family: var(--pop); font-size: 34px; letter-spacing: .04em; line-height: 1; color: var(--red); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 2px 2px 0 var(--ink); }
+.bc p { margin: 0; font-size: 12px; color: var(--muted); }
+.bc .tagbox { font-size: 12px; background: var(--paper); border: 2px dashed var(--ink); padding: 6px 8px; }
+.bc .tagbox b { color: var(--blue); }
+.bc .st { margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted); }
+
+/* cash-out: ledger + next-blind preview */
+.cash2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; margin: auto 0; }
+.cashcol { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.ledger { display: grid; gap: 8px; width: 100%; background: var(--white); color: var(--ink); border: var(--o) solid var(--ink); padding: 14px 16px; box-shadow: 7px 7px 0 var(--ink); rotate: -1deg; }
+.ledger div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 2px dashed rgba(17,17,17,.25); padding-bottom: 6px; }
+.ledger b { font-family: var(--pop); font-weight: 400; font-size: 20px; letter-spacing: .04em; color: #e08a00; }
+.ledger .ledger-sum { border-bottom: none; border-top: 3px solid var(--ink); padding-top: 8px; font-family: var(--comic); font-size: 19px; }
+.ledger .ledger-sum b { font-size: 26px; color: var(--red); }
+.nextcard { position: relative; display: grid; gap: 8px; background: radial-gradient(circle, rgba(30,91,255,.12) 0 28%, transparent 31%) 0 0/10px 10px, var(--white); color: var(--ink); border: var(--o) solid var(--ink); box-shadow: 7px 7px 0 var(--ink); padding: 18px; rotate: 1.2deg; }
+.nextcard.boss { background: radial-gradient(circle, rgba(255,79,163,.18) 0 28%, transparent 31%) 0 0/10px 10px, var(--white); }
+.nc-k { position: absolute; top: -14px; left: 14px; background: var(--ink); color: var(--yellow); font-family: var(--comic); font-size: 15px; padding: 1px 10px; rotate: -3deg; }
+.nextcard h3 { margin: 4px 0 0; font-family: var(--comic); font-weight: 400; font-size: 28px; }
+.nextcard.boss h3 { color: var(--pink); -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; }
+.nextcard h3 small { font-size: 15px; color: var(--muted); }
+.nc-t { font-family: var(--pop); font-size: 40px; line-height: 1; color: var(--red); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--ink); }
+.nc-t small { font-family: var(--comic); font-size: 14px; color: var(--muted); -webkit-text-stroke: 0; text-shadow: none; margin-left: 8px; }
+.nextcard p { margin: 0; line-height: 1.6; }
+.nc-shop { font-size: 13px; background: var(--paper); border: 2px dashed var(--ink); padding: 6px 10px; }
+.nc-shop b { font-family: var(--comic); font-weight: 400; color: var(--blue); margin-right: 6px; }
+
+/* shop and star pack */
+.shopgrid { display: flex; flex-wrap: wrap; gap: 20px; }
+.item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+/* in a column flex box flex-basis would set the height, so pin the width instead */
+.item > .jk, .item > .tc, .item > .planet { flex: none; width: 112px; }
+.item .jk { cursor: default; touch-action: auto; }
+.owned { position: absolute; left: -8px; top: -10px; z-index: 3; rotate: -8deg; font-family: var(--comic); font-size: 13px; background: var(--yellow); color: var(--ink); border: 2px solid var(--ink); padding: 0 6px; box-shadow: 2px 2px 0 var(--ink); }
+.price { font-family: var(--pop); font-size: 22px; letter-spacing: .06em; color: var(--yellow); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 2px 2px 0 var(--ink); }
+.buy { padding: 4px 14px; font-size: 17px; min-width: 0; box-shadow: 4px 4px 0 var(--ink); }
+.shopbar { display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-top: auto; }
+.sold { opacity: .35; pointer-events: none; }
+
+/* end-of-run summary */
+.sumgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; width: 100%; max-width: 640px; }
+.sumgrid div { background: var(--white); color: var(--ink); border: 2px solid var(--ink); padding: 10px; text-align: left; box-shadow: 4px 4px 0 var(--ink); }
+.sumgrid div:nth-child(odd) { rotate: -1deg; }
+.sumgrid div:nth-child(even) { rotate: 1deg; }
+.sumgrid b { display: block; font-family: var(--pop); font-weight: 400; font-size: 22px; letter-spacing: .04em; overflow-wrap: anywhere; }

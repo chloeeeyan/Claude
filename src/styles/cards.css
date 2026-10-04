@@ -1,0 +1,78 @@
+/* Playing cards. Sizes inside a card use cqw (the card is its own size container).
+   Number cards: one big halftone pip. Aces: pip on a yellow starburst. J/Q/K: a suit-coloured comic panel. */
+.card {
+  position: relative; aspect-ratio: 5/7; width: 100%; background: var(--white); border: 2.5px solid var(--ink); border-radius: 7% / 5%; padding: 0; cursor: pointer;
+  container-type: inline-size; color: var(--ink); --suit: var(--ink); --panel: var(--blue); box-shadow: 0 5px 0 var(--ink);
+  transition: translate .14s ease, box-shadow .14s; overflow: visible;
+}
+.card.red { --suit: var(--red-ink); color: var(--red-ink); }
+.card.s-H { --panel: var(--red); }
+.card.s-D { --panel: var(--yellow); }
+.card.s-S { --panel: var(--blue); }
+.card.s-C { --panel: var(--green); }
+.card .ci { position: absolute; display: flex; flex-direction: column; align-items: center; line-height: .86; z-index: 1; }
+.card .ci b { font-family: var(--pop); font-weight: 400; font-size: 26cqw; letter-spacing: -.02em; }
+.card .ci i { font-style: normal; font-family: var(--body); font-size: 15cqw; margin-top: 1cqw; }
+.card .tl { top: 4cqw; left: 6cqw; }
+.card .br { bottom: 4cqw; right: 6cqw; rotate: 180deg; }
+.card .pip {
+  position: absolute; inset: 0; display: grid; place-items: center; padding-top: 4cqw; font-family: var(--body); font-size: 58cqw; line-height: 1;
+  color: transparent; -webkit-text-stroke: 2.6cqw var(--ink);
+  background: radial-gradient(circle, var(--suit) 0 42%, transparent 46%) 0 0/7cqw 7cqw; -webkit-background-clip: text; background-clip: text;
+}
+.card .pip.ace { font-size: 42cqw; color: var(--suit); background: none; -webkit-text-stroke: 2cqw var(--ink); paint-order: stroke fill; z-index: 1; }
+.card .burst {
+  position: absolute; left: 50%; top: 52%; width: 76cqw; aspect-ratio: 1; translate: -50% -50%; background: var(--yellow);
+  clip-path: polygon(50% 0, 60% 24%, 84% 9%, 77% 35%, 100% 44%, 78% 57%, 93% 84%, 65% 74%, 56% 100%, 45% 76%, 19% 92%, 25% 64%, 0 53%, 23% 40%, 10% 14%, 38% 24%);
+}
+.card .burst::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle, rgba(255,138,0,.5) 0 26%, transparent 30%) 0 0/6cqw 6cqw; }
+.card .face {
+  position: absolute; inset: 20cqw 14cqw 20cqw; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1cqw; overflow: hidden;
+  background: radial-gradient(circle, rgba(255,255,255,.35) 0 26%, transparent 30%) 0 0/7cqw 7cqw, var(--panel); border: 2.4cqw solid var(--ink);
+}
+.card .face em { font-style: normal; font-family: var(--body); font-size: 36cqw; line-height: 1; color: var(--white); -webkit-text-stroke: 2.2cqw var(--ink); paint-order: stroke fill; }
+.card.s-D .face em { color: var(--red); }
+.card .face strong { font-family: var(--pop); font-weight: 400; font-size: 20cqw; line-height: 1; background: var(--white); color: var(--ink); border: 1.8cqw solid var(--ink); padding: 0 5cqw; rotate: -6deg; }
+
+/* enhancement label + background, seal stamp */
+.card .eb { position: absolute; left: 50%; bottom: -2cqw; translate: -50% 0; z-index: 2; font-family: var(--comic); font-size: 14cqw; padding: 0 5cqw; white-space: nowrap; line-height: 1.35; border: 1.8cqw solid var(--ink); rotate: -4deg; }
+.card.e-bonus .eb { background: var(--blue); color: var(--white); }
+.card.e-mult .eb { background: var(--red); color: var(--white); }
+.card.e-glass { background: linear-gradient(135deg, #ffffff 0 30%, #d9f3ff 30% 42%, #ffffff 42% 60%, #d9f3ff 60% 66%, #ffffff 66%); }
+.card.e-glass .eb { background: #5bd0ff; color: var(--ink); }
+.card.e-steel { background: radial-gradient(circle, rgba(0,0,0,.12) 0 28%, transparent 32%) 0 0/6cqw 6cqw, #cfd6dd; }
+.card.e-steel .eb { background: #55606b; color: var(--white); }
+.card.e-wild { background: conic-gradient(from 45deg, #ffd3e8 0 25%, #fff1b0 0 50%, #cfe0ff 0 75%, #c9f5dd 0); }
+.card.e-wild .eb { background: var(--pink); color: var(--white); }
+.card .seal { position: absolute; top: -6cqw; right: -6cqw; z-index: 2; width: 22cqw; height: 22cqw; border-radius: 50%; border: 2cqw solid var(--ink); }
+.card .seal::after { content: ""; position: absolute; inset: 4cqw; border-radius: 50%; border: 1.2cqw dashed rgba(17,17,17,.55); }
+.card .seal.red { background: var(--red); }
+.card .seal.gold { background: var(--yellow); }
+
+/* states */
+.card.sel { translate: 0 -20%; box-shadow: 0 0 0 4px var(--yellow), 0 0 0 7px var(--ink), 0 9px 0 4px var(--ink); }
+.card.scoring { translate: 0 -10%; }
+.card.debuff { filter: grayscale(1) contrast(.8) brightness(.9); }
+.card.debuff::after { content: "✕"; position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--pop); font-size: 60cqw; color: var(--red); -webkit-text-stroke: 2cqw var(--ink); opacity: .75; z-index: 3; }
+.card.debuff::before {
+  content: "不计分"; position: absolute; left: 50%; bottom: 9%; translate: -50% 0; z-index: 4; background: var(--ink); color: var(--white);
+  font-family: var(--comic); font-size: 15cqw; line-height: 1.3; padding: 0 5cqw; white-space: nowrap; rotate: -6deg;
+}
+.card.deal { animation: deal calc(.34s / var(--spd)) cubic-bezier(.2, 1.4, .5, 1) both; }
+@keyframes deal { from { opacity: 0; transform: translateY(34px) rotate(10deg) scale(.85); } to { opacity: 1; transform: none; } }
+
+/* mini cards in the guide */
+.minis { display: flex; flex-wrap: wrap; gap: 7px; padding-top: 6px; }
+.mini {
+  display: inline-grid; grid-template-rows: auto auto; place-items: center; width: 38px; height: 52px; padding: 4px 0; background: var(--white);
+  border: 2.5px solid var(--ink); border-radius: 4px; font-family: var(--pop); color: var(--ink); font-size: 19px; line-height: 1; box-shadow: 0 3px 0 var(--ink);
+}
+.mini i { font-style: normal; font-family: var(--body); font-size: 16px; }
+.mini.red { color: var(--red-ink); }
+.mini.dim { opacity: .3; }
+.mini.on { box-shadow: 0 0 0 3px var(--yellow), 0 0 0 5px var(--ink); translate: 0 -5px; }
+.mini.e-bonus { background: #cfe0ff; }
+.mini.e-mult { background: #ffd5d5; }
+.mini.e-glass { background: #d9f3ff; }
+.mini.e-steel { background: #cfd6dd; }
+.mini.e-wild { background: conic-gradient(from 45deg, #ffd3e8 0 25%, #fff1b0 0 50%, #cfe0ff 0 75%, #c9f5dd 0); }
