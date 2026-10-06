@@ -5,7 +5,7 @@ import { panelIn } from './fx.js';
 import { renderHud } from './hud.js';
 import { renderShelf } from './shelf.js';
 import { renderStage } from './screens.js';
-import { saveRun, state, ui } from './store.js';
+import { noteProgress, saveRun, state, ui } from './store.js';
 
 let lastScreen = null;
 const screenOf = () => (state.phase === 'scoring' ? 'play' : state.phase === 'shop' && state.pack ? 'pack' : state.phase);
@@ -18,5 +18,6 @@ export function render() {
   if (lastScreen && scr !== lastScreen && scr !== 'play') panelIn($('stage'));
   lastScreen = scr;
   ui.justDrawn.clear();
+  noteProgress();
   saveRun();
 }

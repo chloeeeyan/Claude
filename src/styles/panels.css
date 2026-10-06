@@ -70,3 +70,12 @@
 .tp-cards { --cw: clamp(48px, 10.5vh, 84px); display: grid; grid-template-columns: repeat(var(--n), var(--cw)); justify-content: center; gap: clamp(6px, 1vw, 12px); padding-top: 16px; }
 .tp-cards .card[data-act="none"] { cursor: default; }
 .tc.tpack { cursor: default; background: repeating-linear-gradient(-45deg, transparent 0 8px, rgba(255,255,255,.16) 8px 10px), var(--purple); }
+
+/* unlocks earned by the run that just ended */
+.unlocks { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin: 4px auto 0; padding: 6px 14px; width: fit-content;
+  background: var(--yellow); border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); rotate: -1deg; }
+.unlocks b { font-family: var(--comic); font-weight: 400; font-size: 20px; color: var(--red); }
+.unlocks span { font-family: var(--comic); font-size: 16px; color: var(--ink); background: var(--white); border: 2px solid var(--ink); padding: 0 8px; -webkit-text-stroke: 0; }
+.end-x { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 16px; }
+.end-x .panel-s { margin: 0; }
+.center:has(.end-x) { gap: 10px; }

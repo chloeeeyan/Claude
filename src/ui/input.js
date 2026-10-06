@@ -1,6 +1,6 @@
 // Every player action: one delegated click handler, keyboard shortcuts and joker drag-to-reorder.
 import {
-  JD, TD, buy, cashOut, choosePack, packApply, packClose, packKeep, packPick, discardCards, freshState, nextBlind, reroll, sellOf, skipBlind, sortHand, startBlind, useTarot,
+  JD, TD, UNLOCK, buy, cashOut, choosePack, dailyKey, dailySetup, isUnlocked, noteTarot, packApply, packClose, packKeep, packPick, discardCards, freshState, nextBlind, reroll, sellOf, skipBlind, sortHand, startBlind, useTarot,
 } from '../core/index.js';
 import { $, toast } from './dom.js';
 import { isPicked } from './components.js';
@@ -13,7 +13,7 @@ import { renderHud } from './hud.js';
 import { renderShelf } from './shelf.js';
 import { renderStage } from './screens.js';
 import { Sfx } from './sfx.js';
-import { menuState, saveRecord, saveRun, setState, state, storage, ui } from './store.js';
+import { endRun, menuState, meta, saveMeta, saveRecord, saveRun, setState, state, storage, ui } from './store.js';
 
 function toggleCard(id) {
   if (state.phase !== 'play') return;
@@ -56,7 +56,17 @@ function armed(b, label, armedLabel) {
   return false;
 }
 
-function backToMenu() { setState(menuState()); render(); }
+// leaving a run (finished or abandoned) folds it into the cross-run progress first
+function backToMenu() { endRun(); setState(menuState()); render(); }
+
+function startRun(st) {
+  ui.newUnlocks = [];
+  setState(st);
+  Sfx.select();
+  render();
+}
+
+const lockedMsg = (id) => `还没解锁：${UNLOCK[id].need}`;
 
 const ACTIONS = {
   card: (b) => toggleCard(b.dataset.id),
@@ -90,7 +100,9 @@ const ACTIONS = {
     render();
   },
   cuse: () => {
+    const c = state.cons.find((x) => x.uid === state.inspect.uid);
     const r = useTarot(state, state.inspect.uid, state.selected);
+    if (!r.err && c) { noteTarot(meta, c.key); saveMeta(); }
     if (r.err) { toast(r.err); return; }
     state.inspect = null;
     Sfx.retrig();
@@ -107,16 +119,29 @@ const ACTIONS = {
     state.inspect = null;
     render();
   },
-  mdeck: (b) => { state.menuDeck = b.dataset.v; renderStage(); },
-  mstake: (b) => { state.menuStake = Number(b.dataset.v); state.stake = state.menuStake; renderStage(); renderHud(); },
+  mdeck: (b) => {
+    if (!isUnlocked(meta, 'deck:' + b.dataset.v)) { toast(lockedMsg('deck:' + b.dataset.v)); return; }
+    state.menuDeck = b.dataset.v; renderStage();
+  },
+  mstake: (b) => {
+    if (!isUnlocked(meta, 'stake:' + b.dataset.v)) { toast(lockedMsg('stake:' + b.dataset.v)); return; }
+    state.menuStake = Number(b.dataset.v); state.stake = state.menuStake; renderStage(); renderHud();
+  },
   begin: () => {
+    if (!isUnlocked(meta, 'deck:' + state.menuDeck)) state.menuDeck = 'red';
+    if (!isUnlocked(meta, 'stake:' + state.menuStake)) state.menuStake = 0;
     ui.prefs.deck = state.menuDeck;
     ui.prefs.stake = state.menuStake;
     storage.set('prefs', ui.prefs);
-    setState(freshState(state.menuDeck, state.menuStake));
-    Sfx.select();
-    render();
+    startRun(freshState(state.menuDeck, state.menuStake));
   },
+  daily: () => {
+    const key = dailyKey(), D = dailySetup(key), st = freshState(D.deck, D.stake, D.seed);
+    st.daily = key;
+    startRun(st);
+    toast(`每日挑战 ${key}：今天所有人的牌都一样`);
+  },
+  collect: () => openModal('guide', 'collect'),
   start: () => { startBlind(state).forEach((id) => ui.justDrawn.add(id)); Sfx.deal(); render(); },
   skip: () => { const m = skipBlind(state); if (m) { Sfx.cash(); toast('跳过盲注：' + m); render(); } },
   cashout: () => { if (cashOut(state)) Sfx.cash(); render(); },
@@ -131,6 +156,7 @@ const ACTIONS = {
   tpick: (b) => {
     const r = packPick(state, b.dataset.v);
     if (r.err) { toast(r.err); return; }
+    if (r.msg) { noteTarot(meta, b.dataset.v); saveMeta(); }
     Sfx.select();
     if (r.msg) { Sfx.cash(); toast(r.msg); }
     render();
@@ -149,6 +175,7 @@ const ACTIONS = {
   tapply: () => {
     const r = packApply(state);
     if (r.err) { toast(r.err); return; }
+    noteTarot(meta, state.pack.pick); saveMeta();
     Sfx.retrig(); toast(r.msg); render();
     (state.pack.changed || []).forEach((id) => pulse(document.querySelector(`.tp-cards [data-id="${id}"]`), 0.8));
   },

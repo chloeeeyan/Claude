@@ -1,8 +1,10 @@
 // Modal dialogs: how-to-play, the hand guide (four tabs) and the deck viewer.
-import { BOSSES, ENH, HANDS, RL, SEALS, SNAME, SUITS, SYM, TAROTS, VS, chipVal, curBoss, evaluate, handBase, isRed } from '../core/index.js';
+import {
+  BOSSES, ENH, HANDS, JOKERS, RL, SEALS, SNAME, SUITS, SYM, TAROTS, UNLOCKS, VS, chipVal, curBoss, evaluate, handBase, isRed, isUnlocked,
+} from '../core/index.js';
 import { $, fmt } from './dom.js';
-import { cardTitle, miniCard, parseCards } from './components.js';
-import { inRound, state } from './store.js';
+import { cardTitle, jokerFace, miniCard, parseCards } from './components.js';
+import { inRound, meta, state } from './store.js';
 
 // [hand, example cards, rule, tip]; 'hidden' is the note that introduces the secret hands
 const HAND_EX = [
@@ -83,11 +85,29 @@ function handsTab() {
   </div>`;
 }
 
+// collection: every joker ever seen in a shop, tarots used, bosses beaten, and what is still locked
+function collectTab() {
+  const seen = new Set(meta.seenJ), owned = new Set(meta.ownedJ), used = new Set(meta.usedT), beat = new Set(meta.bossesBeat);
+  return `<div class="gsec">
+    <p class="hint">在商店里见过的小丑会记在这里，买下过的打勾。一共 ${meta.runs} 局，赢了 ${meta.wins} 局，最远打到底注 ${meta.bestAnte}。</p>
+    <div class="gx"><div class="gx-h"><b>解锁</b><span class="hint">${UNLOCKS.filter((u) => isUnlocked(meta, u.id)).length}/${UNLOCKS.length}</span></div>
+      <p>${UNLOCKS.map((u) => `${isUnlocked(meta, u.id) ? '✔' : '🔒'} <b>${u.n}</b>：${u.need}`).join('<br>')}</p></div>
+    <div class="gx"><div class="gx-h"><b>小丑</b><span class="hint">见过 ${seen.size}/${JOKERS.length} · 买过 ${owned.size}</span></div>
+      <div class="coll">${JOKERS.map((d) => (seen.has(d.key)
+        ? `<div class="coll-i ${owned.has(d.key) ? 'own' : ''}">${jokerFace(d, null)}</div>`
+        : '<div class="coll-i"><div class="jk unknown"><span class="ji" aria-hidden="true">?</span><span class="jn">？？？</span><span class="jd">在商店里见到后记录</span></div></div>')).join('')}</div></div>
+    <div class="gx"><div class="gx-h"><b>塔罗</b><span class="hint">用过 ${TAROTS.filter((t) => used.has(t.key)).length}/${TAROTS.length}</span></div>
+      <p>${TAROTS.map((t) => (used.has(t.key) ? `<b>${t.name}</b>` : `<span class="dim">${t.name}</span>`)).join('　')}</p></div>
+    <div class="gx"><div class="gx-h"><b>Boss</b><span class="hint">击败过 ${Object.keys(BOSSES).filter((k) => beat.has(k)).length}/${Object.keys(BOSSES).length}</span></div>
+      <p>${Object.entries(BOSSES).map(([k, b]) => (beat.has(k) ? `<b>${b.n}</b>` : `<span class="dim">${b.n}</span>`)).join('　')}</p></div>
+  </div>`;
+}
+
 export function guideHTML(tab) {
-  const tabs = [['hands', '牌型'], ['score', '怎么算分'], ['cards', '增强与印'], ['boss', 'Boss']];
+  const tabs = [['hands', '牌型'], ['score', '怎么算分'], ['cards', '增强与印'], ['boss', 'Boss'], ['collect', '收藏']];
   const head = `<h2>牌型图鉴<button class="chip" data-act="close">关闭</button></h2>
     <div class="gtabs">${tabs.map(([k, n]) => `<button class="chip ${tab === k ? 'on' : ''}" data-act="gtab" data-tab="${k}">${n}</button>`).join('')}</div>`;
-  const body = tab === 'score' ? scoreTab() : tab === 'cards' ? cardsTab() : tab === 'boss' ? bossTab() : handsTab();
+  const body = tab === 'score' ? scoreTab() : tab === 'cards' ? cardsTab() : tab === 'boss' ? bossTab() : tab === 'collect' ? collectTab() : handsTab();
   return head + body;
 }
 

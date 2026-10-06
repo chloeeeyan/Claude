@@ -87,3 +87,31 @@
 .lastrun span { font-size: 12.5px; color: var(--muted); }
 .lr-j { display: flex; flex-wrap: wrap; gap: 4px; }
 .lr-j i { font-style: normal; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--white); border: 2px solid var(--ink); font-size: 13px; color: var(--ink); }
+
+/* locked decks and stakes: greyed, with the unlock condition where the description was */
+.cvdk.locked .dback { filter: grayscale(1) brightness(.7); }
+.cvdk.locked b { background: #888; }
+.cvdk.locked .dd { color: rgba(255,255,255,.6); }
+.cvdk.locked:hover { translate: none; }
+.skp.locked { background: #d6d6d6; box-shadow: none; }
+.skp.locked b, .skp.locked span { color: #666; }
+
+/* start + daily challenge side by side */
+.cv-go { display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch; gap: 14px; }
+.cv-daily {
+  display: grid; justify-items: center; align-content: center; line-height: 1.1; font-size: clamp(18px, 3vh, 22px); padding: 6px 18px;
+  background: var(--pink); color: var(--white); -webkit-text-stroke: 0; box-shadow: 5px 5px 0 var(--ink);
+}
+.cv-daily .en { font-size: 10px; color: var(--yellow); }
+.cv-daily small { font-family: var(--body); font-size: 12px; margin: 3px 0 0; padding: 0; min-width: 0; color: var(--white); background: none; border: none; box-shadow: none; -webkit-text-stroke: 0; }
+
+/* collection counter at the foot of the records panel */
+.cv-coll {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; width: 100%; margin-top: 10px; padding: 6px 10px; cursor: pointer; text-align: left;
+  background: var(--yellow); color: var(--ink); border: 2.5px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); font-family: var(--comic);
+}
+.cv-coll span { font-size: 15px; margin-right: 4px; }
+.cv-coll b { font-family: var(--pop); font-weight: 400; font-size: 18px; }
+.cv-coll small { font-size: 12px; }
+.cv-coll em { font-style: normal; font-size: 12px; margin-right: 4px; }
+.cv-coll:hover { background: var(--white); }
