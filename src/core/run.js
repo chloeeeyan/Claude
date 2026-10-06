@@ -1,7 +1,7 @@
 // A run's state machine: select → play ⇄ scoring → cashout → shop → select … → over / win.
 // Every function takes the run state `st` and mutates it; nothing here touches the DOM.
 import { SUITS, SO } from './cards.js';
-import { BOSSES, DECKS, ENH, HANDS, REWARD, STAKES, TAGS, TUNE } from './rules.js';
+import { BOSSES, DECKS, EDITIONS, ENH, HANDS, REWARD, STAKES, TAGS, TUNE, VOUCHERS, VOUCHER_PRICE } from './rules.js';
 import { JD, JOKERS } from './jokers.js';
 import { TAROTS, TD } from './tarots.js';
 import { computeHand, curBoss, targetFor } from './scoring.js';
@@ -9,10 +9,21 @@ import { makeSeed, rand, rint, shuffle } from './rng.js';
 
 export function pickBoss(st, prev, ante) {
   // the target-doubling wall waits until ante 3; the first ante gets no hand penalty
-  const ks = Object.keys(BOSSES).filter((k) => k !== prev && !(k === 'wall' && ante < 3) && !(k === 'glass' && ante < 2));
+  const ks = Object.keys(BOSSES).filter((k) => k !== prev && !(k === 'wall' && ante < 3) && !(k === 'glass' && ante < 2) && !(BOSSES[k].minAnte > ante));
   return ks[rint(st, ks.length)];
 }
 export const rollTag = (st) => { const ks = Object.keys(TAGS); return ks[rint(st, ks.length)]; };
+
+// ---- vouchers: one permanent upgrade on offer per ante
+export const hasV = (st, k) => (st.vouchers || []).includes(k);
+export function rollVoucher(st) {
+  const ks = Object.keys(VOUCHERS).filter((k) => !hasV(st, k));
+  return ks.length ? ks[rint(st, ks.length)] : null;
+}
+// jokers in the negative edition do not take a slot
+export const usedSlots = (st) => st.jokers.filter((j) => j.ed !== 'negative').length;
+export const sellJ = (j) => Math.max(1, Math.floor((JD[j.key].price + (j.ed ? EDITIONS[j.ed].add : 0)) / 2));
+const handLimit = (st) => { const b = curBoss(st); return st.handSize + ((b && b.handDelta) || 0); };
 
 export function newDeck(st, deckKey) {
   const d = [];
@@ -34,12 +45,13 @@ export function freshState(deckKey = 'red', stake = 0, seed = makeSeed()) {
     money: 4 + (D.money || 0), hands: 4, discards: 3, handSize: 8, maxJokers: 5 + (D.slots || 0), maxCons: 2,
     roundScore: 0, target: 0, deckList: [], deck: [], hand: [], played: [], selected: [],
     jokers: [], cons: [], levels: Object.fromEntries(Object.keys(HANDS).map((k) => [k, 1])),
-    daily: null, metaDone: false, shop: null, pack: null, rerollCost: 5, pendingRare: false, sort: 'rank', inspect: null, cash: null, uid: 1, roundHands: 0,
+    daily: null, metaDone: false, vouchers: [], voucherOffer: null, roundTypes: [], shop: null, pack: null, rerollCost: 5, pendingRare: false, sort: 'rank', inspect: null, cash: null, uid: 1, roundHands: 0,
     stats: { types: {}, total: 0, best: 0, bestType: null, earned: 0, tarots: 0, planets: 0, handsPlayed: 0, skipped: 0 },
   };
   st.bossKey = pickBoss(st, null, 1);
   st.tags = [rollTag(st), rollTag(st)];
   st.deckList = newDeck(st, deckKey);
+  st.voucherOffer = rollVoucher(st);
   return st;
 }
 
@@ -50,7 +62,7 @@ export function sortHand(st) {
 // returns the ids of newly drawn cards (the UI animates them in)
 export function draw(st) {
   const ids = [];
-  while (st.hand.length < st.handSize && st.deck.length) { const c = st.deck.pop(); st.hand.push(c); ids.push(c.id); }
+  while (st.hand.length < handLimit(st) && st.deck.length) { const c = st.deck.pop(); st.hand.push(c); ids.push(c.id); }
   sortHand(st);
   return ids;
 }
@@ -58,10 +70,11 @@ export function draw(st) {
 export function startBlind(st) {
   const b = curBoss(st), D = DECKS[st.deckKey];
   st.target = targetFor(st, st.blindIdx);
-  st.hands = Math.max(1, 4 + (D.hands || 0) + ((b && b.handsDelta) || 0));
-  st.discards = b && b.noDiscard ? 0 : 3 + (D.disc || 0);
+  st.hands = b && b.oneHand ? 1 : Math.max(1, 4 + (D.hands || 0) + (hasV(st, 'hand') ? 1 : 0) + ((b && b.handsDelta) || 0));
+  st.discards = b && b.noDiscard ? 0 : 3 + (D.disc || 0) + (hasV(st, 'disc') ? 1 : 0);
+  if (b && b.tax) st.money -= Math.min(10, Math.floor(Math.max(0, st.money) / 2));
   st.deck = shuffle(st, st.deckList.map((c) => ({ ...c })));
-  st.hand = []; st.played = []; st.selected = []; st.roundScore = 0; st.roundHands = 0;
+  st.hand = []; st.played = []; st.selected = []; st.roundScore = 0; st.roundHands = 0; st.roundTypes = [];
   st.phase = 'play';
   return draw(st);
 }
@@ -80,7 +93,18 @@ export function finishHand(st, res) {
   const s = st.stats;
   s.handsPlayed++; s.total += res.total; s.earned += res.money; s.types[res.type] = (s.types[res.type] || 0) + 1;
   if (res.total > s.best) { s.best = res.total; s.bestType = res.type; }
-  if (res.broken.length) { const b = new Set(res.broken); st.deckList = st.deckList.filter((c) => !b.has(c.id)); }
+  if (res.broken.length) {
+    const b = new Set(res.broken); st.deckList = st.deckList.filter((c) => !b.has(c.id));
+    for (const j of st.jokers) { const d = JD[j.key]; if (d.broke) d.broke(res.broken.length, j); }
+  }
+  // boss after-effects of a hand
+  const boss = curBoss(st);
+  if (!(st.roundTypes || (st.roundTypes = [])).includes(res.type)) st.roundTypes.push(res.type);
+  if (boss && boss.arm) st.levels[res.type] = Math.max(1, st.levels[res.type] - 1);
+  if (boss && boss.tooth) st.money = Math.max(0, st.money - boss.tooth * st.played.length);
+  if (boss && boss.hook && st.hand.length) {
+    shuffle(st, st.hand.map((c) => c.id)).slice(0, boss.hook).forEach((id) => { st.hand = st.hand.filter((c) => c.id !== id); });
+  }
   st.played = [];
   let drawn = [];
   if (st.roundScore >= st.target) {
@@ -95,7 +119,7 @@ export function discardCards(st, ids) {
   const sel = new Set(ids);
   const gone = st.hand.filter((c) => sel.has(c.id));
   st.hand = st.hand.filter((c) => !sel.has(c.id)); st.selected = []; st.discards--;
-  for (const j of st.jokers) { const d = JD[j.key]; if (d.discard) d.discard(gone, j); }
+  for (const j of st.jokers) { const d = JD[j.key]; if (d.discard) d.discard(gone, j, st); }
   return draw(st);
 }
 
@@ -104,7 +128,7 @@ export function cashLines(st) {
   const rw = S.noSmall && st.blindIdx === 0 ? 0 : REWARD[st.blindIdx];
   if (rw) lines.push({ t: '击败盲注', v: rw });
   if (st.hands > 0) lines.push({ t: `剩余出牌 ${st.hands} 次`, v: st.hands });
-  const cap = S.intCap != null ? S.intCap : 5, interest = Math.min(cap, Math.floor(st.money / 5));
+  const cap = (S.intCap != null ? S.intCap : 5) + (hasV(st, 'interest') ? 5 : 0), interest = Math.min(cap, Math.floor(st.money / 5));
   if (interest > 0) lines.push({ t: `利息（每 $5 得 $1，最多 $${cap}）`, v: interest });
   st.jokers.forEach((j, i) => {
     let k = i;
@@ -118,7 +142,7 @@ export function cashLines(st) {
 
 export function cashOut(st) {
   const v = st.cash.reduce((a, l) => a + l.v, 0);
-  st.money += v; st.stats.earned += v; st.cash = null; st.rerollCost = 5; st.shop = genShop(st); st.phase = 'shop';
+  st.money += v; st.stats.earned += v; st.cash = null; st.rerollCost = hasV(st, 'reroll') ? 3 : 5; st.shop = genShop(st); st.phase = 'shop';
   return v;
 }
 
@@ -134,14 +158,18 @@ export function genShop(st) {
     if (!cand.length) return;
     const p = cand[rint(st, cand.length)];
     pool.splice(pool.indexOf(p), 1);
-    items.push({ kind: 'joker', key: p.key, price: p.price });
+    // a small chance of a shiny edition, which costs a little more
+    let ed = null, x = rand(st);
+    for (const [k, E] of Object.entries(EDITIONS)) { if (x < E.p) { ed = k; break; } x -= E.p; }
+    items.push({ kind: 'joker', key: p.key, price: p.price + (ed ? EDITIONS[ed].add : 0), ed });
   };
-  for (let i = 0; i < TUNE.shopJokers; i++) { const r = rand(st); take(r < 0.08 ? 3 : r < 0.33 ? 2 : 1); }
+  for (let i = 0; i < TUNE.shopJokers + (hasV(st, 'shelf') ? 1 : 0); i++) { const r = rand(st); take(r < 0.08 ? 3 : r < 0.33 ? 2 : 1); }
   if (st.pendingRare) { take(3); st.pendingRare = false; }
   const hk = visibleHands(st);
   items.push({ kind: 'planet', key: hk[rint(st, hk.length)], price: 3 });
   items.push({ kind: 'tpack', price: 4, opts: shuffle(st, TAROTS.map((t) => t.key)).slice(0, 3) });
   if (TUNE.pack) items.push({ kind: 'pack', price: 4, opts: shuffle(st, hk.slice()).slice(0, 3) });
+  if (st.voucherOffer) items.push({ kind: 'voucher', key: st.voucherOffer, price: VOUCHER_PRICE });
   return items;
 }
 
@@ -197,9 +225,17 @@ export function buy(st, i) {
   if (st.money < it.price) return { err: '钱不够' };
   let msg;
   if (it.kind === 'joker') {
-    if (st.jokers.length >= st.maxJokers) return { err: '小丑栏满了，先出售一张' };
-    st.jokers.push({ key: it.key, uid: st.uid++, data: {} });
-    msg = `买下了${JD[it.key].name}`;
+    if (it.ed !== 'negative' && usedSlots(st) >= st.maxJokers) return { err: '小丑栏满了，先出售一张' };
+    st.jokers.push({ key: it.key, uid: st.uid++, data: {}, ...(it.ed ? { ed: it.ed } : {}) });
+    msg = `买下了${it.ed ? EDITIONS[it.ed].n : ''}${JD[it.key].name}`;
+  } else if (it.kind === 'voucher') {
+    if (hasV(st, it.key)) return { err: '已经有这张优惠券了' };
+    st.vouchers.push(it.key); st.voucherOffer = null;
+    if (it.key === 'slot') st.maxJokers++;
+    if (it.key === 'hsize') st.handSize++;
+    if (it.key === 'cons') st.maxCons++;
+    if (it.key === 'reroll') st.rerollCost = Math.max(1, st.rerollCost - 2);
+    msg = `优惠券「${VOUCHERS[it.key].n}」：${VOUCHERS[it.key].d}`;
   } else if (it.kind === 'planet') {
     st.levels[it.key]++; st.stats.planets++;
     msg = `${HANDS[it.key].n}升到 ${st.levels[it.key]} 级`;
@@ -233,6 +269,7 @@ export function nextBlind(st) {
     st.blindIdx = 0; st.ante++;
     st.bossKey = pickBoss(st, st.bossKey, st.ante);
     st.tags = [rollTag(st), rollTag(st)];
+    st.voucherOffer = rollVoucher(st);
   }
   st.shop = null; st.phase = 'select';
 }

@@ -74,3 +74,6 @@
 .mini.e-glass { background: #d9f3ff; }
 .mini.e-steel { background: #cfd6dd; }
 .mini.e-wild { background: conic-gradient(from 45deg, #ffd3e8 0 25%, #fff1b0 0 50%, #cfe0ff 0 75%, #c9f5dd 0); }
+
+/* permanent extra chips written onto a card (老树) */
+.card .pcb { position: absolute; top: -6cqw; left: -6cqw; z-index: 2; font-family: var(--pop); font-size: 15cqw; line-height: 1.2; padding: 0 4cqw; background: var(--blue); color: var(--white); border: 1.8cqw solid var(--ink); }

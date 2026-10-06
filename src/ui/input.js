@@ -1,6 +1,7 @@
 // Every player action: one delegated click handler, keyboard shortcuts and joker drag-to-reorder.
 import {
-  JD, TD, UNLOCK, buy, cashOut, choosePack, dailyKey, dailySetup, isUnlocked, noteTarot, packApply, packClose, packKeep, packPick, discardCards, freshState, nextBlind, reroll, sellOf, skipBlind, sortHand, startBlind, useTarot,
+  JD, TD, UNLOCK, buy, cashOut, choosePack, dailyKey, dailySetup, discardCards, freshState, isUnlocked, nextBlind, noteTarot,
+  packApply, packClose, packKeep, packPick, reroll, sellJ, skipBlind, sortHand, startBlind, useTarot,
 } from '../core/index.js';
 import { $, toast } from './dom.js';
 import { isPicked } from './components.js';
@@ -90,13 +91,13 @@ const ACTIONS = {
     if (state.phase === 'scoring') return;
     const i = state.jokers.findIndex((j) => j.uid === state.inspect.uid);
     if (i < 0) return;
-    const d = JD[state.jokers[i].key];
-    if (!armed(b, `出售 $${sellOf(d)}`, `确认卖掉${d.name}？`)) return;
-    state.money += sellOf(d);
+    const d = JD[state.jokers[i].key], v = sellJ(state.jokers[i]);
+    if (!armed(b, `出售 $${v}`, `确认卖掉${d.name}？`)) return;
+    state.money += v;
     state.jokers.splice(i, 1);
     state.inspect = null;
     Sfx.cash();
-    toast(`卖掉了${d.name}，得到 $${sellOf(d)}`);
+    toast(`卖掉了${d.name}，得到 $${v}`);
     render();
   },
   cuse: () => {

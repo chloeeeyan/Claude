@@ -43,7 +43,7 @@ export function renderHud() {
     const res = computeHand(state, sel, held, { preview: true });
     const need = state.target - state.roundScore;
     setLive(`${HANDS[res.type].n}<small>${state.levels[res.type]} 级</small>`, res.base.c, res.base.m,
-      `预计 ${hasJ(state, 'misprint') ? '≈ ' : ''}${fmt(res.total)}${res.total >= need ? ' · 够过关' : ''}`, res.total >= need);
+      res.voided ? `这手不得分：${res.voided}` : `预计 ${hasJ(state, 'misprint') || hasJ(state, 'gambler') ? '≈ ' : ''}${fmt(res.total)}${res.total >= need ? ' · 够过关' : ''}`, res.total >= need);
   } else setLive(p === 'play' ? '选牌，凑牌型' : '—', 0, 0);
   // enhancement / seal effects of the selected cards are spelled out instead of hiding in a tooltip
   const notes = [...new Set(sel.flatMap((c) => [
