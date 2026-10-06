@@ -5,6 +5,7 @@ import {
 import { $, fmt } from './dom.js';
 import { cardTitle, jokerFace, miniCard, parseCards } from './components.js';
 import { inRound, meta, state } from './store.js';
+import { teleCount } from './tele.js';
 
 // [hand, example cards, rule, tip]; 'hidden' is the note that introduces the secret hands
 const HAND_EX = [
@@ -100,6 +101,9 @@ function collectTab() {
       <p>${TAROTS.map((t) => (used.has(t.key) ? `<b>${t.name}</b>` : `<span class="dim">${t.name}</span>`)).join('　')}</p></div>
     <div class="gx"><div class="gx-h"><b>Boss</b><span class="hint">击败过 ${Object.keys(BOSSES).filter((k) => beat.has(k)).length}/${Object.keys(BOSSES).length}</span></div>
       <p>${Object.entries(BOSSES).map(([k, b]) => (beat.has(k) ? `<b>${b.n}</b>` : `<span class="dim">${b.n}</span>`)).join('　')}</p></div>
+    <div class="gx"><div class="gx-h"><b>试玩数据</b><span class="hint">本机记录了 ${teleCount()} 局</span></div>
+      <p>每局的牌组、走到哪一关、被哪个 Boss 打败、用了哪些小丑，只存在这台设备上。参加试玩时，点下面导出发给开发者。</p>
+      <div class="cv-tools" style="justify-content:flex-start"><button class="chip on" data-act="teleexport">导出文件</button><button class="chip" data-act="telecopy">复制文本</button></div></div>
   </div>`;
 }
 

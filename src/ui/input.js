@@ -9,6 +9,8 @@ import { pulse } from './fx.js';
 import { closeModal, openModal, switchGuideTab } from './guide.js';
 import { goLandscape } from './orient.js';
 import { playHand } from './play.js';
+import { teleCopy, teleEnd, teleExport, teleStart } from './tele.js';
+import { skipTutor, tutorOk } from './tutor.js';
 import { render } from './render.js';
 import { renderHud } from './hud.js';
 import { renderShelf } from './shelf.js';
@@ -58,11 +60,12 @@ function armed(b, label, armedLabel) {
 }
 
 // leaving a run (finished or abandoned) folds it into the cross-run progress first
-function backToMenu() { endRun(); setState(menuState()); render(); }
+function backToMenu() { teleEnd(); endRun(); setState(menuState()); render(); }
 
 function startRun(st) {
   ui.newUnlocks = [];
   setState(st);
+  teleStart();
   Sfx.select();
   render();
 }
@@ -143,6 +146,10 @@ const ACTIONS = {
     toast(`每日挑战 ${key}：今天所有人的牌都一样`);
   },
   collect: () => openModal('guide', 'collect'),
+  tutorok: () => tutorOk(),
+  teleexport: () => teleExport(),
+  telecopy: async () => toast((await teleCopy()) ? '已复制，粘贴发给开发者即可' : '复制失败，请用「导出文件」'),
+  tutorskip: () => skipTutor(),
   start: () => { startBlind(state).forEach((id) => ui.justDrawn.add(id)); Sfx.deal(); render(); },
   skip: () => { const m = skipBlind(state); if (m) { Sfx.cash(); toast('跳过盲注：' + m); render(); } },
   cashout: () => { if (cashOut(state)) Sfx.cash(); render(); },

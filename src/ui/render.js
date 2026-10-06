@@ -5,6 +5,7 @@ import { panelIn } from './fx.js';
 import { renderHud } from './hud.js';
 import { renderShelf } from './shelf.js';
 import { renderStage } from './screens.js';
+import { runTutor } from './tutor.js';
 import { noteProgress, saveRun, state, ui } from './store.js';
 
 let lastScreen = null;
@@ -20,4 +21,5 @@ export function render() {
   ui.justDrawn.clear();
   noteProgress();
   saveRun();
+  runTutor();
 }

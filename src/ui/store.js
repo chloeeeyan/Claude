@@ -6,7 +6,7 @@ import {
 
 const KEYS = {
   run: 'jn.run', records: 'jn.records', last: 'jn.last', tips: 'jn.tips',
-  prefs: 'jn.prefs', speed: 'jn.speed', sound: 'jn.sound', tutorial: 'jn.tutorial', meta: 'jn.meta',
+  prefs: 'jn.prefs', speed: 'jn.speed', sound: 'jn.sound', tutorial: 'jn.tutorial', tutor: 'jn.tutor', meta: 'jn.meta', tele: 'jn.tele',
 };
 
 // localStorage can be missing or throw (private mode, blocked storage); every access is guarded

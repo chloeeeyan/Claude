@@ -39,9 +39,12 @@ src/
     patch.js       按 data-key 复用节点的局部重绘，牌换位置时 FLIP 滑过去，新牌从牌堆发出
     fx.js          震屏、数字鼓动、换场转场
     orient.js      手机横屏时套用电脑布局（加宽 viewport 后整体缩放）
+    tutor.js       第一局的手把手教学
+    tele.js        本机试玩数据（图鉴 → 收藏里导出）
     input.js       点击、键盘、拖动排序
     components.js  卡牌、小丑、塔罗、星图的 HTML 片段
   styles/        按组件拆分的样式，index.css 统一引入
+docs/            待定方案：游戏特色备选、美术音频计划、试玩方案
 tests/           Vitest 单元测试
 tools/sim.js     平衡模拟器（贪心机器人批量对局）
 ```
