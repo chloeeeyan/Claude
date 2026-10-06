@@ -1,5 +1,5 @@
-// The table's content for each phase: cover, blind select, round, cash-out, shop, star pack, game over, win.
-import { BLIND_NAMES, BOSSES, DECKS, HANDS, JD, PLANETS, REWARD, STAKES, TAGS, curBoss, targetFor } from '../core/index.js';
+// The table's content for each phase: cover, blind select, round, cash-out, shop, star / tarot pack, game over, win.
+import { BLIND_NAMES, BOSSES, DECKS, HANDS, JD, PLANETS, REWARD, STAKES, TAGS, TD, curBoss, packCards, targetFor } from '../core/index.js';
 import { $, fmt } from './dom.js';
 import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, jokerFace, planetFace, tarotFace } from './components.js';
 import { patch } from './patch.js';
@@ -46,7 +46,7 @@ function coachTip() {
   const p = state.phase, b = curBoss(state);
   if (p === 'play' && b && b.deb) return ['boss', `这一关是 Boss「${b.n}」：${b.d}。被它禁掉的牌盖着红叉、写着「不计分」，打出去也拿不到分，适合先弃掉。`];
   if (p === 'play' && state.cons.length) return ['tarot', '你有塔罗牌了：先点一下塔罗，再在手牌里选中要改造的牌，最后点「使用」。塔罗用一次就没了。'];
-  if (p === 'shop') return ['shop', '星图让一种牌型永久升 1 级，没有上限，越升基础分越高，主力牌型最值得买。塔罗是一次性的改牌道具，买下后放进塔罗栏，下一关开打时使用。'];
+  if (p === 'shop') return ['shop', '星图让一种牌型永久升 1 级，没有上限，越升基础分越高，主力牌型最值得买。塔罗包里 3 选 1：可以当场改造牌组里的牌，也可以收进塔罗栏，留到对局里用在手牌上。'];
   if (p === 'play' && state.jokers.length) return ['joker', '小丑从左往右依次触发。拖动小丑可以换顺序，「×倍率」的放在最右边，最后乘，分数最高。'];
   return null;
 }
@@ -133,19 +133,40 @@ function cashoutHTML() {
         <h3>${nbBoss ? 'Boss · ' + nbBoss.n : BLIND_NAMES[nb.i]}${nb.ante !== state.ante ? ` <small>底注 ${nb.ante}</small>` : ''}</h3>
         <div class="nc-t">${fmt(nbTarget)}<small>目标分数</small></div>
         <p>${nbNote}</p>
-        <div class="nc-shop"><b>商店里有</b>2 张小丑 · 1 张星图 · 1 张塔罗 · 1 个星图包</div>
+        <div class="nc-shop"><b>商店里有</b>2 张小丑 · 1 张星图 · 1 个塔罗包 · 1 个星图包</div>
       </div>
     </div>`;
 }
 
 function packHTML() {
+  if (state.pack.kind === 'tarot') return tarotPackHTML();
   return `<h2 class="panel-t" data-en="STAR PACK">星图包 · 挑一张</h2>
     <p class="panel-s">选中的牌型立刻升 1 级。数字是升级后的基础筹码和倍率。</p>
-    <div class="shopgrid">${state.pack.map((k) => {
+    <div class="shopgrid">${state.pack.opts.map((k) => {
       const h = HANDS[k], l = state.levels[k];
       return `<div class="item">${planetFace(PLANETS[k], `${h.n} ${l}→${l + 1} 级<br>${h.c + h.dc * l} 筹码 × ${h.m + h.dm * l} 倍率<br>本局打过 ${(state.stats.types || {})[k] || 0} 次`)}
         <button class="btn gold buy" data-act="pickpack" data-v="${k}">选这张</button></div>`;
     }).join('')}</div>`;
+}
+
+// Tarot pack: three tarots on top, six cards from the deck below; pick a tarot, select cards, use it right here.
+function tarotPackHTML() {
+  const P = state.pack, d = P.pick ? TD[P.pick] : null, n = state.selected.length;
+  const range = d && (d.min === d.max ? `${d.min}` : `${d.min}–${d.max}`);
+  const step = P.done ? '改好了！这些牌已经永久写进你的牌组。'
+    : !d ? '先挑一张塔罗。用掉它：当场改造下面这几张牌组里的牌；也可以收进塔罗栏，留到对局里用在手牌上。'
+      : `已选「${d.name}」：在下面选 ${range} 张牌，再点「当场使用」。${d.copy ? '左边那张会变成右边那张的复制。' : ''}`;
+  const full = state.cons.length >= state.maxCons;
+  return `<h2 class="panel-t" data-en="ARCANA PACK">塔罗包 · 挑一张</h2>
+    <p class="panel-s">${step}</p>
+    <div class="tp-wrap"><div class="shopgrid tp-opts">${P.opts.map((k) => `<div class="item ${P.pick === k ? 'chosen' : ''} ${P.done && P.pick !== k ? 'sold' : ''}">${tarotFace(k, 'div', 'style="cursor:default"', P.pick === k)}
+      <button class="btn ${P.pick === k ? 'primary' : 'gold'} buy" data-act="tpick" data-v="${k}" ${P.done ? 'disabled' : ''}>${P.pick === k ? '已选' : '选这张'}</button></div>`).join('')}</div>
+    <div class="tp-side"><div class="tp-cards" style="--n:${P.cards.length}">${packCards(state).map((c) => cardHTML(c, P.done || !d || d.money ? 'none' : 'pcard')).join('')}</div>
+    <div class="shopbar tp-bar">${P.done
+      ? '<button class="btn primary" data-act="tclose">回到商店</button>'
+      : `<button class="btn gold" data-act="tapply" ${d && n >= d.min && n <= d.max ? '' : 'disabled'}>当场使用${d ? `<small>${n}/${range}</small>` : ''}</button>
+         <button class="btn ghost" data-act="tkeep" ${d && !full ? '' : 'disabled'}>${full ? '塔罗栏已满' : '收进塔罗栏'}</button>
+         <button class="btn ghost" data-act="tclose">不要了</button>`}</div></div></div>`;
 }
 
 function shopHTML() {
@@ -154,6 +175,7 @@ function shopHTML() {
     let face;
     if (it.kind === 'joker') face = jokerFace(JD[it.key], null);
     else if (it.kind === 'pack') face = planetFace('三选一', '打开后从 3 张星图里挑 1 张，让对应牌型升 1 级', '星图包');
+    else if (it.kind === 'tpack') face = `<div class="tc tpack"><span class="tag">卡包</span><span class="ji" aria-hidden="true">${glyph('☾')}</span><span class="jn">塔罗包</span><span class="jd">3 选 1，当场改造牌组里的牌</span></div>`;
     else if (it.kind === 'planet') {
       const h = HANDS[it.key], l = state.levels[it.key];
       face = planetFace(PLANETS[it.key], `${h.n} ${l}→${l + 1} 级<br>+${h.dc} 筹码 +${h.dm} 倍率`);
@@ -165,7 +187,7 @@ function shopHTML() {
       <button class="btn gold buy" data-act="buy" data-i="${i}" ${can ? '' : 'disabled'}>${it.sold ? '已买' : '购买'}</button></div>`;
   }).join('');
   return `<h2 class="panel-t" data-en="THE SHOP">商店</h2>
-    ${coachHTML(true) || '<p class="panel-s"><b>星图</b>：一种牌型永久升 1 级，可以一直叠加。<b>塔罗</b>：一次性道具，下一关里对手牌使用。</p>'}
+    ${coachHTML(true) || '<p class="panel-s"><b>星图</b>：一种牌型永久升 1 级，可以一直叠加。<b>塔罗包</b>：3 选 1，当场改牌或留着用。</p>'}
     <div class="shopgrid">${items}</div>
     <div class="shopbar">
       <button class="btn ghost" data-act="reroll" ${state.money >= state.rerollCost ? '' : 'disabled'}>刷新 $${state.rerollCost}</button>
@@ -200,10 +222,10 @@ export function renderStage() {
   const st = $('stage');
   st.classList.toggle('busy', state.phase === 'scoring');
   // freshly drawn cards are dealt out of the draw pile
-  // cards discarded or swept away after scoring are tossed off the table, as long as the round goes on
-  const round = inRound();
+  // cards discarded, swept away after scoring or cut by a tarot are tossed off the table
+  const round = inRound(), packOpen = !!(state.pack && state.pack.kind === 'tarot');
   patch(st, stageHTML(), {
     enter: (el) => (ui.justDrawn.has(el.dataset.id) ? $('pile') : null),
-    leave: (el) => round && el.classList.contains('card'),
+    leave: (el) => (round || packOpen) && el.classList.contains('card'),
   });
 }

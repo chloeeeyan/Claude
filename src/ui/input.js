@@ -1,9 +1,10 @@
 // Every player action: one delegated click handler, keyboard shortcuts and joker drag-to-reorder.
 import {
-  JD, buy, cashOut, choosePack, discardCards, freshState, nextBlind, reroll, sellOf, skipBlind, sortHand, startBlind, useTarot,
+  JD, TD, buy, cashOut, choosePack, packApply, packClose, packKeep, packPick, discardCards, freshState, nextBlind, reroll, sellOf, skipBlind, sortHand, startBlind, useTarot,
 } from '../core/index.js';
 import { $, toast } from './dom.js';
 import { isPicked } from './components.js';
+import { pulse } from './fx.js';
 import { closeModal, openModal, switchGuideTab } from './guide.js';
 import { goLandscape } from './orient.js';
 import { playHand } from './play.js';
@@ -127,6 +128,32 @@ const ACTIONS = {
     render();
   },
   tipok: (b) => { ui.tipsSeen.push(b.dataset.k); storage.set('tips', ui.tipsSeen); renderStage(); },
+  tpick: (b) => {
+    const r = packPick(state, b.dataset.v);
+    if (r.err) { toast(r.err); return; }
+    Sfx.select();
+    if (r.msg) { Sfx.cash(); toast(r.msg); }
+    render();
+  },
+  pcard: (b) => {
+    const P = state.pack, d = P && P.pick && TD[P.pick];
+    if (!d || P.done) return;
+    const id = b.dataset.id, i = state.selected.indexOf(id);
+    if (i >= 0) state.selected.splice(i, 1);
+    else if (state.selected.length < d.max) state.selected.push(id);
+    else if (d.max === 1) state.selected = [id];
+    else { toast(`「${d.name}」最多选 ${d.max} 张`); return; }
+    Sfx.select();
+    render();
+  },
+  tapply: () => {
+    const r = packApply(state);
+    if (r.err) { toast(r.err); return; }
+    Sfx.retrig(); toast(r.msg); render();
+    (state.pack.changed || []).forEach((id) => pulse(document.querySelector(`.tp-cards [data-id="${id}"]`), 0.8));
+  },
+  tkeep: () => { const r = packKeep(state); if (r.err) { toast(r.err); return; } Sfx.select(); toast(r.msg); render(); },
+  tclose: () => { if (packClose(state)) render(); },
   pickpack: (b) => { const m = choosePack(state, b.dataset.v); if (m) { Sfx.win(); toast(m); render(); } },
   reroll: () => { if (reroll(state)) { Sfx.deal(); render(); } },
   next: () => { nextBlind(state); saveRecord(); render(); },

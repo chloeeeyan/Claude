@@ -59,3 +59,14 @@
 .sumgrid div:nth-child(odd) { rotate: -1deg; }
 .sumgrid div:nth-child(even) { rotate: 1deg; }
 .sumgrid b { display: block; font-family: var(--pop); font-weight: 400; font-size: 22px; letter-spacing: .04em; overflow-wrap: anywhere; }
+
+/* tarot pack: the three tarots, then the sample of deck cards they can be used on */
+.tp-wrap { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 18px clamp(20px, 4vw, 56px); }
+.tp-opts { justify-content: center; gap: 14px; }
+.tp-opts .item > .tc { width: 104px; }
+.tp-side { display: grid; gap: 16px; justify-items: center; }
+.tp-bar { justify-content: center; gap: 12px; flex-wrap: wrap; }
+.item.chosen > .tc { box-shadow: 0 0 0 4px var(--yellow), 0 0 0 7px var(--ink), 6px 8px 0 7px var(--ink); }
+.tp-cards { --cw: clamp(48px, 10.5vh, 84px); display: grid; grid-template-columns: repeat(var(--n), var(--cw)); justify-content: center; gap: clamp(6px, 1vw, 12px); padding-top: 16px; }
+.tp-cards .card[data-act="none"] { cursor: default; }
+.tc.tpack { cursor: default; background: repeating-linear-gradient(-45deg, transparent 0 8px, rgba(255,255,255,.16) 8px 10px), var(--purple); }
