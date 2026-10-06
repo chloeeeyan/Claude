@@ -13,14 +13,16 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
   `scoring.js` computeHand → animation `steps` · `run.js` state machine (select → play ⇄ scoring → cashout → shop → … → over/win) ·
   `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves
 - `src/ui/` `store.js` (live `state` + `setState`, localStorage via `storage`, keys `jn.*`) · `hud.js` · `shelf.js` · `screens.js` (per-phase table HTML) ·
-  `guide.js` modals · `play.js` scoring animation · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
+  `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
 - `src/styles/` one file per component, imported by `index.css`; tokens in `tokens.css`
 - `tests/`, `tools/sim.js`
 
 ## Rules of thumb
 - All randomness in core goes through `rand/rint/shuffle(st, …)`; never `Math.random` in `src/core` (breaks seed replay).
 - Changing the shape of run state: bump `SAVE_VERSION` in `src/core/save.js` and add a migration.
-- UI renders by string templates + full `innerHTML` redraw (`render()`); keep core free of DOM.
+- UI renders by string templates; `render()` redraws everything. Stage and shelf go through `patch()` (`src/ui/patch.js`):
+  elements with `data-key` (cards `c<id>`, jokers `j<uid>`, tarots `t<uid>`) are reused across renders and FLIP-animate
+  when they change zone/order. Keys must be unique within a root. Keep core free of DOM.
 - Fonts are self-hosted via `@fontsource` (Google Fonts is unreliable in mainland China). Don't add CDN dependencies.
 - Style: Pop Art comic — ink outlines, hard offset shadows, Ben-Day dots; Chinese text in ZCOOL KuaiLe, numbers in Luckiest Guy;
   English only as small slanted eyebrows next to Chinese. Essential info must be visible, not hover-only.
@@ -33,9 +35,9 @@ coach tips, pop-art UI, game-screen layout, seeded RNG, versioned saves, tests, 
 
 Agreed priority list (from the product review), in order:
 1. ✅ repo + module split
-2. Deploy: GitHub → EdgeOne Pages (international; free, no ICP filing, loads in China). Build `npm run build`, output `dist`.
+2. ✅ Deploy: GitHub → EdgeOne Pages (international; free, no ICP filing, loads in China). Build `npm run build`, output `dist`.
    Vercel default domain is blocked in China.
-3. Rendering architecture: keyed DOM reuse so cards can animate between zones (FLIP), prerequisite for game feel.
+3. ✅ Rendering architecture: keyed DOM reuse so cards can animate between zones (FLIP), prerequisite for game feel.
 4. Game feel: deal from pile, cards fly to play area, escalating score feedback, screen shake on ×mult, phase transitions.
 5. Game identity: 1–2 original core mechanics + theme naming (move away from poker jargon 盲注/底注); user decides.
 6. Content by archetype (flush / face / discard / economy / single-card / deck-rewrite builds), vouchers, joker editions; ~70–80 jokers, ~20 bosses.

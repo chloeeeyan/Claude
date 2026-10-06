@@ -41,7 +41,7 @@ export function cardHTML(c, act = 'card', arc) {
       : `<span class="pip" aria-hidden="true">${s}</span>`;
   const fan = arc ? ` style="--rot:${(arc.o * 1.7).toFixed(1)}deg;--dy:${(arc.o * arc.o * 1.1).toFixed(1)}px"` : '';
   const title = cardTitle(c);
-  return `<button class="${cls}"${fan} data-act="${act}" data-id="${c.id}" title="${title}" aria-label="${title.replace(/\n/g, '，')}" aria-pressed="${sel}">
+  return `<button class="${cls}"${fan} data-act="${act}" data-id="${c.id}" data-key="c${c.id}" title="${title}" aria-label="${title.replace(/\n/g, '，')}" aria-pressed="${sel}">
     <span class="ci tl"><b>${r}</b><i>${s}</i></span>${mid}<span class="ci br"><b>${r}</b><i>${s}</i></span>
     ${c.enh ? `<span class="eb">${ENH[c.enh].n}</span>` : ''}${c.seal ? `<span class="seal ${c.seal}"></span>` : ''}</button>`;
 }
@@ -51,14 +51,14 @@ export function jokerFace(d, j, tag = 'div', attrs = '') {
     <span class="tag">${RARITY[d.r]}</span><span class="ji" aria-hidden="true">${glyph(JICON[d.key] || '★')}</span>
     <span class="jn">${d.name}</span><span class="jd">${descOf(d, j)}</span></${tag}>`;
 }
-export const jokerHTML = (j) => jokerFace(JD[j.key], j, 'button', `data-act="joker" data-uid="${j.uid}"`);
+export const jokerHTML = (j) => jokerFace(JD[j.key], j, 'button', `data-act="joker" data-uid="${j.uid}" data-key="j${j.uid}"`);
 
 export function tarotFace(key, tag = 'div', attrs = '', picked = false) {
   const d = TD[key];
   return `<${tag} class="tc ${picked ? 'picked' : ''}" ${attrs}><span class="tag">一次性</span><span class="ji" aria-hidden="true">${glyph(TICON[key] || '☾')}</span>
     <span class="jn">${d.name}</span><span class="jd">${d.desc}</span></${tag}>`;
 }
-export const tarotHTML = (c) => tarotFace(c.key, 'button', `data-act="cons" data-uid="${c.uid}"`, isPicked('c', c.uid));
+export const tarotHTML = (c) => tarotFace(c.key, 'button', `data-act="cons" data-uid="${c.uid}" data-key="t${c.uid}"`, isPicked('c', c.uid));
 
 export const planetFace = (name, body, label = '星图') =>
   `<div class="planet"><span class="lbl">${label}</span><span class="orb" aria-hidden="true"></span><span class="jn">${name}</span><span class="jd">${body}</span></div>`;

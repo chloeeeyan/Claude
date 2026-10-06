@@ -1,6 +1,7 @@
 // Joker and tarot shelf, plus the inspector panel that opens under it.
 import { JD, RARITY, TD, descOf, sellOf } from '../core/index.js';
 import { $ } from './dom.js';
+import { patch } from './patch.js';
 import { jokerHTML, tarotHTML } from './components.js';
 import { state } from './store.js';
 
@@ -8,12 +9,12 @@ export function renderShelf() {
   $('jcount').textContent = `${state.jokers.length}/${state.maxJokers}`;
   let html = state.jokers.map(jokerHTML).join('');
   for (let i = state.jokers.length; i < state.maxJokers; i++) html += `<div class="jk empty">${i === 0 ? '商店里买小丑' : '空位'}</div>`;
-  $('jrow').innerHTML = html;
+  patch($('jrow'), html);
 
   $('ccount').textContent = `${state.cons.length}/${state.maxCons}`;
   let ch = state.cons.map(tarotHTML).join('');
   for (let i = state.cons.length; i < state.maxCons; i++) ch += '<div class="tc empty">空位</div>';
-  $('crow').innerHTML = ch;
+  patch($('crow'), ch);
   renderInspector();
 }
 
