@@ -56,3 +56,22 @@
 .jk.unknown { background: repeating-linear-gradient(45deg, #e8e8e8 0 6px, #d8d8d8 6px 12px); color: #777; }
 .jk.unknown .ji { background: #bbb; color: var(--white); }
 .gsec .dim { color: #aaa; }
+
+/* hands-on tutorial: a pulsing yellow ring on what to touch, and a speech bubble pointing at it */
+.tutor-focus { position: relative; z-index: 20; outline: 4px solid var(--yellow); outline-offset: 4px; animation: tutorRing calc(1.2s / var(--spd)) ease-in-out infinite; }
+@keyframes tutorRing { 50% { outline-color: var(--white); outline-offset: 8px; } }
+.tutoring .mat-hint { visibility: hidden; }
+.tutor {
+  position: fixed; z-index: 35; width: min(320px, calc(100vw - 20px)); display: grid; gap: 6px; padding: 10px 12px;
+  background: var(--white); color: var(--ink); border: var(--o) solid var(--ink); box-shadow: 5px 5px 0 var(--ink); rotate: -.6deg;
+  animation: tutorIn calc(.25s / var(--spd)) cubic-bezier(.2, 1.5, .4, 1) both;
+}
+.tutor::after { content: ""; position: absolute; left: calc(var(--ax, 50%) - 11px); bottom: -15px; width: 22px; height: 14px; background: var(--ink); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.tutor.below::after { bottom: auto; top: -15px; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.tutor .tt-k { font-family: var(--comic); font-weight: 400; font-size: 16px; color: var(--red); }
+.tutor p { margin: 0; font-size: 14px; line-height: 1.55; }
+.tutor p b { color: var(--red-ink); }
+.tutor .tt-a { display: flex; justify-content: flex-end; gap: 6px; }
+@keyframes tutorIn { from { opacity: 0; scale: .8; } }
+@media (prefers-reduced-motion: reduce) { .tutor-focus, .tutor { animation: none; } }
+.tutoring .coach.inline { display: none; }

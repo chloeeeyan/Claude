@@ -71,7 +71,7 @@
   .shelf .jk, .shelf .tc { height: auto; aspect-ratio: auto; flex: 1 1 0; max-width: 92px; min-height: 82px; }
   .shelf .jd, .shelf .tag { display: none; }
   .shelf .ji { width: 34px; height: 34px; font-size: 18px; }
-  .hand { display: flex; justify-content: center; gap: 0; --cw: 60px; }
+  .hand { display: flex; justify-content: center; gap: 0; --cw: 60px; width: 100%; align-self: stretch; }
   .hand .card { flex: 0 0 var(--cw); width: var(--cw); }
   .hand .card + .card { margin-left: min(4px, calc((100% - var(--n) * var(--cw)) / (var(--n) - 1))); }
   .btn { padding: 8px 14px; font-size: 20px; min-width: 92px; }

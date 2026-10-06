@@ -14,7 +14,7 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
   `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves ·
   `meta.js` cross-run progress (unlocks, collection, daily challenge), stored by the UI as `jn.meta`
 - `src/ui/` `store.js` (live `state` + `setState`, localStorage via `storage`, keys `jn.*`) · `hud.js` · `shelf.js` · `screens.js` (per-phase table HTML) ·
-  `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `orient.js` phone landscape · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
+  `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `orient.js` phone landscape · `tutor.js` first-run tutorial · `tele.js` local playtest log · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
 - `src/styles/` one file per component, imported by `index.css`; tokens in `tokens.css`
 - `tests/`, `tools/sim.js`
 
@@ -43,10 +43,11 @@ Agreed priority list (from the product review), in order:
    Vercel default domain is blocked in China.
 3. ✅ Rendering architecture: keyed DOM reuse so cards can animate between zones (FLIP), prerequisite for game feel.
 4. ✅ Game feel: deal from pile, cards fly to play area, escalating score feedback, screen shake on ×mult, phase transitions.
-5. Game identity: 1–2 original core mechanics + theme naming (move away from poker jargon 盲注/底注); user decides.
+5. Game identity: 1–2 original core mechanics + theme naming (move away from poker jargon 盲注/底注); user decides —
+   options written up in `docs/identity-options.md`.
 6. ✅ Content by archetype (flush / face / discard / economy / single-card / deck-rewrite builds), vouchers, joker editions; ~70–80 jokers, ~20 bosses.
 7. ✅ Meta progression: unlocks, collection, stake ladder, daily seed.
-8. Onboarding: teach-by-doing first run.
+8. ✅ Onboarding: teach-by-doing first run.
 9. ✅ Tarot/pack UX: open pack → pick and apply on the spot.
-10. Art & audio plan; local telemetry + 20–30 player playtest.
+10. Art & audio plan (`docs/art-audio-plan.md`); ✅ local telemetry (export from 图鉴 → 收藏); playtest plan in `docs/playtest.md`.
 Commercial notes: 棋牌 themes are blocked for WeChat mini-games (personal accounts can't pick 牌类); Steam-first is the realistic route.

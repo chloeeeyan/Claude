@@ -5,6 +5,7 @@ import { pulse, shake } from './fx.js';
 import { setLive } from './hud.js';
 import { render } from './render.js';
 import { Sfx } from './sfx.js';
+import { teleBlind, teleEnd } from './tele.js';
 import { endRun, saveLast, saveRecord, state, ui } from './store.js';
 
 const playedEl = (id) => document.querySelector(`.played [data-id="${id}"]`);
@@ -103,7 +104,8 @@ export async function playHand() {
 
   const drawn = finishHand(state, res);
   drawn.forEach((id) => ui.justDrawn.add(id));
-  if (state.phase === 'over' || state.phase === 'win') { saveLast(); endRun(); }
+  if (['cashout', 'win', 'over'].includes(state.phase)) teleBlind();
+  if (state.phase === 'over' || state.phase === 'win') { saveLast(); teleEnd(); endRun(); }
   if (state.phase === 'cashout' || state.phase === 'win') { Sfx.win(); saveRecord(); }
   else if (state.phase === 'over') { Sfx.lose(); saveRecord(); }
   else if (drawn.length) Sfx.deal();
