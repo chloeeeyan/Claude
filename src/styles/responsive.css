@@ -82,5 +82,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .card, .bar i, .jk, .tc { transition: none; }
-  .card.deal, .boom, .sfxword, .pop { animation-duration: .01s !important; }
+  .boom, .sfxword, .pop { animation-duration: .01s !important; }
 }

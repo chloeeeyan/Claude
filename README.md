@@ -35,7 +35,8 @@ src/
     screens.js     牌桌上各阶段的内容（封面、选关、对局、结算、商店、结束）
     guide.js       玩法、牌型图鉴、牌组查看弹窗
     play.js        出牌与计分动画
-    patch.js       按 data-key 复用节点的局部重绘，牌换位置时 FLIP 滑过去
+    patch.js       按 data-key 复用节点的局部重绘，牌换位置时 FLIP 滑过去，新牌从牌堆发出
+    fx.js          震屏、数字鼓动、换场转场
     input.js       点击、键盘、拖动排序
     components.js  卡牌、小丑、塔罗、星图的 HTML 片段
   styles/        按组件拆分的样式，index.css 统一引入

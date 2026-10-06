@@ -199,5 +199,6 @@ function stageHTML() {
 export function renderStage() {
   const st = $('stage');
   st.classList.toggle('busy', state.phase === 'scoring');
-  patch(st, stageHTML());
+  // freshly drawn cards are dealt out of the draw pile
+  patch(st, stageHTML(), { enter: (el) => (ui.justDrawn.has(el.dataset.id) ? $('pile') : null) });
 }

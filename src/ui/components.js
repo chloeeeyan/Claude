@@ -1,6 +1,6 @@
 // HTML builders for cards, jokers, tarots and planets.
 import { ENH, JD, RARITY, SEALS, SNAME, SYM, TD, VS, RL, curBoss, debuffed, descOf, isFace, isRed } from '../core/index.js';
-import { inRound, state, ui } from './store.js';
+import { inRound, state } from './store.js';
 
 export const glyph = (s) => s + VS;
 
@@ -31,7 +31,7 @@ export function cardTitle(c) {
 export function cardHTML(c, act = 'card', arc) {
   const sel = state.selected.includes(c.id);
   const cls = ['card', 's-' + c.s, isRed(c.s) ? 'red' : '', sel ? 'sel' : '', inRound() && debuffed(state, c) ? 'debuff' : '',
-    ui.justDrawn.has(c.id) ? 'deal' : '', c.enh ? 'e-' + c.enh : ''].join(' ');
+    c.enh ? 'e-' + c.enh : ''].join(' ');
   const s = SYM[c.s] + VS, r = RL(c.r);
   // number cards: one big halftone pip; aces: pip on a starburst; J/Q/K: a coloured comic panel with a crest
   const mid = isFace(c.r)
