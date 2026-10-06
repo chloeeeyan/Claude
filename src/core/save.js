@@ -5,12 +5,14 @@ import { JD } from './jokers.js';
 import { TD } from './tarots.js';
 import { makeSeed } from './rng.js';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 // MIGRATIONS[n] turns a version n-1 state into version n (return null to drop the save)
 const MIGRATIONS = {
   // v2: st.pack became { kind, opts, … } (the star pack used to be a bare array of hand keys)
   2: (s) => { if (Array.isArray(s.pack)) s.pack = { kind: 'star', opts: s.pack }; return s; },
+  // v3: daily-challenge date and whether the run was already folded into the cross-run progress
+  3: (s) => ({ ...s, daily: s.daily || null, metaDone: !!s.metaDone }),
 };
 
 export const packSave = (state) => JSON.stringify({ v: SAVE_VERSION, state });

@@ -28,6 +28,7 @@ src/
     run.js         一局的状态机：选关 → 出牌 → 结算 → 商店 …
     rng.js         带种子的随机数（同一种子可完整复现一局）
     save.js        带版本号的存档格式与迁移
+    meta.js        跨局进度：解锁、收藏、每日挑战
   ui/            界面
     store.js       当前对局与本地偏好（localStorage）
     hud.js         顶部抬头栏与「这一手」计分面板

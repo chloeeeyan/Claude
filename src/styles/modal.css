@@ -46,3 +46,13 @@
   position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); translate: -50% 0; z-index: 30; max-width: calc(100% - 32px);
   background: var(--white); color: var(--ink); border: var(--o) solid var(--ink); padding: 8px 18px; border-radius: 22px; font-family: var(--comic); font-size: 17px; box-shadow: 5px 5px 0 var(--ink);
 }
+
+/* collection tab */
+.coll { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 14px 10px; padding-top: 8px; }
+.coll-i { position: relative; }
+.coll-i > .jk { width: 100%; cursor: default; }
+.coll-i.own::after { content: "✔"; position: absolute; left: -6px; top: -8px; z-index: 3; width: 22px; height: 22px; display: grid; place-items: center; font-size: 13px;
+  background: var(--green); color: var(--white); border: 2px solid var(--ink); border-radius: 50%; }
+.jk.unknown { background: repeating-linear-gradient(45deg, #e8e8e8 0 6px, #d8d8d8 6px 12px); color: #777; }
+.jk.unknown .ji { background: #bbb; color: var(--white); }
+.gsec .dim { color: #aaa; }

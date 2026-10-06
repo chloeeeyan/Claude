@@ -4,14 +4,15 @@ Pop-art poker deck-builder for the browser (Balatro-inspired; names, art and car
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
-- `npm ci` then `npm test` (Vitest, 38 tests) — run after any change
+- `npm ci` then `npm test` (Vitest, 45 tests) — run after any change
 - `npm run sim -- n=400` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
 - `npm run dev` / `npm run build` (output `dist/`, relative paths via `base: './'`)
 
 ## Layout (read only what the task needs)
 - `src/core/` game rules, no DOM: `rules.js` tables · `jokers.js` / `tarots.js` content · `evaluate.js` hand detection ·
   `scoring.js` computeHand → animation `steps` · `run.js` state machine (select → play ⇄ scoring → cashout → shop → … → over/win) ·
-  `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves
+  `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves ·
+  `meta.js` cross-run progress (unlocks, collection, daily challenge), stored by the UI as `jn.meta`
 - `src/ui/` `store.js` (live `state` + `setState`, localStorage via `storage`, keys `jn.*`) · `hud.js` · `shelf.js` · `screens.js` (per-phase table HTML) ·
   `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `orient.js` phone landscape · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
 - `src/styles/` one file per component, imported by `index.css`; tokens in `tokens.css`
@@ -43,7 +44,7 @@ Agreed priority list (from the product review), in order:
 4. ✅ Game feel: deal from pile, cards fly to play area, escalating score feedback, screen shake on ×mult, phase transitions.
 5. Game identity: 1–2 original core mechanics + theme naming (move away from poker jargon 盲注/底注); user decides.
 6. Content by archetype (flush / face / discard / economy / single-card / deck-rewrite builds), vouchers, joker editions; ~70–80 jokers, ~20 bosses.
-7. Meta progression: unlocks, collection, stake ladder, daily seed.
+7. ✅ Meta progression: unlocks, collection, stake ladder, daily seed.
 8. Onboarding: teach-by-doing first run.
 9. ✅ Tarot/pack UX: open pack → pick and apply on the spot.
 10. Art & audio plan; local telemetry + 20–30 player playtest.

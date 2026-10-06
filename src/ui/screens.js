@@ -1,10 +1,13 @@
 // The table's content for each phase: cover, blind select, round, cash-out, shop, star / tarot pack, game over, win.
-import { BLIND_NAMES, BOSSES, DECKS, HANDS, JD, PLANETS, REWARD, STAKES, TAGS, TD, curBoss, packCards, targetFor } from '../core/index.js';
+import {
+  BLIND_NAMES, BOSSES, DECKS, HANDS, JD, JOKER_COUNT, PLANETS, REWARD, STAKES, TAGS, TD, UNLOCK, curBoss, dailyKey, dailySetup, isUnlocked,
+  packCards, targetFor,
+} from '../core/index.js';
 import { $, fmt } from './dom.js';
 import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, jokerFace, planetFace, tarotFace } from './components.js';
 import { patch } from './patch.js';
 import { Sfx } from './sfx.js';
-import { inRound, records, state, storage, ui } from './store.js';
+import { inRound, meta, records, state, storage, ui } from './store.js';
 
 function blindCard(i) {
   const b = i === 2 ? BOSSES[state.bossKey] : null, cur = i === state.blindIdx, done = i < state.blindIdx;
@@ -56,6 +59,20 @@ function coachHTML(inline) {
   return `<div class="coach${inline ? ' inline' : ''}" role="note"><b>小提示</b><p>${t[1]}</p><button class="chip" data-act="tipok" data-k="${t[0]}">知道了</button></div>`;
 }
 
+function dailyButton() {
+  const key = dailyKey(), D = dailySetup(key), r = meta.daily[key];
+  return `<button class="btn cv-daily" data-act="daily"><span class="en">DAILY</span>每日挑战
+    <small>${key.slice(5).replace('-', '月')}日 · ${DECKS[D.deck].n.replace('牌组', '')}牌组${r ? ` · 最佳 ${r.ante > 8 ? '通关' : '底注 ' + r.ante}` : ''}</small></button>`;
+}
+
+// what the run that just ended unlocked, plus the daily-challenge result
+function endExtras(lead = '') {
+  const u = ui.newUnlocks.length ? `<div class="unlocks"><b>新解锁！</b>${ui.newUnlocks.map((x) => `<span>${x.n}</span>`).join('')}</div>` : '';
+  const r = state.daily && meta.daily[state.daily];
+  const d = r ? `<p class="panel-s">每日挑战 ${state.daily} · 今日最佳 ${r.ante > 8 ? '通关' : '底注 ' + r.ante} · ${fmt(r.score)} 分 · 第 ${r.tries} 次</p>` : '';
+  return `<div class="end-x">${lead}${u}${d}<button class="btn gold" data-act="restart">回到开局</button></div>`;
+}
+
 function menuHTML() {
   const rec = records();
   const last = storage.get('last', null);
@@ -79,11 +96,17 @@ function menuHTML() {
       <div class="cv-title"><div class="cv-fan" aria-hidden="true">${fan}</div>
         <h1 class="cv-logo">鬼牌夜场</h1><div class="cv-en">DEAL · STACK · KA-BOOM!</div><div class="cv-zh">凑牌型 · 叠倍率 · 炸翻全场</div></div>
       <div class="cv-eb">CHOOSE YOUR DECK<small>选牌组</small></div>
-      <div class="cv-decks" role="group" aria-label="选牌组">${Object.entries(DECKS).map(([k, d]) => `<button class="cvdk ${state.menuDeck === k ? 'on' : ''}" data-act="mdeck" data-v="${k}" aria-pressed="${state.menuDeck === k}">
-        <span class="dback d-${k}"><i>${glyph(DECK_MARK[k])}</i></span><b>${d.n.replace('牌组', '')}</b><span class="dd">${d.d}</span></button>`).join('')}</div>
+      <div class="cv-decks" role="group" aria-label="选牌组">${Object.entries(DECKS).map(([k, d]) => {
+        const open = isUnlocked(meta, 'deck:' + k);
+        return `<button class="cvdk ${state.menuDeck === k ? 'on' : ''} ${open ? '' : 'locked'}" data-act="mdeck" data-v="${k}" aria-pressed="${state.menuDeck === k}" ${open ? '' : 'aria-disabled="true"'}>
+        <span class="dback d-${k}"><i>${glyph(open ? DECK_MARK[k] : '🔒')}</i></span><b>${d.n.replace('牌组', '')}</b><span class="dd">${open ? d.d : '解锁：' + UNLOCK['deck:' + k].need}</span></button>`;
+      }).join('')}</div>
       <div class="cv-eb">DIFFICULTY<small>选难度</small></div>
-      <div class="cv-stakes" role="group" aria-label="选难度">${STAKES.map((s, i) => `<button class="skp ${state.menuStake === i ? 'on' : ''}" data-act="mstake" data-v="${i}" aria-pressed="${state.menuStake === i}"><b><i>${STAKE_MARK[i]}</i>${s.n}</b><span>${s.d}</span></button>`).join('')}</div>
-      <button class="btn cv-start" data-act="begin">开始游戏<span class="en">LET'S PLAY</span></button>
+      <div class="cv-stakes" role="group" aria-label="选难度">${STAKES.map((s, i) => {
+        const open = isUnlocked(meta, 'stake:' + i);
+        return `<button class="skp ${state.menuStake === i ? 'on' : ''} ${open ? '' : 'locked'}" data-act="mstake" data-v="${i}" aria-pressed="${state.menuStake === i}" ${open ? '' : 'aria-disabled="true"'}><b><i>${open ? STAKE_MARK[i] : '🔒'}</i>${s.n}</b><span>${open ? s.d : '解锁：' + UNLOCK['stake:' + i].need}</span></button>`;
+      }).join('')}</div>
+      <div class="cv-go"><button class="btn cv-start" data-act="begin">开始游戏<span class="en">LET'S PLAY</span></button>${dailyButton()}</div>
     </section>
     <aside class="cv-side r">
       <div class="cvp"><span class="cvp-k">RECORDS<small>战绩板</small></span>
@@ -92,6 +115,7 @@ function menuHTML() {
           return `<div class="recrow"><span>${s.n}</span><i class="pips">${[1, 2, 3, 4, 5, 6, 7, 8].map((n) => `<b class="${n <= Math.min(a, 8) ? 'on' : ''} ${a > 8 ? 'win' : ''}"></b>`).join('')}</i><em>${a ? (a > 8 ? '通关' : '底注 ' + a) : '—'}</em></div>`;
         }).join('')}
         ${lastHTML}
+        <button class="cv-coll" data-act="collect"><span>收藏</span><b>${meta.seenJ.length}<small>/${JOKER_COUNT}</small></b><em>· ${meta.wins} 胜 / ${meta.runs} 局</em></button>
       </div>
     </aside>
   </div>`;
@@ -208,12 +232,11 @@ function stageHTML() {
   if (p === 'over') {
     const where = state.blindIdx === 2 ? 'Boss 盲注「' + BOSSES[state.bossKey].n + '」' : BLIND_NAMES[state.blindIdx];
     return `<div class="center"><h2 class="panel-t" data-en="GAME OVER">牌局结束</h2>
-      <p class="panel-s">止步于底注 ${state.ante} 的${where}，还差 ${fmt(state.target - state.roundScore)} 分。</p>
-      ${summaryHTML()}<button class="btn gold" data-act="restart">回到开局</button></div>`;
+      ${endExtras(`<p class="panel-s">止步于底注 ${state.ante} 的${where}，还差 ${fmt(state.target - state.roundScore)} 分。</p>`)}${summaryHTML()}</div>`;
   }
   if (p === 'win') {
     return `<div class="center"><h2 class="panel-t" data-en="YOU WIN!">通关！八个底注全部拿下</h2>
-      ${summaryHTML()}<button class="btn gold" data-act="restart">回到开局</button></div>`;
+      ${endExtras()}${summaryHTML()}</div>`;
   }
   return '';
 }
