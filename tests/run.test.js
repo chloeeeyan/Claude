@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  SAVE_VERSION, beginHand, buy, cashOut, finishHand, freshState, packSave, startBlind, unpackSave, useTarot,
+  SAVE_VERSION, beginHand, buy, cashOut, finishHand, freshState, packApply, packCards, packKeep, packPick, packSave, startBlind,
+  unpackSave, useTarot,
 } from '../src/core/index.js';
 
 const snapshot = (st) => ({
@@ -52,7 +53,53 @@ describe('run flow', () => {
   });
 });
 
+describe('tarot pack', () => {
+  const openPack = (seed) => {
+    const st = playToShop(seed);
+    st.money = 50;
+    const i = st.shop.findIndex((it) => it.kind === 'tpack');
+    expect(buy(st, i).msg).toBe('打开了塔罗包');
+    return st;
+  };
+
+  it('opens with three tarots and six cards from the deck', () => {
+    const st = openPack(21);
+    expect(st.pack.opts).toHaveLength(3);
+    expect(packCards(st)).toHaveLength(6);
+    expect(buy(st, st.shop.findIndex((it) => it.kind === 'pack')).err).toBe('先处理打开的卡包');
+  });
+
+  it('applies the picked tarot to the selected sample cards for good', () => {
+    const st = openPack(21);
+    st.pack.opts[0] = 'tSteel';
+    packPick(st, 'tSteel');
+    const id = st.pack.cards[2];
+    expect(packApply(st).err).toBeTruthy(); // nothing selected yet
+    st.selected = [id];
+    expect(packApply(st).msg).toContain('铁心');
+    expect(st.deckList.find((c) => c.id === id).enh).toBe('steel');
+    expect(st.pack.done).toBe(true);
+    expect(st.stats.tarots).toBe(1);
+  });
+
+  it('can keep the tarot for later instead', () => {
+    const st = openPack(22);
+    const k = st.pack.opts.find((x) => x !== 'tRich');
+    packPick(st, k);
+    expect(packKeep(st).msg).toContain('塔罗栏');
+    expect(st.cons.map((c) => c.key)).toEqual([k]);
+    expect(st.pack).toBeNull();
+  });
+});
+
 describe('save format', () => {
+  it('migrates a v1 star pack (bare array) to the v2 shape', () => {
+    const st = playToShop(11);
+    st.pack = ['pair', 'flush', 'two'];
+    const back = unpackSave(JSON.stringify({ v: 1, state: st }));
+    expect(back.pack).toEqual({ kind: 'star', opts: ['pair', 'flush', 'two'] });
+  });
+
   it('round-trips a run', () => {
     const st = playToShop(11);
     const back = unpackSave(packSave(st));

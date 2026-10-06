@@ -82,9 +82,17 @@ function shop(st) {
       } else if (it.kind === 'pack') {
         if (st.money >= it.price + 2) {
           G.buy(st, i);
-          G.choosePack(st, st.pack.find((x) => fav.slice(0, 2).includes(x)) || st.pack.find((x) => fav.includes(x)) || st.pack[0]);
+          const o = st.pack.opts;
+          G.choosePack(st, o.find((x) => fav.slice(0, 2).includes(x)) || o.find((x) => fav.includes(x)) || o[0]);
         }
-      } else if (useTarots && st.money >= it.price + 4) G.buy(st, i);
+      } else if (it.kind === 'tpack') {
+        // keep the first tarot the in-round greedy logic knows how to use
+        if (!useTarots || st.money < it.price + 4 || st.cons.length >= st.maxCons) return;
+        G.buy(st, i);
+        const k = st.pack.opts.find((x) => G.TD[x].money) || st.pack.opts.find((x) => !G.TD[x].copy);
+        if (k && G.TD[k].money) G.packPick(st, k); else if (k) { G.packPick(st, k); G.packKeep(st); }
+        G.packClose(st);
+      }
     });
   }
   orderJokers(st);

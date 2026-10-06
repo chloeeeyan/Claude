@@ -140,15 +140,55 @@ export function genShop(st) {
   if (st.pendingRare) { take(3); st.pendingRare = false; }
   const hk = visibleHands(st);
   items.push({ kind: 'planet', key: hk[rint(st, hk.length)], price: 3 });
-  items.push({ kind: 'tarot', key: TAROTS[rint(st, TAROTS.length)].key, price: 3 });
+  items.push({ kind: 'tpack', price: 4, opts: shuffle(st, TAROTS.map((t) => t.key)).slice(0, 3) });
   if (TUNE.pack) items.push({ kind: 'pack', price: 4, opts: shuffle(st, hk.slice()).slice(0, 3) });
   return items;
 }
 
+// Star pack: st.pack = { kind: 'star', opts: [hand keys] } — pick one, it levels up.
 export function choosePack(st, key) {
-  if (!st.pack || !st.pack.includes(key)) return '';
+  if (!st.pack || st.pack.kind !== 'star' || !st.pack.opts.includes(key)) return '';
   st.levels[key]++; st.stats.planets++; st.pack = null;
   return `${HANDS[key].n}升到 ${st.levels[key]} 级`;
+}
+
+// Tarot pack: st.pack = { kind: 'tarot', opts: [3 tarot keys], cards: [6 deck card ids], pick, done }.
+// Pick a tarot, then use it right away on the sample cards (selected in st.selected), or keep it for later.
+export const PACK_CARDS = 6;
+export const packCards = (st) => st.pack.cards.map((id) => st.deckList.find((c) => c.id === id)).filter(Boolean);
+
+export function packPick(st, key) {
+  const P = st.pack;
+  if (!P || P.kind !== 'tarot' || P.done || !P.opts.includes(key)) return { err: '这张不能选' };
+  P.pick = key; st.selected = [];
+  if (TD[key].money) return packApply(st);
+  return { msg: '' };
+}
+
+export function packApply(st) {
+  const P = st.pack;
+  if (!P || P.kind !== 'tarot' || P.done || !P.pick) return { err: '先挑一张塔罗' };
+  const cards = packCards(st).filter((c) => st.selected.includes(c.id));
+  const r = applyTarot(st, TD[P.pick], cards);
+  if (r.err) return r;
+  P.done = true; P.changed = cards.map((c) => c.id); st.selected = []; st.stats.tarots++;
+  return r;
+}
+
+export function packKeep(st) {
+  const P = st.pack;
+  if (!P || P.kind !== 'tarot' || P.done || !P.pick) return { err: '先挑一张塔罗' };
+  if (st.cons.length >= st.maxCons) return { err: '塔罗栏满了' };
+  st.cons.push({ key: P.pick, uid: st.uid++ });
+  const msg = `「${TD[P.pick].name}」收进了塔罗栏`;
+  st.pack = null; st.selected = [];
+  return { msg };
+}
+
+export function packClose(st) {
+  if (!st.pack || st.pack.kind !== 'tarot') return false;
+  st.pack = null; st.selected = [];
+  return true;
 }
 
 export function buy(st, i) {
@@ -164,9 +204,14 @@ export function buy(st, i) {
     st.levels[it.key]++; st.stats.planets++;
     msg = `${HANDS[it.key].n}升到 ${st.levels[it.key]} 级`;
   } else if (it.kind === 'pack') {
-    if (st.pack) return { err: '先从打开的星图包里选一张' };
-    st.pack = it.opts.slice();
+    if (st.pack) return { err: '先处理打开的卡包' };
+    st.pack = { kind: 'star', opts: it.opts.slice() };
     msg = '打开了星图包，选一张';
+  } else if (it.kind === 'tpack') {
+    if (st.pack) return { err: '先处理打开的卡包' };
+    st.pack = { kind: 'tarot', opts: it.opts.slice(), cards: shuffle(st, st.deckList.map((c) => c.id)).slice(0, PACK_CARDS), pick: null, done: false };
+    st.selected = [];
+    msg = '打开了塔罗包';
   } else {
     if (st.cons.length >= st.maxCons) return { err: '塔罗栏满了，先用掉或卖掉一张' };
     st.cons.push({ key: it.key, uid: st.uid++ });
@@ -224,35 +269,38 @@ function mutate(st, id, fn) {
   if (i >= 0) st.hand[i] = { ...m };
 }
 
+// Applies tarot d to `cards` (copies from the hand or the deck list); shared by the tarot slot and the tarot pack.
+function applyTarot(st, d, cards) {
+  if (d.money) {
+    const g = Math.min(20, st.money);
+    st.money += g; st.stats.earned += g;
+    return { msg: `得到 $${g}` };
+  }
+  if (cards.length < d.min || cards.length > d.max) return { err: `需要选中 ${d.min === d.max ? d.min : d.min + '–' + d.max} 张牌` };
+  if (d.destroy) {
+    const b = new Set(cards.map((c) => c.id));
+    st.deckList = st.deckList.filter((c) => !b.has(c.id));
+    st.hand = st.hand.filter((c) => !b.has(c.id));
+    return { msg: `删除了 ${cards.length} 张牌` };
+  }
+  if (d.copy) {
+    const [a, b] = cards;
+    mutate(st, a.id, (c) => { c.r = b.r; c.s = b.s; c.enh = b.enh; c.seal = b.seal; });
+    return { msg: '复制完成' };
+  }
+  const had = !!d.field && cards.some((c) => c[d.field]);
+  cards.forEach((c) => mutate(st, c.id, d.apply));
+  return { msg: `「${d.name}」已生效${had ? '，替换了原来的效果' : ''}` };
+}
+
 export function useTarot(st, uid, selIds) {
   const idx = st.cons.findIndex((c) => c.uid === uid);
   if (idx < 0) return { err: '找不到这张牌' };
   const d = TD[st.cons[idx].key];
-  const cards = st.hand.filter((c) => selIds.includes(c.id));
-  let msg;
-  if (d.money) {
-    const g = Math.min(20, st.money);
-    st.money += g; st.stats.earned += g; msg = `得到 $${g}`;
-  } else {
-    if (st.phase !== 'play') return { err: '回合中才能对手牌使用' };
-    if (cards.length < d.min || cards.length > d.max) return { err: `需要选中 ${d.min === d.max ? d.min : d.min + '–' + d.max} 张手牌` };
-    if (d.destroy) {
-      const b = new Set(cards.map((c) => c.id));
-      st.deckList = st.deckList.filter((c) => !b.has(c.id));
-      st.hand = st.hand.filter((c) => !b.has(c.id));
-      msg = `删除了 ${cards.length} 张牌`;
-    } else if (d.copy) {
-      const [a, b] = cards;
-      mutate(st, a.id, (c) => { c.r = b.r; c.s = b.s; c.enh = b.enh; c.seal = b.seal; });
-      msg = '复制完成';
-    } else {
-      const had = !!d.field && cards.some((c) => c[d.field]);
-      cards.forEach((c) => mutate(st, c.id, d.apply));
-      msg = `「${d.name}」已生效${had ? '，替换了原来的效果' : ''}`;
-    }
-    st.selected = [];
-    sortHand(st);
-  }
+  if (!d.money && st.phase !== 'play') return { err: '回合中才能对手牌使用' };
+  const r = applyTarot(st, d, st.hand.filter((c) => selIds.includes(c.id)));
+  if (r.err) return { err: r.err.replace('张牌', '张手牌') };
+  if (!d.money) { st.selected = []; sortHand(st); }
   st.cons.splice(idx, 1); st.stats.tarots++;
-  return { msg };
+  return r;
 }

@@ -4,7 +4,7 @@ Pop-art poker deck-builder for the browser (Balatro-inspired; names, art and car
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
-- `npm ci` then `npm test` (Vitest, 34 tests) — run after any change
+- `npm ci` then `npm test` (Vitest, 38 tests) — run after any change
 - `npm run sim -- n=400` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
 - `npm run dev` / `npm run build` (output `dist/`, relative paths via `base: './'`)
 
@@ -45,6 +45,6 @@ Agreed priority list (from the product review), in order:
 6. Content by archetype (flush / face / discard / economy / single-card / deck-rewrite builds), vouchers, joker editions; ~70–80 jokers, ~20 bosses.
 7. Meta progression: unlocks, collection, stake ladder, daily seed.
 8. Onboarding: teach-by-doing first run.
-9. Tarot/pack UX: open pack → pick and apply on the spot.
+9. ✅ Tarot/pack UX: open pack → pick and apply on the spot.
 10. Art & audio plan; local telemetry + 20–30 player playtest.
 Commercial notes: 棋牌 themes are blocked for WeChat mini-games (personal accounts can't pick 牌类); Steam-first is the realistic route.

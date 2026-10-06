@@ -5,10 +5,13 @@ import { JD } from './jokers.js';
 import { TD } from './tarots.js';
 import { makeSeed } from './rng.js';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 // MIGRATIONS[n] turns a version n-1 state into version n (return null to drop the save)
-const MIGRATIONS = {};
+const MIGRATIONS = {
+  // v2: st.pack became { kind, opts, … } (the star pack used to be a bare array of hand keys)
+  2: (s) => { if (Array.isArray(s.pack)) s.pack = { kind: 'star', opts: s.pack }; return s; },
+};
 
 export const packSave = (state) => JSON.stringify({ v: SAVE_VERSION, state });
 
