@@ -1,6 +1,7 @@
 // Playing a hand: score it in the core, then animate every scoring step.
 import { HANDS, beginHand, finishHand } from '../core/index.js';
 import { $, fmt, sleep } from './dom.js';
+import { pulse, shake } from './fx.js';
 import { setLive } from './hud.js';
 import { render } from './render.js';
 import { Sfx } from './sfx.js';
@@ -10,17 +11,19 @@ const playedEl = (id) => document.querySelector(`.played [data-id="${id}"]`);
 const handEl = (id) => document.querySelector(`.hand [data-id="${id}"]`);
 const jokerEl = (uid) => document.querySelector(`.jrow [data-uid="${uid}"]`);
 
-function pop(el, text, cls) {
+// k (0..1) grows as the hand goes on: later pops land bigger, so a long combo feels like it is building
+function pop(el, text, cls, k = 0) {
   if (!el) return;
   const p = document.createElement('span');
   p.className = 'pop ' + cls;
   p.textContent = text;
+  if (k) p.style.scale = (1 + 0.6 * k).toFixed(2);
   el.appendChild(p);
   setTimeout(() => p.remove(), 1000 / ui.speed);
 }
 
-function bump(el) {
-  if (el && el.animate) el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.1) rotate(-3deg)' }, { transform: 'scale(1)' }], { duration: 260 / ui.speed });
+function bump(el, k = 0) {
+  if (el && el.animate) el.animate([{ transform: 'scale(1)' }, { transform: `scale(${1.1 + 0.12 * k}) rotate(-3deg)` }, { transform: 'scale(1)' }], { duration: 260 / ui.speed });
 }
 
 // Rolls the round score up. requestAnimationFrame pauses in background tabs, so a hidden page
@@ -63,14 +66,18 @@ export async function playHand() {
   let n = 0, money = state.money;
   for (const s of res.steps) {
     const el = s.at === 'card' ? playedEl(s.id) : s.at === 'held' ? handEl(s.id) : jokerEl(s.uid);
+    const k = Math.min(1, n / 10);
     if (s.text) { pop(el, s.text, s.cls); if (Sfx[s.cls]) Sfx[s.cls](); await sleep(300); continue; }
-    if (s.chips) { pop(el, '+' + s.chips, 'chips'); Sfx.chips(n); }
-    if (s.mult) { pop(el, '+' + s.mult + ' 倍', 'mult'); Sfx.mult(n); }
-    if (s.xmult) { pop(el, '×' + s.xmult, 'xmult'); Sfx.xmult(); }
-    if (s.money) { pop(el, '+$' + s.money, 'cash'); Sfx.cash(); money += s.money; $('sMoney').textContent = money; }
+    if (s.chips) { pop(el, '+' + s.chips, 'chips', k); Sfx.chips(n); pulse($('chips'), k); }
+    if (s.mult) { pop(el, '+' + s.mult + ' 倍', 'mult', k); Sfx.mult(n); pulse($('mult'), k); }
+    if (s.xmult) {
+      pop(el, '×' + s.xmult, 'xmult', Math.max(k, 0.5)); Sfx.xmult(); pulse($('mult'), 1);
+      shake($('table'), Math.min(18, 4 + s.xmult * 3 + k * 4));
+    }
+    if (s.money) { pop(el, '+$' + s.money, 'cash', k); Sfx.cash(); money += s.money; $('sMoney').textContent = money; }
     n++;
-    bump(el);
-    if (s.card) bump(playedEl(s.card));
+    bump(el, k);
+    if (s.card) bump(playedEl(s.card), k);
     setLive(name, s.after.chips, s.after.mult);
     await sleep(s.chips && s.mult ? 520 : 380);
   }
@@ -78,15 +85,20 @@ export async function playHand() {
 
   setLive(name, res.chips, res.mult, '= ' + fmt(res.total));
   Sfx.score();
+  // the payoff scales with how much of the target this one hand covers
+  const share = Math.min(1, res.total / Math.max(1, state.target));
+  pulse($('total'), share);
   if (boom) boom.classList.add('out');
   const clear = state.roundScore + res.total >= state.target;
   const word = document.createElement('div');
   word.className = 'sfxword' + (clear ? ' big' : '');
   word.innerHTML = `${clear ? 'KA-BOOM!' : SOUND_WORDS[Math.floor(Math.random() * SOUND_WORDS.length)]}<small>+${fmt(res.total)}</small>`;
   $('stage').appendChild(word);
+  if (clear) shake($('app'), 16); else if (share > 0.25) shake($('table'), 3 + 8 * share);
   setTimeout(() => word.remove(), 1150 / ui.speed);
   await sleep(clear ? 700 : 420);
   await countUp(state.roundScore, state.roundScore + res.total);
+  pulse($('roundScore'), share);
   await sleep(420);
 
   const drawn = finishHand(state, res);

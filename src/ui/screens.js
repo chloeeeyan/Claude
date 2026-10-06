@@ -2,6 +2,7 @@
 import { BLIND_NAMES, BOSSES, DECKS, HANDS, JD, PLANETS, REWARD, STAKES, TAGS, curBoss, targetFor } from '../core/index.js';
 import { $, fmt } from './dom.js';
 import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, jokerFace, planetFace, tarotFace } from './components.js';
+import { patch } from './patch.js';
 import { Sfx } from './sfx.js';
 import { records, state, storage, ui } from './store.js';
 
@@ -171,24 +172,33 @@ function shopHTML() {
       <button class="btn primary" data-act="next">下一个盲注</button></div>`;
 }
 
-export function renderStage() {
-  const st = $('stage'), p = state.phase;
-  st.classList.toggle('busy', p === 'scoring');
-  if (p === 'play' || p === 'scoring') st.innerHTML = roundHTML();
-  else if (p === 'menu') st.innerHTML = menuHTML();
-  else if (p === 'select') {
-    st.innerHTML = `<h2 class="panel-t" data-en="CHOOSE YOUR BLIND">底注 ${state.ante} / 8</h2>
+function stageHTML() {
+  const p = state.phase;
+  if (p === 'play' || p === 'scoring') return roundHTML();
+  if (p === 'menu') return menuHTML();
+  if (p === 'select') {
+    return `<h2 class="panel-t" data-en="CHOOSE YOUR BLIND">底注 ${state.ante} / 8</h2>
       <p class="panel-s">每个底注有三个盲注，得分达到目标就过关。小盲注和大盲注可以跳过，换一张奖励券，但也拿不到这一关的钱和商店。</p>
       <div class="blinds">${[0, 1, 2].map(blindCard).join('')}</div>`;
-  } else if (p === 'cashout') st.innerHTML = cashoutHTML();
-  else if (p === 'shop') st.innerHTML = state.pack ? packHTML() : shopHTML();
-  else if (p === 'over') {
+  }
+  if (p === 'cashout') return cashoutHTML();
+  if (p === 'shop') return state.pack ? packHTML() : shopHTML();
+  if (p === 'over') {
     const where = state.blindIdx === 2 ? 'Boss 盲注「' + BOSSES[state.bossKey].n + '」' : BLIND_NAMES[state.blindIdx];
-    st.innerHTML = `<div class="center"><h2 class="panel-t" data-en="GAME OVER">牌局结束</h2>
+    return `<div class="center"><h2 class="panel-t" data-en="GAME OVER">牌局结束</h2>
       <p class="panel-s">止步于底注 ${state.ante} 的${where}，还差 ${fmt(state.target - state.roundScore)} 分。</p>
       ${summaryHTML()}<button class="btn gold" data-act="restart">回到开局</button></div>`;
-  } else if (p === 'win') {
-    st.innerHTML = `<div class="center"><h2 class="panel-t" data-en="YOU WIN!">通关！八个底注全部拿下</h2>
+  }
+  if (p === 'win') {
+    return `<div class="center"><h2 class="panel-t" data-en="YOU WIN!">通关！八个底注全部拿下</h2>
       ${summaryHTML()}<button class="btn gold" data-act="restart">回到开局</button></div>`;
   }
+  return '';
+}
+
+export function renderStage() {
+  const st = $('stage');
+  st.classList.toggle('busy', state.phase === 'scoring');
+  // freshly drawn cards are dealt out of the draw pile
+  patch(st, stageHTML(), { enter: (el) => (ui.justDrawn.has(el.dataset.id) ? $('pile') : null) });
 }
