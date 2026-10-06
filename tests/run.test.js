@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  SAVE_VERSION, beginHand, buy, cashOut, finishHand, freshState, packApply, packCards, packKeep, packPick, packSave, startBlind,
+  SAVE_VERSION, beginHand, buy, cashOut, finishHand, freshState, nextBlind, packApply, packCards, packKeep, packPick, packSave, startBlind,
   unpackSave, useTarot,
 } from '../src/core/index.js';
 
@@ -50,6 +50,43 @@ describe('run flow', () => {
     expect(useTarot(st, 9, [id]).msg).toContain('铁心');
     expect(st.deckList.find((c) => c.id === id).enh).toBe('steel');
     expect(st.cons).toHaveLength(0);
+  });
+});
+
+describe('vouchers, editions and bosses', () => {
+  it('offers a voucher each ante and applies it for good', () => {
+    const st = playToShop(31);
+    st.money = 50;
+    const i = st.shop.findIndex((it) => it.kind === 'voucher');
+    st.shop[i].key = 'slot';
+    const max = st.maxJokers;
+    expect(buy(st, i).msg).toContain('加座');
+    expect(st.maxJokers).toBe(max + 1);
+    expect(st.voucherOffer).toBeNull();
+    for (let k = 0; k < 3; k++) nextBlind(st);
+    expect(st.ante).toBe(2);
+    expect(st.voucherOffer).not.toBe('slot');
+  });
+
+  it('lets a negative joker in even when the slots are full', () => {
+    const st = playToShop(32);
+    st.money = 99;
+    st.jokers = Array.from({ length: st.maxJokers }, (_, k) => ({ key: 'joker', uid: 50 + k, data: {} }));
+    st.shop[0] = { kind: 'joker', key: 'misprint', price: 4, ed: null };
+    expect(buy(st, 0).err).toBeTruthy();
+    st.shop[0] = { kind: 'joker', key: 'misprint', price: 9, ed: 'negative' };
+    expect(buy(st, 0).msg).toContain('负片');
+  });
+
+  it('gives 针眼 a single hand and 镣铐 a smaller hand', () => {
+    const st = freshState('red', 0, 4);
+    st.blindIdx = 2; st.bossKey = 'needle';
+    startBlind(st);
+    expect(st.hands).toBe(1);
+    const st2 = freshState('red', 0, 4);
+    st2.blindIdx = 2; st2.bossKey = 'manacle';
+    startBlind(st2);
+    expect(st2.hand).toHaveLength(7);
   });
 });
 

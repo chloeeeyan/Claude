@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  SAVE_VERSION, dailyKey, dailySetup, emptyMeta, freshState, grandfather, isUnlocked, normalizeMeta, packSave, recordRun, unpackSave,
+  dailyKey, dailySetup, emptyMeta, freshState, grandfather, isUnlocked, normalizeMeta, packSave, recordRun, unpackSave,
 } from '../src/core/index.js';
 
 const ended = (over) => {
@@ -63,7 +63,7 @@ describe('daily challenge', () => {
     expect(unpackSave(packSave(st)).daily).toBe('2026-10-06');
     const old = freshState('red', 0, 3);
     delete old.daily; delete old.metaDone;
-    const back = unpackSave(JSON.stringify({ v: SAVE_VERSION - 1, state: old }));
+    const back = unpackSave(JSON.stringify({ v: 2, state: old }));
     expect(back.daily).toBeNull();
     expect(back.metaDone).toBe(false);
   });

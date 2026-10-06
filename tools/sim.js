@@ -43,7 +43,8 @@ function chooseDiscard(st, best) {
   return st.hand.filter((c) => !best.scoring.has(c.id)).sort((a, b) => a.r - b.r).slice(0, 5).map((c) => c.id);
 }
 
-const XMULT = new Set(['last', 'family', 'royal', 'duo', 'trio', 'palette', 'first', 'fullseat', 'smith']);
+const XMULT = new Set(['last', 'family', 'royal', 'duo', 'trio', 'palette', 'first', 'fullseat', 'smith', 'mono', 'rainbow', 'crown', 'regent',
+  'solo', 'glassblow', 'blush', 'quad', 'tower', 'twin', 'gambler']);
 const orderJokers = (st) => st.jokers.sort((a, b) => (XMULT.has(a.key) ? 1 : 0) - (XMULT.has(b.key) ? 1 : 0));
 
 function useTarotsGreedy(st) {
@@ -70,10 +71,11 @@ function shop(st) {
       if (it.sold || st.money < it.price) return;
       if (it.kind === 'joker') {
         const d = G.JD[it.key];
-        if (st.jokers.length >= st.maxJokers) {
-          const worst = st.jokers.map((j, k) => [G.JD[j.key], k]).sort((a, b) => a[0].r - b[0].r || a[0].price - b[0].price)[0];
-          if (!worst || worst[0].r >= d.r || st.money + G.sellOf(worst[0]) < it.price) return;
-          st.money += G.sellOf(worst[0]);
+        if (it.ed !== 'negative' && G.usedSlots(st) >= st.maxJokers) {
+          const worst = st.jokers.map((j, k) => [G.JD[j.key], k, j]).filter((x) => x[2].ed !== 'negative')
+            .sort((a, b) => a[0].r - b[0].r || a[0].price - b[0].price)[0];
+          if (!worst || worst[0].r >= d.r || st.money + G.sellJ(worst[2]) < it.price) return;
+          st.money += G.sellJ(worst[2]);
           st.jokers.splice(worst[1], 1);
         }
         G.buy(st, i);
@@ -85,6 +87,8 @@ function shop(st) {
           const o = st.pack.opts;
           G.choosePack(st, o.find((x) => fav.slice(0, 2).includes(x)) || o.find((x) => fav.includes(x)) || o[0]);
         }
+      } else if (it.kind === 'voucher') {
+        if (pass === 1 && st.money >= it.price + 5) G.buy(st, i);
       } else if (it.kind === 'tpack') {
         // keep the first tarot the in-round greedy logic knows how to use
         if (!useTarots || st.money < it.price + 4 || st.cons.length >= st.maxCons) return;

@@ -1,10 +1,10 @@
 // The table's content for each phase: cover, blind select, round, cash-out, shop, star / tarot pack, game over, win.
 import {
-  BLIND_NAMES, BOSSES, DECKS, HANDS, JD, JOKER_COUNT, PLANETS, REWARD, STAKES, TAGS, TD, UNLOCK, curBoss, dailyKey, dailySetup, isUnlocked,
+  BLIND_NAMES, BOSSES, DECKS, HANDS, JD, JOKER_COUNT, PLANETS, REWARD, STAKES, TAGS, TD, UNLOCK, VOUCHERS, curBoss, dailyKey, dailySetup, isUnlocked,
   packCards, targetFor,
 } from '../core/index.js';
 import { $, fmt } from './dom.js';
-import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, jokerFace, planetFace, tarotFace } from './components.js';
+import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, jokerFace, planetFace, tarotFace, voucherFace } from './components.js';
 import { patch } from './patch.js';
 import { Sfx } from './sfx.js';
 import { inRound, meta, records, state, storage, ui } from './store.js';
@@ -157,7 +157,7 @@ function cashoutHTML() {
         <h3>${nbBoss ? 'Boss · ' + nbBoss.n : BLIND_NAMES[nb.i]}${nb.ante !== state.ante ? ` <small>底注 ${nb.ante}</small>` : ''}</h3>
         <div class="nc-t">${fmt(nbTarget)}<small>目标分数</small></div>
         <p>${nbNote}</p>
-        <div class="nc-shop"><b>商店里有</b>2 张小丑 · 1 张星图 · 1 个塔罗包 · 1 个星图包</div>
+        <div class="nc-shop"><b>商店里有</b>${2 + (state.vouchers.includes('shelf') ? 1 : 0)} 张小丑 · 1 张星图 · 1 个塔罗包 · 1 个星图包${state.voucherOffer ? ' · 1 张优惠券' : ''}</div>
       </div>
     </div>`;
 }
@@ -197,7 +197,8 @@ function shopHTML() {
   const items = state.shop.map((it, i) => {
     const can = state.money >= it.price && !it.sold;
     let face;
-    if (it.kind === 'joker') face = jokerFace(JD[it.key], null);
+    if (it.kind === 'joker') face = jokerFace(JD[it.key], null, 'div', '', it.ed);
+    else if (it.kind === 'voucher') face = voucherFace(it.key);
     else if (it.kind === 'pack') face = planetFace('三选一', '打开后从 3 张星图里挑 1 张，让对应牌型升 1 级', '星图包');
     else if (it.kind === 'tpack') face = `<div class="tc tpack"><span class="tag">卡包</span><span class="ji" aria-hidden="true">${glyph('☾')}</span><span class="jn">塔罗包</span><span class="jd">3 选 1，当场改造牌组里的牌</span></div>`;
     else if (it.kind === 'planet') {
@@ -211,7 +212,7 @@ function shopHTML() {
       <button class="btn gold buy" data-act="buy" data-i="${i}" ${can ? '' : 'disabled'}>${it.sold ? '已买' : '购买'}</button></div>`;
   }).join('');
   return `<h2 class="panel-t" data-en="THE SHOP">商店</h2>
-    ${coachHTML(true) || '<p class="panel-s"><b>星图</b>：一种牌型永久升 1 级，可以一直叠加。<b>塔罗包</b>：3 选 1，当场改牌或留着用。</p>'}
+    ${coachHTML(true) || `<p class="panel-s"><b>星图</b>：一种牌型永久升 1 级，可以一直叠加。<b>塔罗包</b>：3 选 1，当场改牌或留着用。${state.vouchers.length ? `<br><b>已有优惠券</b>：${state.vouchers.map((k) => VOUCHERS[k].n).join('、')}` : ''}</p>`}
     <div class="shopgrid">${items}</div>
     <div class="shopbar">
       <button class="btn ghost" data-act="reroll" ${state.money >= state.rerollCost ? '' : 'disabled'}>刷新 $${state.rerollCost}</button>

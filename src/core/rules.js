@@ -23,8 +23,8 @@ export const PLANETS = {
   full: '天鹅座', four: '南十字', sflush: '猎户座', five: '北斗', flushfull: '仙后座', flush5: '银河',
 };
 
-// Tuned with tools/sim.js: about 8% bot win rate on 普通, steady drop-off from ante 3 on.
-export const ANTE = [300, 700, 1500, 3000, 6000, 11000, 18000, 28000];
+// Tuned with tools/sim.js: about 8–9% bot win rate on 普通 (red deck), steady drop-off from ante 3 on.
+export const ANTE = [300, 700, 1500, 3000, 6000, 11500, 19000, 30000];
 export const TUNE = { shopJokers: 2, pack: true };
 export const REWARD = [3, 4, 5];
 export const BLIND_NAMES = ['小盲注', '大盲注'];
@@ -39,6 +39,39 @@ export const BOSSES = {
   glass: { n: '沙漏', d: '出牌次数 −1', handsDelta: -1 },
   wall: { n: '高墙', d: '目标分数翻倍', targetMult: 2 },
   flint: { n: '燧石', d: '牌型的基础筹码和倍率减半', halve: true },
+  odd: { n: '单行道', d: 'A、9、7、5、3 不计分', deb: (c) => c.r === 14 || (c.r <= 9 && c.r % 2 === 1) },
+  even: { n: '双人床', d: '10、8、6、4、2 不计分', deb: (c) => c.r <= 10 && c.r % 2 === 0 },
+  low: { n: '矮人', d: '2、3、4、5 不计分', deb: (c) => c.r <= 5 },
+  needle: { n: '针眼', d: '只能出 1 手牌，目标分数减半', oneHand: true, targetMult: 0.5, minAnte: 2 },
+  psychic: { n: '读心者', d: '必须打出 5 张牌，否则这手不得分', min5: true, minAnte: 2 },
+  eye: { n: '独眼', d: '同一种牌型本回合只能得一次分', noRepeat: true },
+  mouth: { n: '偏食', d: '本回合只有第一次打出的牌型能得分', oneType: true, minAnte: 2 },
+  arm: { n: '断臂', d: '每打出一手，那个牌型降 1 级', arm: true, minAnte: 2 },
+  hook: { n: '鱼钩', d: '每出一手牌，随机弃掉手里 2 张', hook: 2 },
+  tooth: { n: '蛀牙', d: '每打出 1 张牌失去 $1', tooth: 1 },
+  manacle: { n: '镣铐', d: '手牌上限 −1', handDelta: -1 },
+  tax: { n: '税官', d: '开局收走一半的钱（最多 $10）', tax: true, minAnte: 2 },
+};
+
+// Permanent upgrades: one is offered in the shop each ante for $10.
+export const VOUCHERS = {
+  slot: { n: '加座', d: '小丑栏 +1' },
+  hand: { n: '多一手', d: '每回合出牌 +1' },
+  disc: { n: '多一弃', d: '每回合弃牌 +1' },
+  hsize: { n: '大手掌', d: '手牌上限 +1' },
+  cons: { n: '塔罗袋', d: '塔罗栏 +1' },
+  shelf: { n: '多货架', d: '商店多 1 张小丑' },
+  reroll: { n: '刷新折扣', d: '商店刷新费 −$2' },
+  interest: { n: '复利', d: '利息上限 +$5' },
+};
+export const VOUCHER_PRICE = 10;
+
+// Joker editions: a rare shiny version of a joker. `add` is the extra price; chance is per shop joker.
+export const EDITIONS = {
+  foil: { n: '闪箔', d: '+50 筹码', chips: 50, add: 2, p: 0.04 },
+  holo: { n: '镭射', d: '+10 倍率', mult: 10, add: 3, p: 0.03 },
+  poly: { n: '彩虹', d: '×1.5 倍率', xmult: 1.5, add: 5, p: 0.015 },
+  negative: { n: '负片', d: '不占小丑栏', add: 5, p: 0.006 },
 };
 
 export const ENH = {

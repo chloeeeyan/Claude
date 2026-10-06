@@ -5,7 +5,7 @@ import { JD } from './jokers.js';
 import { TD } from './tarots.js';
 import { makeSeed } from './rng.js';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 // MIGRATIONS[n] turns a version n-1 state into version n (return null to drop the save)
 const MIGRATIONS = {
@@ -13,6 +13,8 @@ const MIGRATIONS = {
   2: (s) => { if (Array.isArray(s.pack)) s.pack = { kind: 'star', opts: s.pack }; return s; },
   // v3: daily-challenge date and whether the run was already folded into the cross-run progress
   3: (s) => ({ ...s, daily: s.daily || null, metaDone: !!s.metaDone }),
+  // v4: vouchers, the ante's voucher on offer, and the hand types played this round (for bosses)
+  4: (s) => ({ ...s, vouchers: s.vouchers || [], voucherOffer: s.voucherOffer || null, roundTypes: s.roundTypes || [] }),
 };
 
 export const packSave = (state) => JSON.stringify({ v: SAVE_VERSION, state });
