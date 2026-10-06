@@ -49,9 +49,11 @@ tools/sim.js     平衡模拟器（贪心机器人批量对局）
 
 ## 部署（EdgeOne Pages）
 
-1. 把仓库推到 GitHub。
-2. 在 EdgeOne Pages（国际站）用 GitHub 登录，导入这个仓库。
-3. 构建设置：框架选 Vite（或「其他」），构建命令 `npm run build`，输出目录 `dist`。
-4. 之后每次推送到 `main`，网站会自动重新构建并更新。
+构建设置写在根目录 `edgeone.json`（会覆盖控制台里的同名设置）：安装 `npm ci`、构建 `npm run build`、输出 `./dist`、Node 20.18.0；
+`/assets/*` 带哈希文件名，长缓存；`index.html` 不缓存，发版后玩家刷新即可拿到新版。
+
+1. 在 EdgeOne Pages（国际站）用 GitHub 登录，导入这个仓库。
+2. 框架预设选 Vite（或「Other」），构建命令 `npm run build`，输出目录 `dist`，生产分支 `main`。
+3. 之后每次推送到 `main`，网站会自动重新构建并更新；其他分支 / PR 会生成预览地址。
 
 字体（站酷快乐体、Luckiest Guy）随项目一起打包，不依赖 Google 字体服务，国内可以正常加载。
