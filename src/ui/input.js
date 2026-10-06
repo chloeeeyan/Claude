@@ -5,6 +5,7 @@ import {
 import { $, toast } from './dom.js';
 import { isPicked } from './components.js';
 import { closeModal, openModal, switchGuideTab } from './guide.js';
+import { goLandscape } from './orient.js';
 import { playHand } from './play.js';
 import { render } from './render.js';
 import { renderHud } from './hud.js';
@@ -146,6 +147,7 @@ const ACTIONS = {
   close: () => closeModal(),
   speed: () => { ui.speed = ui.speed === 1 ? 2 : ui.speed === 2 ? 4 : 1; storage.set('speed', ui.speed); renderHud(); },
   sound: () => { Sfx.toggle(); render(); },
+  landscape: async () => { if (!(await goLandscape())) toast('把手机横过来，就是和电脑一样的横屏布局'); },
 };
 
 function moveJoker(dir) {

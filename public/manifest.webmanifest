@@ -1,0 +1,12 @@
+{
+  "name": "鬼牌夜场 · Joker Night",
+  "short_name": "鬼牌夜场",
+  "description": "波普漫画风的扑克构筑小游戏：凑牌型、叠倍率、买小丑，打过 8 个底注。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1e5bff",
+  "theme_color": "#1e5bff",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

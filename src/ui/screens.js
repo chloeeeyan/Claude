@@ -4,7 +4,7 @@ import { $, fmt } from './dom.js';
 import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, jokerFace, planetFace, tarotFace } from './components.js';
 import { patch } from './patch.js';
 import { Sfx } from './sfx.js';
-import { records, state, storage, ui } from './store.js';
+import { inRound, records, state, storage, ui } from './store.js';
 
 function blindCard(i) {
   const b = i === 2 ? BOSSES[state.bossKey] : null, cur = i === state.blindIdx, done = i < state.blindIdx;
@@ -72,7 +72,7 @@ function menuHTML() {
         <div class="how"><em>1</em><b>选牌出牌</b><span>凑出对子、同花、顺子这些牌型</span></div>
         <div class="how"><em>2</em><b>筹码 × 倍率</b><span>牌型定基础分，计分牌再加点数</span></div>
         <div class="how"><em>3</em><b>买小丑叠效果</b><span>过关去商店，小丑效果层层叠加</span></div>
-        <div class="cv-tools"><button class="chip" data-act="help">玩法</button><button class="chip" data-act="guide">牌型图鉴</button><button class="chip" data-act="sound">音效 ${Sfx.on ? '开' : '关'}</button></div>
+        <div class="cv-tools"><button class="chip" data-act="help">玩法</button><button class="chip" data-act="guide">牌型图鉴</button><button class="chip" data-act="sound">音效 ${Sfx.on ? '开' : '关'}</button><button class="chip rot-only" data-act="landscape">横屏玩</button></div>
       </div>
     </aside>
     <section class="cv-main">
@@ -200,5 +200,10 @@ export function renderStage() {
   const st = $('stage');
   st.classList.toggle('busy', state.phase === 'scoring');
   // freshly drawn cards are dealt out of the draw pile
-  patch(st, stageHTML(), { enter: (el) => (ui.justDrawn.has(el.dataset.id) ? $('pile') : null) });
+  // cards discarded or swept away after scoring are tossed off the table, as long as the round goes on
+  const round = inRound();
+  patch(st, stageHTML(), {
+    enter: (el) => (ui.justDrawn.has(el.dataset.id) ? $('pile') : null),
+    leave: (el) => round && el.classList.contains('card'),
+  });
 }

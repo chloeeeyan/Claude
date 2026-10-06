@@ -5,9 +5,11 @@ import './styles/index.css';
 
 import { openModal } from './ui/guide.js';
 import { bindInput } from './ui/input.js';
+import { bindOrientation } from './ui/orient.js';
 import { render } from './ui/render.js';
 import { loadRun, menuState, setState, state, storage, ui } from './ui/store.js';
 
+bindOrientation();
 setState(loadRun() || menuState());
 if (state.phase === 'play') state.hand.forEach((c) => ui.justDrawn.add(c.id));
 bindInput();
