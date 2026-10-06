@@ -37,6 +37,7 @@ src/
     play.js        出牌与计分动画
     patch.js       按 data-key 复用节点的局部重绘，牌换位置时 FLIP 滑过去，新牌从牌堆发出
     fx.js          震屏、数字鼓动、换场转场
+    orient.js      手机横屏时套用电脑布局（加宽 viewport 后整体缩放）
     input.js       点击、键盘、拖动排序
     components.js  卡牌、小丑、塔罗、星图的 HTML 片段
   styles/        按组件拆分的样式，index.css 统一引入

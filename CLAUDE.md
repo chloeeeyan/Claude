@@ -13,7 +13,7 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
   `scoring.js` computeHand → animation `steps` · `run.js` state machine (select → play ⇄ scoring → cashout → shop → … → over/win) ·
   `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves
 - `src/ui/` `store.js` (live `state` + `setState`, localStorage via `storage`, keys `jn.*`) · `hud.js` · `shelf.js` · `screens.js` (per-phase table HTML) ·
-  `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
+  `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `orient.js` phone landscape · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
 - `src/styles/` one file per component, imported by `index.css`; tokens in `tokens.css`
 - `tests/`, `tools/sim.js`
 
@@ -27,7 +27,8 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
 - Fonts are self-hosted via `@fontsource` (Google Fonts is unreliable in mainland China). Don't add CDN dependencies.
 - Style: Pop Art comic — ink outlines, hard offset shadows, Ben-Day dots; Chinese text in ZCOOL KuaiLe, numbers in Luckiest Guy;
   English only as small slanted eyebrows next to Chinese. Essential info must be visible, not hover-only.
-- Desktop must fit one screen (checked at 1366×640 and 1134×734); phones stack and scroll.
+- Desktop must fit one screen (checked at 1366×640 and 1134×734); phones held upright stack and scroll. Phones held sideways
+  get the desktop layout: `ui/orient.js` widens the viewport meta so the page lays out ~640px tall and the browser scales it.
 - Reply to the user in Chinese, plainly; verify visual changes in a browser before claiming done.
 
 ## Status and next steps

@@ -80,6 +80,13 @@
   .cvdk { flex: 0 0 30%; }
 }
 
+/* the "play sideways" buttons only show on phones held upright */
+:root:not(.phone-port) .rot-only { display: none; }
+.phone-port .cv-tools .rot-only { background: var(--yellow); }
+/* phones held sideways get the desktop layout (see ui/orient.js); keep taps snappy and leave room for the notch */
+.phone-land .app { padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px); }
+button { touch-action: manipulation; }
+
 @media (prefers-reduced-motion: reduce) {
   .card, .bar i, .jk, .tc { transition: none; }
   .boom, .sfxword, .pop { animation-duration: .01s !important; }

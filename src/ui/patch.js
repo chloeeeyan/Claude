@@ -14,7 +14,7 @@ function slot(el) {
 
 function box(el) {
   const r = el.getBoundingClientRect();
-  return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: el.offsetWidth || r.width, rot: parseFloat(getComputedStyle(el).rotate) || 0 };
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: el.offsetWidth || r.width, h: el.offsetHeight || r.height, rot: parseFloat(getComputedStyle(el).rotate) || 0 };
 }
 
 const measure = (el) => ({ ...box(el), ...slot(el) });
@@ -25,6 +25,7 @@ function syncAttrs(el, fresh) {
 }
 
 // opts.enter(el) → an element new keyed elements should fly out of (or null to just appear)
+// opts.leave(el) → true when a keyed element that is gone should be tossed off the table instead of vanishing
 export function patch(root, html, opts = {}) {
   const old = new Map([...root.querySelectorAll('[data-key]')].map((el) => [el.dataset.key, el]));
   if (!old.size && !opts.enter) { root.innerHTML = html; return; }
@@ -48,6 +49,10 @@ export function patch(root, html, opts = {}) {
   root.replaceChildren(tpl.content);
   if (!animate) return;
   kept.forEach((el) => flip(el, before.get(el.dataset.key)));
+  if (opts.leave) {
+    let k = 0;
+    old.forEach((el, key) => { if (opts.leave(el)) toss(el, before.get(key), k++); });
+  }
   if (opts.enter) {
     let k = 0;
     for (const el of born) {
@@ -78,4 +83,24 @@ function flyIn(el, a, k) {
     { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 30}px) rotate(${-4 - b.rot / 2}deg) scale(${(s + 1) / 2}) rotateY(60deg)`, opacity: 1, zIndex: 5, offset: 0.4 },
     { transform: 'none', opacity: 1, zIndex: 5 },
   ], { duration: 420 / ui.speed, delay: (k * 70) / ui.speed, easing: 'cubic-bezier(.25, .9, .35, 1.05)', fill: 'backwards' });
+}
+
+// a removed card spins off the right edge of the screen; it travels as a fixed-position ghost so layout is untouched
+function toss(el, a, k) {
+  if (!a) return;
+  el.classList.remove('sel', 'scoring');
+  el.querySelectorAll('.pop').forEach((p) => p.remove());
+  Object.assign(el.style, {
+    position: 'fixed', left: a.x - a.w / 2 + 'px', top: a.y - a.h / 2 + 'px', width: a.w + 'px', height: a.h + 'px',
+    margin: 0, rotate: a.rot + 'deg', translate: 'none', zIndex: 40, pointerEvents: 'none',
+  });
+  el.removeAttribute('data-key');
+  document.body.appendChild(el);
+  const dx = innerWidth - a.x + a.w, dy = -a.h * (0.6 + 0.25 * (k % 3));
+  el.animate([
+    { transform: 'none', opacity: 1 },
+    { transform: `translate(${dx * 0.25}px, ${-a.h * 0.35}px) rotate(${10 + k * 4}deg)`, opacity: 1, offset: 0.3 },
+    { transform: `translate(${dx}px, ${dy}px) rotate(${50 + k * 12}deg) scale(.8)`, opacity: 0.2 },
+  ], { duration: 520 / ui.speed, delay: (k * 50) / ui.speed, easing: 'cubic-bezier(.45, 0, .7, .4)', fill: 'both' })
+    .finished.then(() => el.remove(), () => el.remove());
 }
