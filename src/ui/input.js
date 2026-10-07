@@ -95,12 +95,12 @@ const ACTIONS = {
     const i = state.jokers.findIndex((j) => j.uid === state.inspect.uid);
     if (i < 0) return;
     const d = JD[state.jokers[i].key], v = sellJ(state.jokers[i]);
-    if (!armed(b, `出售 $${v}`, `确认卖掉${d.name}？`)) return;
+    if (!armed(b, `解约 $${v}`, `确认和${d.name}解约？`)) return;
     state.money += v;
     state.jokers.splice(i, 1);
     state.inspect = null;
     Sfx.cash();
-    toast(`卖掉了${d.name}，得到 $${v}`);
+    toast(`和${d.name}解约，拿回 $${v}`);
     render();
   },
   cuse: () => {
@@ -151,7 +151,7 @@ const ACTIONS = {
   telecopy: async () => toast((await teleCopy()) ? '已复制，粘贴发给开发者即可' : '复制失败，请用「导出文件」'),
   tutorskip: () => skipTutor(),
   start: () => { startBlind(state).forEach((id) => ui.justDrawn.add(id)); Sfx.deal(); render(); },
-  skip: () => { const m = skipBlind(state); if (m) { Sfx.cash(); toast('跳过盲注：' + m); render(); } },
+  skip: () => { const m = skipBlind(state); if (m) { Sfx.cash(); toast('跳过这场：' + m); render(); } },
   cashout: () => { if (cashOut(state)) Sfx.cash(); render(); },
   buy: (b) => {
     const r = buy(state, Number(b.dataset.i));

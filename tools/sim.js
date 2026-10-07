@@ -7,7 +7,8 @@ const N = Number(args.n || 300);
 const deck = args.deck || 'red';
 const stake = Number(args.stake || 0);
 const useTarots = args.tarot !== '0';
-const discardBias = Number(args.agg || 1.15); // discard when best × hands left < need × bias
+const discardBias = Number(args.agg || 1.15);
+const audience = args.aud !== '0'; // aud=0: empty seats, to measure what the audience adds // discard when best × hands left < need × bias
 if (args.ante) args.ante.split(',').map(Number).forEach((v, i) => { G.ANTE[i] = v; });
 
 // all 1–5 card subsets of an n-card hand, cached by n
@@ -44,7 +45,7 @@ function chooseDiscard(st, best) {
 }
 
 const XMULT = new Set(['last', 'family', 'royal', 'duo', 'trio', 'palette', 'first', 'fullseat', 'smith', 'mono', 'rainbow', 'crown', 'regent',
-  'solo', 'glassblow', 'blush', 'quad', 'tower', 'twin', 'gambler']);
+  'solo', 'glassblow', 'blush', 'quad', 'tower', 'twin', 'gambler', 'claque']);
 const orderJokers = (st) => st.jokers.sort((a, b) => (XMULT.has(a.key) ? 1 : 0) - (XMULT.has(b.key) ? 1 : 0));
 
 function useTarotsGreedy(st) {
@@ -105,7 +106,7 @@ function shop(st) {
 function runOne(seed) {
   const st = G.freshState(deck, stake, seed);
   for (let guard = 0; guard < 5000; guard++) {
-    if (st.phase === 'select') G.startBlind(st);
+    if (st.phase === 'select') { G.startBlind(st); if (!audience) st.audience = []; }
     else if (st.phase === 'play') {
       useTarotsGreedy(st);
       const best = bestPlay(st), need = st.target - st.roundScore;

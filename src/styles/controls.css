@@ -3,7 +3,7 @@
   border: 2px solid var(--ink); background: var(--white); color: var(--ink); border-radius: 999px;
   padding: 3px 11px; font-size: 12px; cursor: pointer; box-shadow: 2px 2px 0 var(--ink);
 }
-.chip:hover:not(:disabled) { background: var(--yellow); }
+.chip:hover:not(:disabled):not(.on) { background: var(--yellow); }
 .chip:active:not(:disabled) { translate: 2px 2px; box-shadow: 0 0 0 var(--ink); }
 .chip:disabled { opacity: .45; cursor: not-allowed; }
 .chip.on { background: var(--ink); color: var(--yellow); }

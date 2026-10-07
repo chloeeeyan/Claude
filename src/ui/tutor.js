@@ -25,25 +25,31 @@ const STEPS = [
   {
     key: 'read', when: () => playing() && state.selected.length > 0 && state.roundHands === 0,
     target: () => '#scorer, [data-act="play"]',
-    text: () => '左边是这手牌能拿的分：<b>筹码 × 倍率</b>。最多能选 5 张，看着「预计」分数，满意了就点<b>出牌</b>。',
+    text: () => '左边是这手牌能赢得的掌声：<b>筹码 × 倍率</b>。最多能选 5 张，看着「预计」分数，满意了就点<b>出牌</b>。',
     done: () => state.phase === 'scoring' || state.roundHands > 0,
+  },
+  {
+    key: 'crowd', when: () => playing() && state.roundHands >= 1 && (state.audience || []).length > 0,
+    target: () => '.crowd',
+    text: () => '台下坐着 3 位<b>观众</b>，各有各的口味。某手牌合了谁的口味，他就被征服、当场打赏；三位全征服是<b>满场喝彩</b>。选牌时，会被征服的观众会亮黄。',
+    done: () => state.phase !== 'play' || state.roundHands >= 2, ok: true,
   },
   {
     key: 'discard', when: () => playing() && state.roundHands >= 1 && state.discards > 0 && !state.selected.length,
     target: () => '[data-act="discard"]',
-    text: () => '还没到目标分数？选几张不想要的牌点<b>弃牌</b>，换新牌凑更大的牌型。出牌次数比弃牌次数宝贵。',
+    text: () => '还没到目标掌声？选几张不想要的牌点<b>弃牌</b>，换新牌凑更大的牌型。出牌次数比弃牌次数宝贵。',
     done: () => state.phase !== 'play' || state.roundHands >= 2, ok: true,
   },
   {
     key: 'shop', when: () => state.phase === 'shop' && !state.pack && state.jokers.length === 0,
     target: () => '.shopgrid .item:first-child',
-    text: () => '过关的钱可以在商店花掉。<b>小丑</b>每手牌都会自动帮你加分，先买一张试试。',
+    text: () => '谢幕的钱可以在后台花掉。<b>演员</b>每手牌都会自动帮你加分，先买一张试试。',
     done: () => state.jokers.length > 0 || state.phase !== 'shop', ok: true,
   },
   {
     key: 'jokers', when: () => playing() && state.jokers.length > 0,
     target: () => '#jrow',
-    text: () => '小丑<b>从左到右</b>依次触发：「+倍率」放左边，「×倍率」放右边最划算。拖动可以换顺序，点一下看详情或出售。',
+    text: () => '演员<b>从左到右</b>依次触发：「+倍率」放左边，「×倍率」放右边最划算。拖动可以换顺序，点一下看详情或解约。',
     done: () => state.phase === 'scoring', ok: true,
   },
 ];

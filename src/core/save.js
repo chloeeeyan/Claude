@@ -4,8 +4,9 @@ import { HANDS } from './rules.js';
 import { JD } from './jokers.js';
 import { TD } from './tarots.js';
 import { makeSeed } from './rng.js';
+import { rollCrowds } from './audience.js';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 // MIGRATIONS[n] turns a version n-1 state into version n (return null to drop the save)
 const MIGRATIONS = {
@@ -15,6 +16,8 @@ const MIGRATIONS = {
   3: (s) => ({ ...s, daily: s.daily || null, metaDone: !!s.metaDone }),
   // v4: vouchers, the ante's voucher on offer, and the hand types played this round (for bosses)
   4: (s) => ({ ...s, vouchers: s.vouchers || [], voucherOffer: s.voucherOffer || null, roundTypes: s.roundTypes || [] }),
+  // v5: the audience — crowds for the night's three shows, and who is seated (and won over) in this one
+  5: (s) => ({ ...s, crowds: s.crowds || (s.phase === 'menu' || typeof s.rng !== 'number' ? null : rollCrowds(s)), audience: s.audience || [] }),
 };
 
 export const packSave = (state) => JSON.stringify({ v: SAVE_VERSION, state });
