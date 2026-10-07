@@ -1,22 +1,31 @@
 # 鬼牌夜场 · Joker Night — notes for Claude
 
 Pop-art poker deck-builder for the browser (Balatro-inspired; names, art and cards are original). Chinese UI.
+Theme: a night-club variety troupe (夜场剧团). Core twist: every show seats an audience of three whose tastes you play to.
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
-- `npm ci` then `npm test` (Vitest, 54 tests) — run after any change
+- `npm ci` then `npm test` (Vitest, 59 tests) — run after any change
 - `npm run sim -- n=400` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
+  (`aud=0` runs with empty seats, ≈2%: the audience is core, not a bonus)
 - `npm run dev` / `npm run build` (output `dist/`, relative paths via `base: './'`)
 
 ## Layout (read only what the task needs)
 - `src/core/` game rules, no DOM: `rules.js` tables · `jokers.js` (hooks: card / held / hand / before / discard / money / broke; `arch` = build style) / `tarots.js` content · `evaluate.js` hand detection ·
   `scoring.js` computeHand → animation `steps` · `run.js` state machine (select → play ⇄ scoring → cashout → shop → … → over/win) ·
   `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves ·
-  `meta.js` cross-run progress (unlocks, collection, daily challenge), stored by the UI as `jn.meta`
+  `meta.js` cross-run progress (unlocks, collection, daily challenge), stored by the UI as `jn.meta` ·
+  `audience.js` spectators, crowd rolls per night, tips (scored inside `computeHand` as `at: 'aud'` steps)
 - `src/ui/` `store.js` (live `state` + `setState`, localStorage via `storage`, keys `jn.*`) · `hud.js` · `shelf.js` · `screens.js` (per-phase table HTML) ·
   `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `orient.js` phone landscape · `tutor.js` first-run tutorial · `tele.js` local playtest log · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
 - `src/styles/` one file per component, imported by `index.css`; tokens in `tokens.css`
 - `tests/`, `tools/sim.js`
+
+## Names: code vs. what the player sees
+Code keeps poker/Balatro names; all UI text uses the troupe names. ante → 第 N 夜 (night) · blind 0/1/2 → 暖场 / 正戏 / 压轴
+(boss = 压轴嘉宾) · score → 掌声 · joker → 演员 (selling = 解约) · tarot / cons → 道具, tarot pack → 道具箱 · planet → 剧本
+(names are stage plays) · shop → 后台 · voucher → 剧院改造 · audience / spectator → 观众, all three won over → 满场喝彩.
+Hand types (对子, 顺子…) keep their poker names on purpose.
 
 ## Rules of thumb
 - All randomness in core goes through `rand/rint/shuffle(st, …)`; never `Math.random` in `src/core` (breaks seed replay).
@@ -33,8 +42,8 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
 - Reply to the user in Chinese, plainly; verify visual changes in a browser before claiming done.
 
 ## Status and next steps
-Done: playable full run (8 antes, 75 jokers in 8 build styles, 15 tarots, 12 hand types incl. 3 hidden, 20 bosses, 8 vouchers,
-4 joker editions, 5 decks, 3 stakes), hand guide,
+Done: playable full run (8 nights, 75 jokers in 8 build styles, 15 tarots, 12 hand types incl. 3 hidden, 20 bosses, 8 vouchers,
+4 joker editions, 5 decks, 3 stakes, 17 spectator types, 6 crowd jokers), hand guide,
 coach tips, pop-art UI, game-screen layout, seeded RNG, versioned saves, tests, sim.
 
 Agreed priority list (from the product review), in order:
@@ -43,8 +52,7 @@ Agreed priority list (from the product review), in order:
    Vercel default domain is blocked in China.
 3. ✅ Rendering architecture: keyed DOM reuse so cards can animate between zones (FLIP), prerequisite for game feel.
 4. ✅ Game feel: deal from pile, cards fly to play area, escalating score feedback, screen shake on ×mult, phase transitions.
-5. Game identity: 1–2 original core mechanics + theme naming (move away from poker jargon 盲注/底注); user decides —
-   options written up in `docs/identity-options.md`.
+5. ✅ Game identity: chose 观众席 (audience) + 夜场剧团 naming — see `docs/identity-options.md`.
 6. ✅ Content by archetype (flush / face / discard / economy / single-card / deck-rewrite builds), vouchers, joker editions; ~70–80 jokers, ~20 bosses.
 7. ✅ Meta progression: unlocks, collection, stake ladder, daily seed.
 8. ✅ Onboarding: teach-by-doing first run.

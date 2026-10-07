@@ -44,7 +44,7 @@ export const JOKERS = [
     before: (c, j) => { j.data.n = (j.data.n || 0) + 1; },
     hand: (c, j) => ({ mult: j.data.n }),
   },
-  { key: 'collector', name: '收藏家', r: 2, price: 6, desc: '每拥有 1 张小丑 <b>+3</b> 倍率', hand: (c) => ({ mult: 3 * c.jokerCount }) },
+  { key: 'collector', name: '收藏家', r: 2, price: 6, desc: '每拥有 1 位演员 <b>+3</b> 倍率', hand: (c) => ({ mult: 3 * c.jokerCount }) },
   { key: 'hoard', name: '守财奴', r: 2, price: 6, desc: '每持有 $1 <b>+2</b> 筹码', hand: (c) => c.money > 0 && { chips: 2 * c.money } },
   { key: 'deep', name: '深牌库', r: 2, price: 6, desc: '牌堆里每剩 1 张 <b>+2</b> 筹码', hand: (c) => c.deckLen > 0 && { chips: 2 * c.deckLen } },
   { key: 'gem', name: '宝石匠', r: 2, price: 6, desc: '每张计分的增强牌 <b>+5</b> 倍率', card: (c, k) => k.enh && { mult: 5 } },
@@ -63,7 +63,7 @@ export const JOKERS = [
   { key: 'trio', name: '三人行', r: 3, price: 8, desc: '出牌含<b>三条</b>时 ×3 倍率', hand: (c) => has(c, 'three') && { xmult: 3 } },
   { key: 'palette', name: '调色盘', r: 3, price: 8, desc: '出牌含<b>同花</b>时 ×2 倍率', hand: (c) => has(c, 'flush') && { xmult: 2 } },
   { key: 'mirror', name: '镜中人', r: 3, price: 8, desc: '计分的人头牌<b>额外触发 1 次</b>' },
-  { key: 'blueprint', name: '蓝图', r: 3, price: 9, desc: '复制<b>右边相邻</b>小丑的效果' },
+  { key: 'blueprint', name: '蓝图', r: 3, price: 9, desc: '复制<b>右边相邻</b>演员的效果' },
 
   // ---- flush builds
   { key: 'inkwell', arch: 'flush', name: '墨水瓶', r: 1, price: 4, desc: '出牌含<b>同花</b>时 +80 筹码', hand: (c) => has(c, 'flush') && { chips: 80 } },
@@ -97,7 +97,7 @@ export const JOKERS = [
   // ---- economy
   { key: 'cat', arch: 'economy', name: '招财猫', r: 1, price: 5, desc: '每打出一手牌得 <b>$1</b>', hand: () => ({ money: 1 }) },
   { key: 'bull', arch: 'economy', name: '牛市', r: 2, price: 6, desc: '每持有 $4 <b>+1</b> 倍率', hand: (c) => c.money >= 4 && { mult: Math.floor(c.money / 4) } },
-  { key: 'golden', arch: 'economy', name: '金饭碗', r: 2, price: 7, desc: '回合结束时得 $1 × <b>当前底注</b>', money: (j, st) => st.ante },
+  { key: 'golden', arch: 'economy', name: '金饭碗', r: 2, price: 7, desc: '每场结束时得 $1 × <b>当前是第几夜</b>', money: (j, st) => st.ante },
   {
     key: 'rocket', arch: 'economy', name: '火箭', r: 2, price: 6,
     desc: (j) => `回合结束得 $1，每打过一个 Boss 再多 $2<br>（当前 <b>$${1 + 2 * (j ? j.data.n || 0 : 0)}</b>）`,
@@ -145,6 +145,19 @@ export const JOKERS = [
   // previews leave the gamble out, so "预计" never promises a ×4 that may not come
   { key: 'gambler', arch: 'scale', name: '赌徒', r: 2, price: 6, desc: '<b>1/4</b> 概率 ×4 倍率', hand: (c) => !c.preview && rand(c.st) < 0.25 && { xmult: 4 } },
   { key: 'echo', arch: 'scale', name: '回音壁', r: 3, price: 9, desc: '<b>第一张</b>计分牌额外触发 2 次' },
+  // ---- playing to the crowd
+  { key: 'shill', arch: 'crowd', name: '托儿', r: 1, price: 4, desc: '每位<b>已被征服</b>的观众 +5 倍率', hand: (c) => c.audOk > 0 && { mult: 5 * c.audOk } },
+  { key: 'heckler', arch: 'crowd', name: '刺头', r: 2, price: 6, desc: '每位<b>还没被征服</b>的观众 +6 倍率', hand: (c) => c.audN - c.audOk > 0 && { mult: 6 * (c.audN - c.audOk) } },
+  { key: 'agent', arch: 'crowd', name: '经纪人', r: 1, price: 5, desc: '观众给的<b>打赏翻倍</b>（满场喝彩也算）' },
+  {
+    key: 'claque', arch: 'crowd', name: '领掌人', r: 2, price: 7, desc: '本场<b>满场喝彩</b>之后，每手 ×2 倍率',
+    hand: (c) => c.audN > 0 && c.audOk === c.audN && { xmult: 2 },
+  },
+  { key: 'encore', arch: 'crowd', name: '返场', r: 3, price: 8, desc: '观众给的 <b>×倍率</b> 再乘一次' },
+  {
+    key: 'boxoffice', arch: 'crowd', name: '票房', r: 2, price: 6, desc: '每场结束时，每位被征服的观众得 <b>$2</b>',
+    money: (j, st) => 2 * (st.audience || []).filter((a) => a.ok).length,
+  },
 ];
 
 export const JD = Object.fromEntries(JOKERS.map((j) => [j.key, j]));

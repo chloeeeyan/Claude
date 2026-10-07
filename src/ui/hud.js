@@ -17,8 +17,8 @@ export function renderHud() {
   $('app').classList.toggle('menu', p === 'menu');
   $('table').classList.toggle('full', !['play', 'scoring'].includes(p));
   if (p !== 'menu') {
-    const lead = p === 'select' ? '下一关' : p === 'shop' || p === 'cashout' ? '刚击败' : `底注 ${state.ante} · 第 ${state.blindIdx + 1} 关`;
-    $('blindBox').innerHTML = `<span class="lbl">${lead}</span><span class="bn ${b ? 'boss' : ''}">${b ? 'Boss · ' + b.n : BLIND_NAMES[state.blindIdx]}</span>`;
+    const lead = p === 'select' ? '下一场' : p === 'shop' || p === 'cashout' ? '刚演完' : `第 ${state.ante} 夜 · 第 ${state.blindIdx + 1} 场`;
+    $('blindBox').innerHTML = `<span class="lbl">${lead}</span><span class="bn ${b ? 'boss' : ''}">${b ? '压轴 · ' + b.n : BLIND_NAMES[state.blindIdx]}</span>`;
   }
   const showScore = inRound() || p === 'over';
   $('roundScore').textContent = fmt(showScore ? state.roundScore : 0);
@@ -43,7 +43,7 @@ export function renderHud() {
     const res = computeHand(state, sel, held, { preview: true });
     const need = state.target - state.roundScore;
     setLive(`${HANDS[res.type].n}<small>${state.levels[res.type]} 级</small>`, res.base.c, res.base.m,
-      res.voided ? `这手不得分：${res.voided}` : `预计 ${hasJ(state, 'misprint') || hasJ(state, 'gambler') ? '≈ ' : ''}${fmt(res.total)}${res.total >= need ? ' · 够过关' : ''}`, res.total >= need);
+      res.voided ? `这手不得分：${res.voided}` : `预计 ${hasJ(state, 'misprint') || hasJ(state, 'gambler') ? '≈ ' : ''}${fmt(res.total)}${res.total >= need ? ' · 够谢幕' : ''}`, res.total >= need);
   } else setLive(p === 'play' ? '选牌，凑牌型' : '—', 0, 0);
   // enhancement / seal effects of the selected cards are spelled out instead of hiding in a tooltip
   const notes = [...new Set(sel.flatMap((c) => [

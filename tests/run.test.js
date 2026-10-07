@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  SAVE_VERSION, beginHand, buy, cashOut, finishHand, freshState, nextBlind, packApply, packCards, packKeep, packPick, packSave, startBlind,
+  SAVE_VERSION, SPEC, beginHand, buy, cashOut, finishHand, freshState, nextBlind, packApply, packCards, packKeep, packPick, packSave, startBlind,
   unpackSave, useTarot,
 } from '../src/core/index.js';
 
@@ -95,7 +95,7 @@ describe('tarot pack', () => {
     const st = playToShop(seed);
     st.money = 50;
     const i = st.shop.findIndex((it) => it.kind === 'tpack');
-    expect(buy(st, i).msg).toBe('打开了塔罗包');
+    expect(buy(st, i).msg).toBe('打开了道具箱');
     return st;
   };
 
@@ -123,7 +123,7 @@ describe('tarot pack', () => {
     const st = openPack(22);
     const k = st.pack.opts.find((x) => x !== 'tRich');
     packPick(st, k);
-    expect(packKeep(st).msg).toContain('塔罗栏');
+    expect(packKeep(st).msg).toContain('道具栏');
     expect(st.cons.map((c) => c.key)).toEqual([k]);
     expect(st.pack).toBeNull();
   });
@@ -157,5 +157,26 @@ describe('save format', () => {
   it('rejects saves from a newer version and garbage', () => {
     expect(unpackSave(JSON.stringify({ v: SAVE_VERSION + 1, state: {} }))).toBeNull();
     expect(unpackSave('not json')).toBeNull();
+  });
+});
+
+describe('audience across a run', () => {
+  it('rolls three crowds per night, seats them per show and remembers who was won over', () => {
+    const st = freshState('red', 0, 12);
+    expect(st.crowds).toHaveLength(3);
+    st.crowds.forEach((c) => expect(new Set(c).size).toBe(3));
+    startBlind(st);
+    expect(st.audience.map((a) => a.key)).toEqual(st.crowds[0]);
+    st.audience = [{ key: 'pairfan', ok: false }, { key: 'fivefan', ok: false }, { key: 'solo', ok: false }];
+    const [a, b] = st.hand; b.r = a.r;
+    finishHand(st, beginHand(st, [a.id, b.id]));
+    expect(st.audience[0].ok).toBe(true);
+    expect(st.stats.wonOver).toBe(1);
+  });
+
+  it('gives the headline show a harder crowd than the warm-up', () => {
+    const st = freshState('red', 0, 13);
+    const tierSum = (crowd) => crowd.reduce((n, k) => n + SPEC[k].tier, 0);
+    expect(tierSum(st.crowds[2])).toBeGreaterThan(tierSum(st.crowds[0]));
   });
 });

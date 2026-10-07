@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeHand, freshState, startBlind } from '../src/core/index.js';
+import { OVATION_TIP, SPEC, computeHand, freshState, startBlind } from '../src/core/index.js';
 import { cards } from './helpers.js';
 
 function round(jokers = []) {
@@ -7,6 +7,7 @@ function round(jokers = []) {
   st.bossKey = 'wall'; // keep blind 0 boss-free and deterministic
   startBlind(st);
   st.jokers = jokers.map((key, i) => ({ key, uid: 100 + i, data: {} }));
+  st.audience = []; // the audience has its own tests; keep these totals about cards and jokers
   return st;
 }
 
@@ -101,5 +102,39 @@ describe('computeHand', () => {
     st.bossKey = 'eye'; st.roundTypes = ['pair'];
     expect(computeHand(st, cards('KH KC'), [], { preview: true }).total).toBe(0);
     expect(computeHand(st, cards('KH KC 9S 9D'), [], { preview: true }).total).toBeGreaterThan(0);
+  });
+});
+
+describe('the audience', () => {
+  const seat = (st, ...keys) => { st.audience = keys.map((key) => ({ key, ok: false })); return st; };
+
+  it('tips a spectator whose taste the hand meets, once per show', () => {
+    const st = seat(round(), 'pairfan', 'flushfan', 'solo');
+    const res = computeHand(st, cards('KH KC'), [], { preview: true });
+    expect(res.sat).toEqual([0]);
+    expect(res.money).toBe(SPEC.pairfan.tip.money);
+    st.audience[0].ok = true;
+    expect(computeHand(st, cards('KH KC'), [], { preview: true }).sat).toEqual([]);
+  });
+
+  it('multiplies the hand for ×mult tastes and pays a standing ovation when the last one is won over', () => {
+    const st = seat(round(), 'pairfan', 'solo', 'acefan');
+    st.audience[0].ok = true; st.audience[2].ok = true;
+    const res = computeHand(st, cards('9S'), [], { preview: true });
+    expect(res.sat).toEqual([1]);
+    expect(res.mult).toBe(1 * SPEC.solo.tip.xmult);
+    expect(res.ovation).toBe(true);
+    expect(res.money).toBe(OVATION_TIP);
+  });
+
+  it('lets crowd jokers work the room: 经纪人 doubles tips, 返场 repeats ×mult, 托儿 counts the won-over', () => {
+    const st = seat(round(['agent', 'encore', 'shill']), 'pairfan', 'solo', 'acefan');
+    st.audience[0].ok = true;
+    const res = computeHand(st, cards('9S'), [], { preview: true });
+    const x = SPEC.solo.tip.xmult;
+    expect(res.mult).toBe((1 + 5) * x * x);
+    expect(res.money).toBe(0);
+    const res2 = computeHand(st, cards('AS'), [], { preview: true });
+    expect(res2.money).toBe(2 * SPEC.acefan.tip.money + 2 * OVATION_TIP); // 王牌迷 + ovation, both doubled
   });
 });

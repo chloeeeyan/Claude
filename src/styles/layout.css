@@ -144,3 +144,36 @@
 .coach .chip { justify-self: end; }
 .coach.inline { position: static; width: auto; rotate: 0deg; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 10px; }
 .coach.inline p { font-size: 13.5px; }
+
+/* ---- the audience: a strip of seats along the top of the table (boss banner on its left) ---- */
+.stagebar { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 6px 12px; min-height: 0; }
+.stagebar .bossbar { position: relative; }
+.crowd { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+.cr-k { font-family: var(--comic); font-size: 15px; color: var(--white); -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; text-shadow: 2px 2px 0 var(--ink); line-height: 1.05; text-align: right; }
+.cr-k .en { font-size: 10px; color: var(--yellow); }
+.seat {
+  position: relative; display: flex; align-items: center; gap: 6px; width: 168px; padding: 4px 8px 4px 4px; background: var(--white); color: var(--ink);
+  border: 2.5px solid var(--ink); border-radius: 26px 10px 10px 26px; box-shadow: 3px 3px 0 var(--ink); transition: background .2s, translate .2s;
+}
+.seat .sa {
+  flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-family: var(--comic); font-size: 17px;
+  background: var(--paper); border: 2.5px solid var(--ink);
+}
+.seat.t2 .sa { background: var(--yellow); }
+.seat.t3 .sa { background: var(--pink); color: var(--white); }
+.seat .sn { display: grid; min-width: 0; line-height: 1.15; }
+.seat .sn b { font-family: var(--comic); font-weight: 400; font-size: 14px; }
+.seat .sn i { font-style: normal; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seat .tip { margin-left: auto; flex: none; font-family: var(--pop); font-size: 14px; color: var(--red-ink); }
+.seat.will { background: var(--yellow); translate: 0 -3px; animation: seatWill calc(.9s / var(--spd)) ease-in-out infinite; }
+.seat.will .sn i { color: var(--ink); }
+@keyframes seatWill { 50% { box-shadow: 3px 3px 0 var(--ink), 0 0 0 4px rgba(255,255,255,.8); } }
+.seat.ok { background: var(--green); color: var(--white); }
+.seat.ok .sn i { color: rgba(255,255,255,.9); }
+.seat.ok .tip { color: var(--white); font-size: 18px; }
+.seat.ok .sa { background: var(--white); color: var(--ink); }
+.crowd .pop { top: -18px; }
+/* standing ovation banner */
+.ovation { position: absolute; right: 0; top: 40px; z-index: 7; pointer-events: none; font-family: var(--comic); font-size: 34px; color: var(--yellow);
+  -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 4px 4px 0 var(--ink); animation: sfx calc(1.3s / var(--spd)) cubic-bezier(.2, 1.5, .4, 1) both; }
+@media (prefers-reduced-motion: reduce) { .seat.will { animation: none; } }

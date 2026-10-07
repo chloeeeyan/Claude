@@ -3,6 +3,7 @@ import { chipVal, isFace } from './cards.js';
 import { ANTE, BOSSES, EDITIONS, HANDS, STAKES } from './rules.js';
 import { JD, hasJ } from './jokers.js';
 import { evaluate } from './evaluate.js';
+import { OVATION_TIP, SPEC } from './audience.js';
 import { rand } from './rng.js';
 
 export const curBoss = (st) => (st.blindIdx === 2 ? BOSSES[st.bossKey] : null);
@@ -33,7 +34,7 @@ export function computeHand(st, played, held, opt = {}) {
   const voidWhy = !boss ? '' : boss.min5 && played.length < 5 ? '要 5 张' : boss.noRepeat && seen.includes(ev.type) ? '牌型重复'
     : boss.oneType && seen.length && !seen.includes(ev.type) ? '不是第一种牌型' : '';
   if (voidWhy) {
-    return { type: ev.type, scoring: ev.scoring, base, steps: [{ at: 'card', id: played[0].id, text: voidWhy, cls: 'dead' }], chips: 0, mult: 0, money: 0, total: 0, broken: [], voided: voidWhy };
+    return { type: ev.type, scoring: ev.scoring, base, steps: [{ at: 'card', id: played[0].id, text: voidWhy, cls: 'dead' }], chips: 0, mult: 0, money: 0, total: 0, broken: [], sat: [], ovation: false, voided: voidWhy };
   }
   const S = { chips: base.c, mult: base.m, money: 0 };
   const steps = [];
@@ -43,6 +44,7 @@ export function computeHand(st, played, held, opt = {}) {
     live: ev.scoring.filter((c) => !debuffed(st, c)), held,
     handsAfter: st.hands - 1, discards: st.discards, money: st.money, deckLen: st.deck.length,
     jokerCount: st.jokers.length, deckList: st.deckList, first: st.roundHands === 0, preview,
+    audOk: (st.audience || []).filter((a) => a.ok).length, audN: (st.audience || []).length,
   };
   for (const j of jokers) { const d = JD[j.key]; if (d.before) d.before(ctx, j); }
 
@@ -97,6 +99,25 @@ export function computeHand(st, played, held, opt = {}) {
     if (E && E.xmult) push({ at: 'joker', uid: j.uid, xmult: E.xmult });
   });
 
+  // the audience: every spectator this hand wins over tips now (経纪人 doubles cash tips, 返场 repeats ×mult tips)
+  const aud = st.audience || [], sat = [];
+  let ovation = false;
+  if (aud.length) {
+    const actx = { ...ctx, total: Math.floor(S.chips * S.mult), target: st.target, roundTypes: st.roundTypes || [] };
+    const agent = hasJ(st, 'agent') ? 2 : 1, encore = hasJ(st, 'encore') ? 2 : 1;
+    aud.forEach((a, i) => {
+      const sp = SPEC[a.key];
+      if (a.ok || !sp || !sp.ok(actx)) return;
+      sat.push(i);
+      if (sp.tip.money) push({ at: 'aud', i, money: sp.tip.money * agent });
+      for (let t = 0; sp.tip.xmult && t < encore; t++) push({ at: 'aud', i, xmult: sp.tip.xmult });
+    });
+    if (sat.length && aud.every((a, i) => a.ok || sat.includes(i))) {
+      ovation = true;
+      push({ at: 'aud', i: -1, money: OVATION_TIP * agent, ovation: true });
+    }
+  }
+
   const broken = preview ? [] : ctx.live.filter((c) => c.enh === 'glass' && rand(st) < 0.25).map((c) => c.id);
-  return { type: ev.type, scoring: ev.scoring, base, steps, chips: S.chips, mult: S.mult, money: S.money, total: Math.floor(S.chips * S.mult), broken };
+  return { type: ev.type, scoring: ev.scoring, base, steps, chips: S.chips, mult: S.mult, money: S.money, total: Math.floor(S.chips * S.mult), broken, sat, ovation };
 }

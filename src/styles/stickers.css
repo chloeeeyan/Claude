@@ -1,7 +1,7 @@
 /* Joker = a little comic strip: avatar circle, caption bar, speech bubble. Tarots and planets share the frame. */
 .jk, .tc, .planet {
   position: relative; flex: 0 0 112px; aspect-ratio: 5/7; padding: 7px 6px 6px; text-align: left; display: flex; flex-direction: column; align-items: center; gap: 5px;
-  border: var(--o) solid var(--ink); box-shadow: var(--sh) var(--sh) 0 var(--ink); min-width: 0; rotate: var(--tilt, 0deg); transition: rotate .15s, translate .15s; color: var(--ink);
+  border: var(--o) solid var(--ink); box-shadow: var(--sh) var(--sh) 0 var(--ink); min-width: 0; min-height: 0; rotate: var(--tilt, 0deg); transition: rotate .15s, translate .15s; color: var(--ink);
 }
 .jk { cursor: grab; touch-action: none; user-select: none; background: radial-gradient(circle, rgba(255,255,255,.28) 0 27%, transparent 30%) 0 0/8px 8px, var(--r1); }
 .jk.r2 { background-color: var(--r2); }

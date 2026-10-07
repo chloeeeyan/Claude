@@ -9,3 +9,4 @@ export * from './scoring.js';
 export * from './run.js';
 export * from './save.js';
 export * from './meta.js';
+export * from './audience.js';

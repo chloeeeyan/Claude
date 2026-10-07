@@ -18,16 +18,17 @@ export const HANDS = {
   flush5: { n: '同花五条', c: 160, m: 16, dc: 50, dm: 3, secret: true },
 };
 
+// scripts (剧本) that level a hand type up, named after stage plays and Peking-opera repertoire
 export const PLANETS = {
-  high: '月相', pair: '双子座', two: '天秤座', three: '三角座', straight: '天龙座', flush: '孔雀座',
-  full: '天鹅座', four: '南十字', sflush: '猎户座', five: '北斗', flushfull: '仙后座', flush5: '银河',
+  high: '独角戏', pair: '双簧', two: '二进宫', three: '三岔口', straight: '连台本戏', flush: '一色戏装',
+  full: '满堂红', four: '四郎探母', sflush: '连环计', five: '五女拜寿', flushfull: '大团圆', flush5: '五福临门',
 };
 
-// Tuned with tools/sim.js: about 8–9% bot win rate on 普通 (red deck), steady drop-off from ante 3 on.
-export const ANTE = [300, 700, 1500, 3000, 6000, 11500, 19000, 30000];
+// Tuned with tools/sim.js: about 9% bot win rate on 普通 (red deck) with the audience in play (≈2% with empty seats: the crowd is core).
+export const ANTE = [300, 800, 2000, 4000, 8000, 16000, 27000, 42000];
 export const TUNE = { shopJokers: 2, pack: true };
 export const REWARD = [3, 4, 5];
-export const BLIND_NAMES = ['小盲注', '大盲注'];
+export const BLIND_NAMES = ['暖场', '正戏'];
 
 export const BOSSES = {
   spade: { n: '铁锹', d: '所有黑桃牌不计分', deb: (c) => suitIs(c, 'S') },
@@ -55,13 +56,13 @@ export const BOSSES = {
 
 // Permanent upgrades: one is offered in the shop each ante for $10.
 export const VOUCHERS = {
-  slot: { n: '加座', d: '小丑栏 +1' },
+  slot: { n: '加座', d: '演员栏 +1' },
   hand: { n: '多一手', d: '每回合出牌 +1' },
   disc: { n: '多一弃', d: '每回合弃牌 +1' },
   hsize: { n: '大手掌', d: '手牌上限 +1' },
-  cons: { n: '塔罗袋', d: '塔罗栏 +1' },
-  shelf: { n: '多货架', d: '商店多 1 张小丑' },
-  reroll: { n: '刷新折扣', d: '商店刷新费 −$2' },
+  cons: { n: '道具袋', d: '道具栏 +1' },
+  shelf: { n: '多货架', d: '后台多 1 位演员' },
+  reroll: { n: '刷新折扣', d: '后台刷新费 −$2' },
   interest: { n: '复利', d: '利息上限 +$5' },
 };
 export const VOUCHER_PRICE = 10;
@@ -71,7 +72,7 @@ export const EDITIONS = {
   foil: { n: '闪箔', d: '+50 筹码', chips: 50, add: 2, p: 0.04 },
   holo: { n: '镭射', d: '+10 倍率', mult: 10, add: 3, p: 0.03 },
   poly: { n: '彩虹', d: '×1.5 倍率', xmult: 1.5, add: 5, p: 0.015 },
-  negative: { n: '负片', d: '不占小丑栏', add: 5, p: 0.006 },
+  negative: { n: '负片', d: '不占演员栏', add: 5, p: 0.006 },
 };
 
 export const ENH = {
@@ -91,21 +92,21 @@ export const DECKS = {
   red: { n: '红色牌组', d: '每回合弃牌 +1', disc: 1 },
   blue: { n: '蓝色牌组', d: '每回合出牌 +1', hands: 1 },
   gold: { n: '金色牌组', d: '开局多 $10', money: 10 },
-  black: { n: '黑色牌组', d: '小丑栏 +1，每回合出牌 −1', slots: 1, hands: -1 },
+  black: { n: '黑色牌组', d: '演员栏 +1，每回合出牌 −1', slots: 1, hands: -1 },
   paint: { n: '彩绘牌组', d: '开局随机 6 张牌带增强效果', enhStart: 6 },
 };
 
 export const STAKES = [
   { n: '普通', d: '标准规则', tm: 1 },
-  { n: '困难', d: '目标分数 ×1.25，小盲注没有奖励', tm: 1.25, noSmall: true },
-  { n: '噩梦', d: '目标分数 ×1.6，小盲注没有奖励，利息最多 $3', tm: 1.6, noSmall: true, intCap: 3 },
+  { n: '困难', d: '目标分数 ×1.25，暖场没有奖励', tm: 1.25, noSmall: true },
+  { n: '噩梦', d: '目标分数 ×1.6，暖场没有奖励，利息最多 $3', tm: 1.6, noSmall: true, intCap: 3 },
 ];
 
 export const TAGS = {
   cash: { n: '现金券', d: '立即获得 $8' },
-  rare: { n: '稀有券', d: '下个商店多出一张稀有小丑' },
-  planet: { n: '星图券', d: '随机两个牌型各升 1 级' },
-  tarot: { n: '塔罗券', d: '获得 2 张随机塔罗牌' },
+  rare: { n: '稀有券', d: '下次后台多出一位稀有演员' },
+  planet: { n: '剧本券', d: '随机两个牌型各升 1 级' },
+  tarot: { n: '道具券', d: '获得 2 件随机道具' },
 };
 
 export const RARITY = { 1: '普通', 2: '罕见', 3: '稀有' };

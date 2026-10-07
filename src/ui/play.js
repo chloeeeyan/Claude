@@ -11,6 +11,7 @@ import { endRun, saveLast, saveRecord, state, ui } from './store.js';
 const playedEl = (id) => document.querySelector(`.played [data-id="${id}"]`);
 const handEl = (id) => document.querySelector(`.hand [data-id="${id}"]`);
 const jokerEl = (uid) => document.querySelector(`.jrow [data-uid="${uid}"]`);
+const seatEl = (i) => document.querySelector(i < 0 ? '.crowd' : `.crowd .seat[data-i="${i}"]`);
 
 // k (0..1) grows as the hand goes on: later pops land bigger, so a long combo feels like it is building
 function pop(el, text, cls, k = 0) {
@@ -66,7 +67,7 @@ export async function playHand() {
 
   let n = 0, money = state.money;
   for (const s of res.steps) {
-    const el = s.at === 'card' ? playedEl(s.id) : s.at === 'held' ? handEl(s.id) : jokerEl(s.uid);
+    const el = s.at === 'card' ? playedEl(s.id) : s.at === 'held' ? handEl(s.id) : s.at === 'aud' ? seatEl(s.i) : jokerEl(s.uid);
     const k = Math.min(1, n / 10);
     if (s.text) { pop(el, s.text, s.cls); if (Sfx[s.cls]) Sfx[s.cls](); await sleep(300); continue; }
     if (s.chips) { pop(el, '+' + s.chips, 'chips', k); Sfx.chips(n); pulse($('chips'), k); }
@@ -76,6 +77,17 @@ export async function playHand() {
       shake($('table'), Math.min(18, 4 + s.xmult * 3 + k * 4));
     }
     if (s.money) { pop(el, '+$' + s.money, 'cash', k); Sfx.cash(); money += s.money; $('sMoney').textContent = money; }
+    if (s.at === 'aud') {
+      // a spectator is won over: the seat lights up for good; the last one brings the house down
+      if (el && s.i >= 0) el.classList.add('ok');
+      if (s.ovation) {
+        const o = document.createElement('div');
+        o.className = 'ovation'; o.textContent = '满场喝彩！';
+        $('stage').appendChild(o);
+        setTimeout(() => o.remove(), 1300 / ui.speed);
+        shake($('app'), 10); Sfx.win();
+      }
+    }
     n++;
     bump(el, k);
     if (s.card) bump(playedEl(s.card), k);

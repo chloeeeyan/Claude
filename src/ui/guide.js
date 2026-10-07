@@ -1,6 +1,6 @@
 // Modal dialogs: how-to-play, the hand guide (four tabs) and the deck viewer.
 import {
-  BOSSES, ENH, HANDS, JOKERS, RL, SEALS, SNAME, SUITS, SYM, TAROTS, UNLOCKS, VS, chipVal, curBoss, evaluate, handBase, isRed, isUnlocked,
+  BOSSES, ENH, HANDS, JOKERS, OVATION_TIP, SPECTATORS, tipText, RL, SEALS, SNAME, SUITS, SYM, TAROTS, UNLOCKS, VS, chipVal, curBoss, evaluate, handBase, isRed, isUnlocked,
 } from '../core/index.js';
 import { $, fmt } from './dom.js';
 import { cardTitle, jokerFace, miniCard, parseCards } from './components.js';
@@ -18,7 +18,7 @@ const HAND_EX = [
   ['two', 'QS QD 7C 7H 4S', '两组不同的对子。', '四张计分，第五张不计分。'],
   ['pair', 'KH KC 9S 6D 2H', '两张点数相同的牌。', '只有那一对计分。好牌不想浪费的话，可以只打这两张。'],
   ['high', 'AS JH 8C 5D 3S', '五张牌什么牌型都没凑成。', '只有点数最大的那一张计分，得分最低，尽量避免。'],
-  ['hidden', '', '上面三种是隐藏牌型：普通 52 张牌里凑不出来，需要用「复刻」塔罗把牌复制出相同的，才有机会打出。打出过一次之后，商店里才会出现它们的星图。'],
+  ['hidden', '', '上面三种是隐藏牌型：普通 52 张牌里凑不出来，需要用「复刻」道具把牌复制出相同的，才有机会打出。打出过一次之后，后台才会出现它们的剧本。'],
   ['flush5', 'AS AS AS AS AS', '五张完全相同的牌：同点数又同花色。', '最强牌型。'],
   ['flushfull', 'QH QH QH 5H 5H', '葫芦，而且五张同一种花色。', ''],
   ['five', 'KS KS KH KD KC', '五张点数相同的牌。', ''],
@@ -35,38 +35,38 @@ function exampleCalc(cards) {
 function scoreTab() {
   const ex = parseCards('KH KC 9S 6D 2H'), r = exampleCalc(ex);
   return `<div class="gsec">
-    <p class="hint">每手牌的得分 = 筹码 × 倍率。下面用一手「对子」走一遍。</p>
+    <p class="hint">每手牌的掌声 = 筹码 × 倍率。下面用一手「对子」走一遍。</p>
     <ol class="steps">
       <li><div><b>认牌型。</b>打出这 5 张，系统认出是「对子」。亮起来的两张是计分牌，其余三张不计分。
         <div class="minis">${ex.map((c) => miniCard(c, r.on.has(c) ? 'on' : 'dim')).join('')}</div></div></li>
       <li><div><b>拿基础分。</b>对子现在是 ${state.levels.pair} 级：<span class="badge c">${r.base.c} 筹码</span> × <span class="badge m">${r.base.m} 倍率</span>。</div></li>
       <li><div><b>计分牌加筹码。</b>两张 K 各加 10 筹码。点数筹码：A 是 11，J、Q、K 是 10，2 到 10 按牌面。</div></li>
-      <li><div><b>小丑生效。</b>小丑按从左到右的顺序触发。比如带着「小丑」（+4 倍率），倍率就从 ${r.base.m} 变成 ${r.base.m + 4}。</div></li>
-      <li><div><b>相乘。</b>没有小丑时：<div class="calc">${r.html}</div></div></li>
+      <li><div><b>演员生效。</b>演员按从左到右的顺序触发。比如带着「小丑」（+4 倍率），倍率就从 ${r.base.m} 变成 ${r.base.m + 4}。</div></li>
+      <li><div><b>相乘。</b>没有演员时：<div class="calc">${r.html}</div></div></li>
     </ol>
     <div class="gx"><div class="gx-h"><b>为什么「×倍率」要放右边</b></div>
-      <p>同样两张小丑，「二重奏」（×2）和「小丑」（+4），基础倍率 2：</p>
+      <p>同样两位演员，「二重奏」（×2）和「小丑」（+4），基础倍率 2：</p>
       <div class="calc">二重奏在左：2 <span class="m">×2</span> = 4，再 <span class="m">+4</span> = <span class="t">8 倍率</span></div>
       <div class="calc">二重奏在右：2 <span class="m">+4</span> = 6，再 <span class="m">×2</span> = <span class="t">12 倍率</span></div>
-      <p>先加后乘更划算。拖动小丑就能调整顺序。</p></div>
+      <p>先加后乘更划算。拖动演员就能调整顺序。</p></div>
     <div class="gx"><div class="gx-h"><b>三个省事的习惯</b></div>
-      <p>选好牌先别急着出，看计分面板的「预计」分数，够过关会变绿。<br>星图让牌型升级，基础筹码和倍率一起涨，主力牌型优先升。<br>手里的牌凑不出好牌型时，先弃牌换牌，出牌次数比弃牌次数更值钱。</p></div>
+      <p>选好牌先别急着出，看计分面板的「预计」分数，够谢幕会变绿。<br>剧本让牌型升级，基础筹码和倍率一起涨，主力牌型优先升。<br>手里的牌凑不出好牌型时，先弃牌换牌，出牌次数比弃牌次数更值钱。</p></div>
   </div>`;
 }
 
 function cardsTab() {
   const q = parseCards('QH')[0];
   return `<div class="gsec">
-    <p class="hint">增强效果和印都加在具体某张牌上，会一直跟着这张牌。主要通过塔罗牌获得，彩绘牌组开局就带几张。</p>
+    <p class="hint">增强效果和印都加在具体某张牌上，会一直跟着这张牌。主要通过道具获得，彩绘牌组开局就带几张。</p>
     ${Object.entries(ENH).map(([k, e]) => `<div class="gx"><div class="gx-h">${miniCard({ ...q, enh: k })}<b>${e.n}</b><span class="hint">增强</span></div><p>${e.d}。</p></div>`).join('')}
     ${Object.entries(SEALS).map(([k, e]) => `<div class="gx"><div class="gx-h">${miniCard(q)}<span class="badge seal-${k}">印</span><b>${e.n}</b></div><p>${e.d}。一张牌可以同时有增强和印。</p></div>`).join('')}
-    <div class="gx"><div class="gx-h"><b>塔罗一览</b></div><p>${TAROTS.map((t) => `<b>${t.name}</b>：${t.desc.replace(/<\/?b>/g, '')}`).join('<br>')}</p></div>
+    <div class="gx"><div class="gx-h"><b>道具一览</b></div><p>${TAROTS.map((t) => `<b>${t.name}</b>：${t.desc.replace(/<\/?b>/g, '')}`).join('<br>')}</p></div>
   </div>`;
 }
 
 function bossTab() {
   return `<div class="gsec">
-    <p class="hint">每个底注的第三关是 Boss 盲注，目标分数是小盲注的 2 倍，还带一个限制。开局选盲注时就能看到是哪一个。</p>
+    <p class="hint">每一夜的第三场是压轴，目标掌声是暖场的 2 倍，压轴嘉宾还带一个刁难规则。选场时就能看到是谁。</p>
     ${Object.values(BOSSES).map((b) => `<div class="gx"><div class="gx-h"><b>${b.n}</b></div><p>${b.d}。</p></div>`).join('')}
   </div>`;
 }
@@ -86,32 +86,41 @@ function handsTab() {
   </div>`;
 }
 
+function crowdTab() {
+  const tiers = [[1, '好说话'], [2, '要用点心'], [3, '很挑剔']];
+  return `<div class="gsec">
+    <p class="hint">每一场台下坐 3 位观众，每人有一个喜好。谢幕只看掌声够不够目标；观众是额外的：某手牌合了谁的口味，谁就被征服，当场打赏（给钱或给这手牌乘倍率），一场只给一次。三位都征服是<b>满场喝彩</b>，再给 $${OVATION_TIP}。暖场的观众好说话，压轴的最挑剔；选场时就能看到谁会来。</p>
+    ${tiers.map(([t, n]) => `<div class="gx"><div class="gx-h"><b>${n}</b></div>
+      <p>${SPECTATORS.filter((x) => x.tier === t).map((x) => `<b>${x.n}</b>：${x.d}，${tipText(x)}`).join('<br>')}</p></div>`).join('')}
+  </div>`;
+}
+
 // collection: every joker ever seen in a shop, tarots used, bosses beaten, and what is still locked
 function collectTab() {
   const seen = new Set(meta.seenJ), owned = new Set(meta.ownedJ), used = new Set(meta.usedT), beat = new Set(meta.bossesBeat);
   return `<div class="gsec">
-    <p class="hint">在商店里见过的小丑会记在这里，买下过的打勾。一共 ${meta.runs} 局，赢了 ${meta.wins} 局，最远打到底注 ${meta.bestAnte}。</p>
+    <p class="hint">在后台见过的演员会记在这里，买下过的打勾。一共 ${meta.runs} 局，赢了 ${meta.wins} 局，最远撑到第 ${meta.bestAnte} 夜。</p>
     <div class="gx"><div class="gx-h"><b>解锁</b><span class="hint">${UNLOCKS.filter((u) => isUnlocked(meta, u.id)).length}/${UNLOCKS.length}</span></div>
       <p>${UNLOCKS.map((u) => `${isUnlocked(meta, u.id) ? '✔' : '🔒'} <b>${u.n}</b>：${u.need}`).join('<br>')}</p></div>
-    <div class="gx"><div class="gx-h"><b>小丑</b><span class="hint">见过 ${seen.size}/${JOKERS.length} · 买过 ${owned.size}</span></div>
+    <div class="gx"><div class="gx-h"><b>演员</b><span class="hint">见过 ${seen.size}/${JOKERS.length} · 买过 ${owned.size}</span></div>
       <div class="coll">${JOKERS.map((d) => (seen.has(d.key)
         ? `<div class="coll-i ${owned.has(d.key) ? 'own' : ''}">${jokerFace(d, null)}</div>`
-        : '<div class="coll-i"><div class="jk unknown"><span class="ji" aria-hidden="true">?</span><span class="jn">？？？</span><span class="jd">在商店里见到后记录</span></div></div>')).join('')}</div></div>
-    <div class="gx"><div class="gx-h"><b>塔罗</b><span class="hint">用过 ${TAROTS.filter((t) => used.has(t.key)).length}/${TAROTS.length}</span></div>
+        : '<div class="coll-i"><div class="jk unknown"><span class="ji" aria-hidden="true">?</span><span class="jn">？？？</span><span class="jd">在后台见到后记录</span></div></div>')).join('')}</div></div>
+    <div class="gx"><div class="gx-h"><b>道具</b><span class="hint">用过 ${TAROTS.filter((t) => used.has(t.key)).length}/${TAROTS.length}</span></div>
       <p>${TAROTS.map((t) => (used.has(t.key) ? `<b>${t.name}</b>` : `<span class="dim">${t.name}</span>`)).join('　')}</p></div>
-    <div class="gx"><div class="gx-h"><b>Boss</b><span class="hint">击败过 ${Object.keys(BOSSES).filter((k) => beat.has(k)).length}/${Object.keys(BOSSES).length}</span></div>
+    <div class="gx"><div class="gx-h"><b>压轴嘉宾</b><span class="hint">征服过 ${Object.keys(BOSSES).filter((k) => beat.has(k)).length}/${Object.keys(BOSSES).length}</span></div>
       <p>${Object.entries(BOSSES).map(([k, b]) => (beat.has(k) ? `<b>${b.n}</b>` : `<span class="dim">${b.n}</span>`)).join('　')}</p></div>
     <div class="gx"><div class="gx-h"><b>试玩数据</b><span class="hint">本机记录了 ${teleCount()} 局</span></div>
-      <p>每局的牌组、走到哪一关、被哪个 Boss 打败、用了哪些小丑，只存在这台设备上。参加试玩时，点下面导出发给开发者。</p>
+      <p>每局的牌组、演到哪一夜、被哪位压轴嘉宾难倒、用了哪些演员，只存在这台设备上。参加试玩时，点下面导出发给开发者。</p>
       <div class="cv-tools" style="justify-content:flex-start"><button class="chip on" data-act="teleexport">导出文件</button><button class="chip" data-act="telecopy">复制文本</button></div></div>
   </div>`;
 }
 
 export function guideHTML(tab) {
-  const tabs = [['hands', '牌型'], ['score', '怎么算分'], ['cards', '增强与印'], ['boss', 'Boss'], ['collect', '收藏']];
+  const tabs = [['hands', '牌型'], ['score', '怎么算分'], ['crowd', '观众'], ['cards', '增强与印'], ['boss', '压轴嘉宾'], ['collect', '收藏']];
   const head = `<h2>牌型图鉴<button class="chip" data-act="close">关闭</button></h2>
     <div class="gtabs">${tabs.map(([k, n]) => `<button class="chip ${tab === k ? 'on' : ''}" data-act="gtab" data-tab="${k}">${n}</button>`).join('')}</div>`;
-  const body = tab === 'score' ? scoreTab() : tab === 'cards' ? cardsTab() : tab === 'boss' ? bossTab() : tab === 'collect' ? collectTab() : handsTab();
+  const body = tab === 'score' ? scoreTab() : tab === 'cards' ? cardsTab() : tab === 'boss' ? bossTab() : tab === 'collect' ? collectTab() : tab === 'crowd' ? crowdTab() : handsTab();
   return head + body;
 }
 
@@ -126,7 +135,7 @@ function deckHTML() {
   };
   const special = state.deckList.filter((c) => c.enh || c.seal);
   return `<h2>牌组 · ${state.deckList.length} 张<button class="chip" data-act="close">关闭</button></h2>
-    <p class="hint">${inRound() ? `牌堆还剩 ${state.deck.length} 张没抽，暗色是已经在手里或用掉的牌。` : '每个盲注开始时整副牌重新洗匀。'}底部有蓝线的牌带增强效果或印。</p>
+    <p class="hint">${inRound() ? `牌堆还剩 ${state.deck.length} 张没抽，暗色是已经在手里或用掉的牌。` : '每场开始时整副牌重新洗匀。'}底部有蓝线的牌带增强效果或印。</p>
     <div class="deckwrap"><div class="deckgrid"><span class="sh"></span>${ranks.map((r) => `<span class="sh">${RL(r)}</span>`).join('')}
     ${SUITS.map((s) => `<span class="sh">${SYM[s] + VS}</span>` + ranks.map((r) => cell(s, r)).join('')).join('')}</div></div>
     ${special.length ? `<p class="hint">特殊牌：${special.map((c) => SNAME[c.s] + RL(c.r) + (c.enh ? '「' + ENH[c.enh].n + '」' : '') + (c.seal ? '「' + SEALS[c.seal].n + '」' : '')).join('、')}</p>` : ''}`;
@@ -134,12 +143,12 @@ function deckHTML() {
 
 const HELP = `<h2>玩法<button class="chip" data-act="close">知道了</button></h2>
   <ol>
-    <li>每个盲注有一个<b>目标分数</b>。你有几次<b>出牌</b>机会，每次最多打 5 张牌，累计得分达到目标就过关。</li>
-    <li>每手牌的得分 = <b>筹码 × 倍率</b>。牌型决定基础筹码和倍率（同花顺最高），真正计分的牌再把自己的点数加进筹码。</li>
+    <li>每一场有一个<b>目标掌声</b>。你有几次<b>出牌</b>机会，每次最多打 5 张牌，累计掌声达到目标就成功谢幕。</li>
+    <li>每手牌的掌声 = <b>筹码 × 倍率</b>。牌型决定基础筹码和倍率（同花顺最高），真正计分的牌再把自己的点数加进筹码。</li>
     <li>不想要的牌可以<b>弃掉</b>换新牌。弃牌次数有限，用来凑同花、顺子很关键。</li>
-    <li>过关拿钱，去商店买<b>小丑</b>。小丑从左到右依次触发，所以「×倍率」的小丑放右边，最后乘，分数更高。可以直接拖动排序。</li>
-    <li><b>星图</b>让一个牌型永久升级；<b>塔罗</b>可以改造牌组里的牌：改花色、加增强、盖印。</li>
-    <li>每存 $5 回合结束多给 $1 利息，最多 $5，攒钱也是策略。第三个盲注是 <b>Boss</b>，有特殊限制，开局前就能看到。</li>
+    <li>谢幕拿钱，去后台招<b>演员</b>。演员从左到右依次触发，所以「×倍率」的演员放右边，最后乘，掌声更高。可以直接拖动排序。</li>
+    <li><b>剧本</b>让一个牌型永久升级；<b>道具</b>可以改造牌组里的牌：改花色、加增强、盖印。</li>
+    <li>每存 $5 回合结束多给 $1 利息，最多 $5，攒钱也是策略。每夜第三场是<b>压轴</b>，压轴嘉宾有刁难规则，选场时就能看到。台下还有 3 位<b>观众</b>，合他们口味会打赏。</li>
   </ol>
   <div class="actions" style="margin-top:16px"><button class="btn gold" data-act="guide" data-tab="hands">看牌型图鉴和示例</button></div>`;
 

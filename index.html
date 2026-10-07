@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>鬼牌夜场</title>
-  <meta name="description" content="波普漫画风的扑克构筑小游戏：凑牌型、叠倍率、买小丑，打过 8 个底注。">
+  <meta name="description" content="波普漫画风的扑克构筑小游戏：凑牌型、叠倍率、买演员，演满 8 夜。">
   <meta name="theme-color" content="#1e5bff">
   <meta property="og:title" content="鬼牌夜场 · DEAL · STACK · KA-BOOM!">
-  <meta property="og:description" content="凑牌型、叠倍率、买小丑，打过 8 个底注。">
+  <meta property="og:description" content="凑牌型、叠倍率、买演员，演满 8 夜。">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="mobile-web-app-capable" content="yes">
@@ -21,12 +21,12 @@
       <span class="logo">鬼牌夜场</span>
       <div class="hud-blind" id="blindBox"></div>
       <div class="hud-score">
-        <span class="lbl"><i class="en">SCORE</i>本回合得分</span>
+        <span class="lbl"><i class="en">APPLAUSE</i>本场掌声</span>
         <div class="hs-row"><b id="roundScore">0</b><span class="hs-target">/ <em id="hudTarget">300</em></span></div>
         <div class="bar"><i id="bar"></i></div>
       </div>
       <div class="hud-money" title="金钱"><span class="coin" aria-hidden="true">$</span><b id="sMoney">4</b></div>
-      <div class="hud-ante"><span class="lbl"><i class="en">ANTE</i>底注</span><b id="sAnte">1/8</b></div>
+      <div class="hud-ante"><span class="lbl"><i class="en">NIGHT</i>夜</span><b id="sAnte">1/8</b></div>
       <nav class="hud-tools" aria-label="工具">
         <button class="ic" data-act="help"><span>?</span>玩法</button>
         <button class="ic" data-act="guide"><span>▤</span>图鉴</button>
@@ -39,11 +39,11 @@
 
     <div class="shelf">
       <section class="shelf-j">
-        <div class="rowhead"><span><i class="en">JOKERS</i>小丑 <b id="jcount">0/5</b></span><span class="hint">拖动换顺序 · 点开看详情</span></div>
+        <div class="rowhead"><span><i class="en">CAST</i>演员 <b id="jcount">0/5</b></span><span class="hint">拖动换顺序 · 点开看详情</span></div>
         <div class="jrow" id="jrow"></div>
       </section>
       <section class="shelf-c">
-        <div class="rowhead"><span><i class="en">TAROT</i>塔罗 <b id="ccount">0/2</b></span></div>
+        <div class="rowhead"><span><i class="en">PROPS</i>道具 <b id="ccount">0/2</b></span></div>
         <div class="crow" id="crow"></div>
       </section>
       <div class="inspector" id="inspector" hidden></div>

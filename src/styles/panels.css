@@ -4,7 +4,7 @@
   content: attr(data-en); display: block; width: fit-content; margin-bottom: 2px; font-family: var(--pop); font-size: 14px; letter-spacing: .16em; line-height: 1.2;
   color: var(--white); -webkit-text-stroke: 0; text-shadow: 2px 2px 0 var(--ink); transform: skewX(-10deg);
 }
-.panel-s { margin: 0; max-width: 62ch; width: fit-content; line-height: 1.6; background: var(--white); color: var(--ink); border: 2px solid var(--ink); padding: 6px 12px; box-shadow: 3px 3px 0 var(--ink); }
+.panel-s { margin: 0; max-width: min(100%, 84ch); width: fit-content; line-height: 1.6; background: var(--white); color: var(--ink); border: 2px solid var(--ink); padding: 6px 12px; box-shadow: 3px 3px 0 var(--ink); }
 .panel-s .seed { font-size: 12px; color: var(--muted); }
 .center { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; margin: auto 0; }
 
@@ -79,3 +79,11 @@
 .end-x { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 16px; }
 .end-x .panel-s { margin: 0; }
 .center:has(.end-x) { gap: 10px; }
+
+/* who sits in each show, on the show-select cards */
+.bc-h { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
+.bc-crowd { display: grid; gap: 3px; }
+.bc-crowd .seat { width: 100%; box-shadow: 2px 2px 0 var(--ink); padding-block: 1px; gap: 5px; }
+.bc-crowd .seat .sa { width: 22px; height: 22px; font-size: 12px; border-width: 2px; }
+.bc-crowd .seat .sn { display: flex; align-items: baseline; gap: 6px; }
+.bc-crowd .seat .sn b { font-size: 13px; flex: none; }
