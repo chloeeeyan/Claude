@@ -1,23 +1,26 @@
 // Blind targets, hand levels and the scoring pipeline.
 import { chipVal, isFace } from './cards.js';
-import { ANTE, BOSSES, EDITIONS, HANDS, STAKES } from './rules.js';
+import { ANTE, BLIND_X, BOSSES, EDITIONS, HANDS, STAKES } from './rules.js';
 import { JD, hasJ } from './jokers.js';
 import { evaluate } from './evaluate.js';
-import { HEAT, HEAT_START, OVATION_TIP, SPEC } from './audience.js';
+import { HEAT, HEAT_START, OVATION_TIP, SPEC, VIP } from './audience.js';
 import { rand } from './rng.js';
 
 export const curBoss = (st) => (st.blindIdx === 2 ? BOSSES[st.bossKey] : null);
-export const debuffed = (st, c) => { const b = curBoss(st); return !!(b && b.deb && b.deb(c)); };
+// the guest's rule while it still holds: winning the VIP over lifts it
+export const vipWon = (st) => (st.audience || []).some((a) => a.vip && a.ok);
+export const bossRule = (st) => (vipWon(st) ? null : curBoss(st));
+export const debuffed = (st, c) => { const b = bossRule(st); return !!(b && b.deb && b.deb(c)); };
 
 export function targetFor(st, i) {
   const b = i === 2 ? BOSSES[st.bossKey] : null;
-  return Math.round((ANTE[st.ante - 1] * [1, 1.5, 2][i] * ((b && b.targetMult) || 1) * STAKES[st.stake].tm) / 10) * 10;
+  return Math.round((ANTE[st.ante - 1] * BLIND_X[i] * ((b && b.targetMult) || 1) * STAKES[st.stake].tm) / 10) * 10;
 }
 
 export function handBase(st, t) {
   const h = HANDS[t], l = st.levels[t];
   let c = h.c + h.dc * (l - 1), m = h.m + h.dm * (l - 1);
-  const b = curBoss(st);
+  const b = bossRule(st);
   if (b && b.halve && ['play', 'scoring'].includes(st.phase)) { c = Math.ceil(c / 2); m = Math.max(1, Math.ceil(m / 2)); }
   return { c, m };
 }
@@ -30,7 +33,7 @@ export function computeHand(st, played, held, opt = {}) {
   const ev = evaluate(played, { four: hasJ(st, 'fourf'), splash: hasJ(st, 'splash') });
   const base = handBase(st, ev.type);
   // bosses that void a whole hand: it scores nothing, but still costs the hand
-  const boss = curBoss(st), seen = st.roundTypes || [];
+  const boss = bossRule(st), seen = st.roundTypes || [];
   const voidWhy = !boss ? '' : boss.min5 && played.length < 5 ? '要 5 张' : boss.noRepeat && seen.includes(ev.type) ? '牌型重复'
     : boss.oneType && seen.length && !seen.includes(ev.type) ? '不是第一种牌型' : '';
   if (voidWhy) {
@@ -110,14 +113,16 @@ export function computeHand(st, played, held, opt = {}) {
       const sp = SPEC[a.key];
       if (!sp) return;
       const likes = sp.ok(actx);
-      if (likes) fans++;
-      else if (sp.no(actx)) boos.push(i);
+      // the VIP stands apart from the room's mood: no heat, no boos, not needed for the ovation
+      if (likes && !a.vip) fans++;
+      else if (!likes && !a.vip && sp.no(actx)) boos.push(i);
       if (a.ok || !likes) return;
       sat.push(i);
+      if (a.vip) { push({ at: 'aud', i, money: VIP.tip * agent, say: VIP.say, lift: true }); return; }
       if (sp.tip.money) push({ at: 'aud', i, money: sp.tip.money * agent, say: sp.say[0] });
       for (let t = 0; sp.tip.xmult && t < encore; t++) push({ at: 'aud', i, xmult: sp.tip.xmult, say: t ? '' : sp.say[0] });
     });
-    if (sat.length && aud.every((a, i) => a.ok || sat.includes(i))) {
+    if (sat.some((i) => !aud[i].vip) && aud.every((a, i) => a.vip || a.ok || sat.includes(i))) {
       ovation = true;
       push({ at: 'aud', i: -1, money: OVATION_TIP * agent, ovation: true });
     }

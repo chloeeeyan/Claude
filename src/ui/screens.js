@@ -1,7 +1,7 @@
 // The table's content for each phase: cover, blind select, round, cash-out, shop, star / tarot pack, game over, win.
 import {
   BLIND_NAMES, BOSSES, DECKS, HANDS, JD, JOKER_COUNT, PLANETS, REWARD, STAKES, TAGS, TD, UNLOCK, VOUCHERS, curBoss, dailyKey, dailySetup, isUnlocked,
-  computeHand, packCards, targetFor, SEATS, pickBonus,
+  computeHand, packCards, targetFor, SEATS, SPEC, VIP, pickBonus,
 } from '../core/index.js';
 import { $, fmt } from './dom.js';
 import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, heatHTML, jokerFace, planetFace, seatHTML, tarotFace, voucherFace } from './components.js';
@@ -18,6 +18,7 @@ function blindCard(i) {
   return `<div class="bc ${cur ? 'cur' : ''} ${done ? 'done' : ''} ${b ? 'boss' : ''}">
     <div class="bc-h"><div><span class="lbl">${b ? '黄金档嘉宾' : '节目'}</span><h3>${b ? b.n : BLIND_NAMES[i]}</h3></div><span class="t">${fmt(targetFor(state, i))}</span></div>
     <p>${b ? b.d : '没有刁难规则'} · 奖励 ${rw ? '$' + rw : '无'}</p>
+    ${b && b.vip ? `<p class="vipnote">★ 嘉宾坐前排，喜欢「${SPEC[b.vip].d}」：征服他，规则作废，再赏 $${VIP.tip}</p>` : ''}
     ${crowdPicker(i, done)}
     ${tag && !done ? `<div class="tagbox">跳过可得 <b>${tag.n}</b>：${tag.d}</div>` : ''}
     <div class="st">${cur ? `<button class="btn gold" data-act="start" ${seated < SEATS ? 'disabled' : ''}>${seated < SEATS ? `再选 ${SEATS - seated} 位观众` : '开始'}</button>${i < 2 ? '<button class="chip" data-act="skip" title="跳过这场，换奖励券（没有这场的钱和后台）">跳过</button>' : ''}` : done ? '已完成' : '即将到来'}</div></div>`;
@@ -55,6 +56,7 @@ function summaryHTML() {
 
 function bossBar() {
   const b = curBoss(state);
+  if (b && (state.audience || []).some((a) => a.vip)) return ''; // the guest sits in the crowd, rule on their seat
   return b ? `<div class="bossbar"><b>黄金档 · ${b.n}</b><span>${b.d}</span></div>` : '';
 }
 
@@ -68,15 +70,15 @@ function crowdHTML() {
     const r = computeHand(state, sel, state.hand.filter((c) => !state.selected.includes(c.id)), { preview: true });
     will = r.sat || []; boos = r.boos || []; next = r.heat;
   }
-  const won = aud.filter((a) => a.ok).length;
-  return `<div class="crowd" aria-label="观众">${heatHTML(state.heat ?? 1, next)}<span class="cr-k"><i class="en">CROWD</i>观众 ${won}/${aud.length}</span>
-    ${aud.map((a, i) => seatHTML(a.key, i, boos.includes(i) ? 'boo' : a.ok ? 'ok' : will.includes(i) ? 'will' : '')).join('')}</div>`;
+  const won = aud.filter((a) => a.ok && !a.vip).length, seats = aud.filter((a) => !a.vip).length;
+  return `<div class="crowd" aria-label="观众">${heatHTML(state.heat ?? 1, next)}<span class="cr-k"><i class="en">CROWD</i>观众 ${won}/${seats}</span>
+    ${aud.map((a, i) => seatHTML(a.key, i, boos.includes(i) ? 'boo' : a.ok ? 'ok' : will.includes(i) ? 'will' : '', a.vip ? curBoss(state) : null)).join('')}</div>`;
 }
 
 // one-time tips, each shown the first time its situation comes up
 function coachTip() {
   const p = state.phase, b = curBoss(state);
-  if (p === 'play' && b && b.deb) return ['boss', `这一场的黄金档嘉宾是「${b.n}」：${b.d}。被它禁掉的牌盖着红叉、写着「不计分」，打出去也拿不到分，适合先弃掉。`];
+  if (p === 'play' && b && b.deb) return ['boss', `这一场的黄金档嘉宾是「${b.n}」：${b.d}。被它禁掉的牌盖着红叉、写着「不计分」。嘉宾坐在前排：合了嘉宾的口味（${SPEC[b.vip].d}），规则就作废。`];
   if (p === 'play' && state.cons.length) return ['tarot', '你有道具了：先点一下道具，再在手牌里选中要改造的牌，最后点「使用」。道具用一次就没了。'];
   if (p === 'shop') return ['shop', '赞助广告让一种牌型永久升 1 级，没有上限，越升基础分越高，主力牌型最值得买。道具箱里 3 选 1：可以当场改造牌组里的牌，也可以收进道具栏，留到对局里用在手牌上。'];
   if (p === 'play' && state.jokers.length) return ['joker', '艺人从左往右依次触发。拖动艺人可以换顺序，「×倍率」的放在最右边，最后乘，分数最高。'];
@@ -176,7 +178,7 @@ function cashoutHTML() {
   const nbTarget = targetFor({ ...state, ante: nb.ante }, nb.i);
   const nbNote = nbBoss ? nbBoss.d + '。提前在后台做好准备。'
     : nb.ante !== state.ante ? '进入新的一期，目标收视会明显变高，黄金档嘉宾到时揭晓。' : '没有刁难规则，可以跳过它换奖励券。';
-  const aud = state.audience || [], won = aud.filter((a) => a.ok).length;
+  const aud = (state.audience || []).filter((a) => !a.vip), won = aud.filter((a) => a.ok).length;
   const crowdLine = aud.length ? `<div class="crowd cash-crowd"><span class="cr-k"><i class="en">CROWD</i>观众 ${won}/${aud.length}${won === aud.length ? ' · 全场起立' : ''}</span>${aud.map((a, i) => seatHTML(a.key, i, a.ok ? 'ok' : '')).join('')}</div>` : '';
   return `<h2 class="panel-t" data-en="THAT'S A WRAP">收工！收视 ${fmt(state.roundScore)}</h2>${crowdLine}
     <div class="cash2">

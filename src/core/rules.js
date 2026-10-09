@@ -30,30 +30,33 @@ export const PLANETS = {
 export const ANTE = [285, 735, 1900, 3800, 7650, 15200, 25800, 40300];
 export const TUNE = { shopJokers: 2, pack: true };
 export const REWARD = [3, 4, 5];
+export const BLIND_X = [1, 1.5, 2.5]; // target per show, × the episode's ANTE
 export const BLIND_NAMES = ['热场', '正片'];
 
+// 黄金档 guests. Each sits in the crowd as a VIP whose taste is a spectator's (vip); win them over and the rule is
+// lifted for the rest of the show — and what it took at the start is given back (discards, a hand, the tax; not the target).
 export const BOSSES = {
-  spade: { n: '铁锹', d: '所有黑桃牌不计分', deb: (c) => suitIs(c, 'S') },
-  heart: { n: '碎心', d: '所有红桃牌不计分', deb: (c) => suitIs(c, 'H') },
-  club: { n: '枯枝', d: '所有梅花牌不计分', deb: (c) => suitIs(c, 'C') },
-  diamond: { n: '失窃', d: '所有方片牌不计分', deb: (c) => suitIs(c, 'D') },
-  mask: { n: '面具', d: '人头牌（J、Q、K）不计分', deb: (c) => isFace(c.r) },
-  miser: { n: '吝啬鬼', d: '本回合不能弃牌', noDiscard: true },
-  glass: { n: '沙漏', d: '出牌次数 −1', handsDelta: -1 },
-  wall: { n: '高墙', d: '目标分数翻倍', targetMult: 2 },
-  flint: { n: '燧石', d: '牌型的基础筹码和倍率减半', halve: true },
-  odd: { n: '单行道', d: 'A、9、7、5、3 不计分', deb: (c) => c.r === 14 || (c.r <= 9 && c.r % 2 === 1) },
-  even: { n: '双人床', d: '10、8、6、4、2 不计分', deb: (c) => c.r <= 10 && c.r % 2 === 0 },
-  low: { n: '矮人', d: '2、3、4、5 不计分', deb: (c) => c.r <= 5 },
-  needle: { n: '针眼', d: '只能出 1 手牌，目标分数减半', oneHand: true, targetMult: 0.5, minAnte: 2 },
-  psychic: { n: '读心者', d: '必须打出 5 张牌，否则这手不得分', min5: true, minAnte: 2 },
-  eye: { n: '独眼', d: '同一种牌型本回合只能得一次分', noRepeat: true },
-  mouth: { n: '偏食', d: '本回合只有第一次打出的牌型能得分', oneType: true, minAnte: 2 },
-  arm: { n: '断臂', d: '每打出一手，那个牌型降 1 级', arm: true, minAnte: 2 },
-  hook: { n: '鱼钩', d: '每出一手牌，随机弃掉手里 2 张', hook: 2 },
-  tooth: { n: '蛀牙', d: '每打出 1 张牌失去 $1', tooth: 1 },
-  manacle: { n: '镣铐', d: '手牌上限 −1', handDelta: -1 },
-  tax: { n: '税官', d: '开局收走一半的钱（最多 $10）', tax: true, minAnte: 2 },
+  spade: { n: '铁锹', d: '所有黑桃牌不计分', vip: 'redfan', deb: (c) => suitIs(c, 'S') },
+  heart: { n: '碎心', d: '所有红桃牌不计分', vip: 'blackfan', deb: (c) => suitIs(c, 'H') },
+  club: { n: '枯枝', d: '所有梅花牌不计分', vip: 'redfan', deb: (c) => suitIs(c, 'C') },
+  diamond: { n: '失窃', d: '所有方片牌不计分', vip: 'blackfan', deb: (c) => suitIs(c, 'D') },
+  mask: { n: '面具', d: '人头牌（J、Q、K）不计分', vip: 'lowfan', deb: (c) => isFace(c.r) },
+  miser: { n: '吝啬鬼', d: '本回合不能弃牌', vip: 'solo', noDiscard: true },
+  glass: { n: '沙漏', d: '出牌次数 −1', vip: 'big', handsDelta: -1 },
+  wall: { n: '高墙', d: '目标分数翻倍', vip: 'big', targetMult: 2 },
+  flint: { n: '燧石', d: '牌型的基础筹码和倍率减半', vip: 'enhfan', halve: true },
+  odd: { n: '单行道', d: 'A、9、7、5、3 不计分', vip: 'twofan', deb: (c) => c.r === 14 || (c.r <= 9 && c.r % 2 === 1) },
+  even: { n: '双人床', d: '10、8、6、4、2 不计分', vip: 'threefan', deb: (c) => c.r <= 10 && c.r % 2 === 0 },
+  low: { n: '矮人', d: '2、3、4、5 不计分', vip: 'facefan', deb: (c) => c.r <= 5 },
+  needle: { n: '针眼', d: '只能出 1 手牌，目标分数减半', vip: 'opener', oneHand: true, targetMult: 0.5, minAnte: 2 },
+  psychic: { n: '读心者', d: '必须打出 5 张牌，否则这手不得分', vip: 'fullfan', min5: true, minAnte: 2 },
+  eye: { n: '独眼', d: '同一种牌型本回合只能得一次分', vip: 'variety', noRepeat: true },
+  mouth: { n: '偏食', d: '本回合只有第一次打出的牌型能得分', vip: 'pairfan', oneType: true, minAnte: 2 },
+  arm: { n: '断臂', d: '每打出一手，那个牌型降 1 级', vip: 'flushfan', arm: true, minAnte: 2 },
+  hook: { n: '鱼钩', d: '每出一手牌，随机弃掉手里 2 张', vip: 'solo', hook: 2 },
+  tooth: { n: '蛀牙', d: '每打出 1 张牌失去 $1', vip: 'solo', tooth: 1 },
+  manacle: { n: '镣铐', d: '手牌上限 −1', vip: 'pairfan', handDelta: -1 },
+  tax: { n: '税官', d: '开局收走一半的钱（最多 $10）', vip: 'acefan', tax: true, minAnte: 2 },
 };
 
 // Permanent upgrades: one is offered in the shop each ante for $10.

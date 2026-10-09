@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OVATION_TIP, SPEC, computeHand, freshState, startBlind } from '../src/core/index.js';
-import { HEAT, HEAT_START } from '../src/core/audience.js';
+import { HEAT, HEAT_START, VIP } from '../src/core/audience.js';
 import { cards } from './helpers.js';
 
 function round(jokers = []) {
@@ -149,6 +149,16 @@ describe('the audience', () => {
     expect(res.heat).toBe(0);
     expect(res.mult).toBe(1 * HEAT[0].x);
     expect(res.steps.filter((x) => x.cls === 'boo')).toHaveLength(2);
+  });
+
+  it('pays the VIP guest more and never lets them boo', () => {
+    const st = seat(round(), 'pairfan', 'fivefan', 'acefan');
+    st.audience.unshift({ key: 'redfan', ok: false, vip: true });
+    const res = computeHand(st, cards('KC'), [], { preview: true }); // all black: 红衣客 would boo, the VIP doesn't
+    expect(res.boos).not.toContain(0);
+    const won = computeHand(st, cards('KH KD'), [], { preview: true });
+    expect(won.sat).toContain(0);
+    expect(won.steps.find((x) => x.lift).money).toBe(VIP.tip);
   });
 
   it('never lets a spectator boo a hand they like (a straight flush pleases both purists)', () => {

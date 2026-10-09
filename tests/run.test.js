@@ -4,6 +4,7 @@ import {
   unpackSave, useTarot,
 } from '../src/core/index.js';
 import { cashLines } from '../src/core/run.js';
+import { debuffed } from '../src/core/scoring.js';
 import { hasClash, pickBonus, pickedKeys, togglePick } from '../src/core/audience.js';
 
 const snapshot = (st) => ({
@@ -230,6 +231,39 @@ describe('audience across a run', () => {
     const back = unpackSave(JSON.stringify({ v: 5, state: st }));
     expect(back.heat).toBe(1);
     expect(back.lastType).toBeNull();
+  });
+
+  it('seats the 黄金档 guest as a VIP; winning them over lifts the rule and gives back what it took', () => {
+    const st = freshState('red', 0, 18);
+    st.blindIdx = 2; st.bossKey = 'wall'; st.money = 20;
+    startBlind(st);
+    expect(st.audience[0]).toMatchObject({ key: 'big', vip: true, ok: false });
+    expect(st.audience).toHaveLength(4);
+    const full = st.target;
+    const res = beginHand(st, [st.hand[0].id]);
+    res.sat = [0]; res.total = 0; // pretend this hand won the VIP over
+    finishHand(st, res);
+    expect(st.audience[0].ok).toBe(true);
+    expect(st.target).toBe(full); // a doubled target stays doubled
+    expect(st.stats.vips).toBe(1);
+  });
+
+  it('lifts card debuffs and gives the 税官 money back once the VIP is won', () => {
+    const st = freshState('red', 0, 19);
+    st.blindIdx = 2; st.bossKey = 'tax'; st.money = 20;
+    startBlind(st);
+    expect(st.money).toBe(10);
+    const res = beginHand(st, [st.hand[0].id]);
+    res.sat = [0]; res.total = 0;
+    finishHand(st, res);
+    expect(st.money).toBe(20 + res.money);
+    const sp = freshState('red', 0, 20);
+    sp.blindIdx = 2; sp.bossKey = 'spade';
+    startBlind(sp);
+    const spade = { id: 'x', s: 'S', r: 9, enh: null, seal: null };
+    expect(debuffed(sp, spade)).toBe(true);
+    sp.audience[0].ok = true;
+    expect(debuffed(sp, spade)).toBe(false);
   });
 
   it('gives the headline show a harder crowd than the warm-up', () => {
