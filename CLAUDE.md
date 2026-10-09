@@ -8,8 +8,9 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
 - `npm ci` then `npm test` (Vitest, 59 tests) — run after any change
-- `npm run sim -- n=400` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
-  (`aud=0` runs with empty seats, ≈2%: the audience is core, not a bonus)
+- `npm run sim -- n=800` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
+  (`aud=0` runs with empty seats, ≈2%: the audience is core, not a bonus). The bot reads the room (weighs cash tips;
+  `read=0` turns that off) and prints spectators won per cleared show and the ovation rate.
 - `npm run dev` / `npm run build` (output `dist/`, relative paths via `base: './'`)
 
 ## Layout (read only what the task needs)
