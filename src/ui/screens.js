@@ -1,7 +1,7 @@
 // The table's content for each phase: cover, blind select, round, cash-out, shop, star / tarot pack, game over, win.
 import {
   BLIND_NAMES, BOSSES, DECKS, HANDS, JD, JOKER_COUNT, PLANETS, REWARD, STAKES, TAGS, TD, UNLOCK, VOUCHERS, curBoss, dailyKey, dailySetup, isUnlocked,
-  computeHand, packCards, targetFor,
+  computeHand, packCards, targetFor, SEATS, pickBonus,
 } from '../core/index.js';
 import { $, fmt } from './dom.js';
 import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, heatHTML, jokerFace, planetFace, seatHTML, tarotFace, voucherFace } from './components.js';
@@ -14,12 +14,27 @@ function blindCard(i) {
   const S = STAKES[state.stake];
   const rw = S.noSmall && i === 0 ? 0 : REWARD[i];
   const tag = i < 2 ? TAGS[state.tags[i]] : null;
+  const seated = ((state.picks && state.picks[i]) || []).length;
   return `<div class="bc ${cur ? 'cur' : ''} ${done ? 'done' : ''} ${b ? 'boss' : ''}">
     <div class="bc-h"><div><span class="lbl">${b ? '黄金档嘉宾' : '节目'}</span><h3>${b ? b.n : BLIND_NAMES[i]}</h3></div><span class="t">${fmt(targetFor(state, i))}</span></div>
     <p>${b ? b.d : '没有刁难规则'} · 奖励 ${rw ? '$' + rw : '无'}</p>
-    ${state.crowds && state.crowds[i] ? `<div class="bc-crowd">${state.crowds[i].map((k, n) => seatHTML(k, n)).join('')}</div>` : ''}
+    ${crowdPicker(i, done)}
     ${tag && !done ? `<div class="tagbox">跳过可得 <b>${tag.n}</b>：${tag.d}</div>` : ''}
-    <div class="st">${cur ? `<button class="btn gold" data-act="start">开始</button>${i < 2 ? '<button class="chip" data-act="skip">跳过</button>' : ''}` : done ? '已完成' : '即将到来'}</div></div>`;
+    <div class="st">${cur ? `<button class="btn gold" data-act="start" ${seated < SEATS ? 'disabled' : ''}>${seated < SEATS ? `再选 ${SEATS - seated} 位观众` : '开始'}</button>${i < 2 ? '<button class="chip" data-act="skip" title="跳过这场，换奖励券（没有这场的钱和后台）">跳过</button>' : ''}` : done ? '已完成' : '即将到来'}</div></div>`;
+}
+
+// 候场: the show's queue of five; tap to seat or unseat (three seats). Picky spectators (tier 2+) pay $1 each at the end.
+function crowdPicker(i, done) {
+  const q = state.crowds && state.crowds[i];
+  if (!q) return '';
+  const p = (state.picks && state.picks[i]) || [], live = !done && state.phase === 'select';
+  return `<div class="bc-crowd ${live ? 'live' : ''}">
+    <div class="bc-ck"><b>候场 · 入场 ${p.length}/${SEATS}</b>${pickBonus(state, i) ? `<span>挑剔观众 +$${pickBonus(state, i)}</span>` : ''}</div>
+    ${q.map((k, n) => {
+      const on = p.includes(n);
+      return live ? `<div class="pickseat ${on ? 'on' : ''}" role="button" tabindex="0" aria-pressed="${on}" data-act="pick" data-v="${i}:${n}">${seatHTML(k, n, on ? '' : 'out')}</div>`
+        : on ? seatHTML(k, n) : '';
+    }).join('')}</div>`;
 }
 
 function summaryHTML() {
@@ -241,7 +256,7 @@ function stageHTML() {
   if (p === 'menu') return menuHTML();
   if (p === 'select') {
     return `<h2 class="panel-t" data-en="TONIGHT'S LINEUP">第 ${state.ante} 期 · 共 8 期</h2>
-      <p class="panel-s">每期三场，收视够目标就收工。热场和正片可以跳过，换一张奖励券（但没有这场的钱和后台）。</p>
+      <p class="panel-s sel-intro">每期三场，收视够目标就收工。点观众换人入场（3 个座位）。热场和正片可以跳过，换一张奖励券（但没有这场的钱和后台）。</p>
       <div class="blinds">${[0, 1, 2].map(blindCard).join('')}</div>`;
   }
   if (p === 'cashout') return cashoutHTML();

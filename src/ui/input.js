@@ -1,7 +1,7 @@
 // Every player action: one delegated click handler, keyboard shortcuts and joker drag-to-reorder.
 import {
   JD, TD, UNLOCK, buy, cashOut, choosePack, dailyKey, dailySetup, discardCards, freshState, isUnlocked, nextBlind, noteTarot,
-  packApply, packClose, packKeep, packPick, reroll, sellJ, skipBlind, sortHand, startBlind, useTarot,
+  packApply, packClose, packKeep, packPick, reroll, sellJ, skipBlind, sortHand, startBlind, togglePick, useTarot,
 } from '../core/index.js';
 import { $, toast } from './dom.js';
 import { isPicked } from './components.js';
@@ -151,6 +151,12 @@ const ACTIONS = {
   telecopy: async () => toast((await teleCopy()) ? '已复制，粘贴发给开发者即可' : '复制失败，请用「导出文件」'),
   tutorskip: () => skipTutor(),
   start: () => { startBlind(state).forEach((id) => ui.justDrawn.add(id)); Sfx.channel(); Sfx.deal(); render(); },
+  pick: (b) => {
+    const [i, n] = b.dataset.v.split(':').map(Number);
+    const err = togglePick(state, i, n);
+    if (err) { toast(err); return; }
+    Sfx.select(); saveRun(); render();
+  },
   skip: () => { const m = skipBlind(state); if (m) { Sfx.cash(); toast('跳过这场：' + m); render(); } },
   cashout: () => { if (cashOut(state)) Sfx.cash(); render(); },
   buy: (b) => {
@@ -233,6 +239,8 @@ function onClick(e) {
 
 function onKey(e) {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
+  // div[role=button] controls (the crowd picker) answer Enter / Space like buttons
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[role="button"][data-act]')) { e.preventDefault(); e.target.click(); return; }
   if (!$('modal').hidden) { if (e.key === 'Escape') closeModal(); return; }
   if (state.phase !== 'play') return;
   const k = e.key.toLowerCase();

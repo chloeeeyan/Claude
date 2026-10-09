@@ -1,5 +1,5 @@
 // Balance simulator: a greedy bot plays N seeded runs and reports how far it gets.
-// Usage: npm run sim -- n=400 deck=red stake=0 tarot=1 aud=1 read=1 tip=0.1 hw=0.5 heat=0.5,1,1.5,2 ante=300,700,...
+// Usage: npm run sim -- n=400 deck=red stake=0 tarot=1 aud=1 read=1 pick=suggest tip=0.1 hw=0.5 heat=0.5,1,1.5,2 ante=300,700,...
 import * as G from '../src/core/index.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.split('=')));
@@ -9,12 +9,14 @@ const stake = Number(args.stake || 0);
 const useTarots = args.tarot !== '0';
 const discardBias = Number(args.agg || 1.15); // discard when best × hands left < need × bias
 const audience = args.aud !== '0'; // aud=0: empty seats, to measure what the audience adds
+const pickMode = args.pick || 'suggest'; // who the bot seats from each show's queue: suggest (the default three) | easy | hard
 const readRoom = args.read !== '0'; // read=0: ignore cash tips when picking a hand (the old bot)
 const tipWeight = Number(args.tip || 0.1); // $1 is worth this share of the score still needed per hand
 const heatWeight = Number(args.hw || 0.5); // one step of heat is worth this share of it (it scales the hands to come)
 if (args.ante) args.ante.split(',').map(Number).forEach((v, i) => { G.ANTE[i] = v; });
 // hands=three:35:3:25:2/flush:30:4:15:2 overrides c:m:dc:dm per hand type
 if (args.hands) args.hands.split('/').forEach((h) => { const [k, ...v] = h.split(':'); ['c', 'm', 'dc', 'dm'].forEach((f, i) => { if (v[i]) G.HANDS[k][f] = Number(v[i]); }); });
+if (args.picky) { const [t, p] = args.picky.split(':').map(Number); G.PICKY.tier = t; G.PICKY.pay = p; } // picky=3:1
 if (args.heat) args.heat.split(',').map(Number).forEach((v, i) => { G.HEAT[i].x = v; }); // e.g. heat=0.5,1,1.5,2
 
 // all 1–5 card subsets of an n-card hand, cached by n
@@ -119,7 +121,13 @@ function shop(st) {
 function runOne(seed) {
   const st = G.freshState(deck, stake, seed);
   for (let guard = 0; guard < 5000; guard++) {
-    if (st.phase === 'select') { G.startBlind(st); if (!audience) st.audience = []; }
+    if (st.phase === 'select') {
+      if (pickMode !== 'suggest') { // seat the three lowest (easy) or highest (hard) tiers
+        const q = st.crowds[st.blindIdx], dir = pickMode === 'easy' ? 1 : -1;
+        st.picks[st.blindIdx] = q.map((k, n) => [G.SPEC[k].tier, n]).sort((a, b) => dir * (a[0] - b[0]) || a[1] - b[1]).slice(0, 3).map((x) => x[1]).sort((a, b) => a - b);
+      }
+      G.startBlind(st); if (!audience) st.audience = [];
+    }
     else if (st.phase === 'play') {
       useTarotsGreedy(st);
       const best = bestPlay(st), need = st.target - st.roundScore;
@@ -154,7 +162,7 @@ for (let i = 1; i <= N; i++) {
     winTypes[fav] = (winTypes[fav] || 0) + 1;
   } else died[st.ante]++;
 }
-console.log(`deck=${deck} stake=${stake} tarot=${useTarots} aud=${audience} read=${readRoom} n=${N} ante=[${G.ANTE}] heat=[${G.HEAT.map((h) => h.x)}] ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+console.log(`deck=${deck} stake=${stake} tarot=${useTarots} aud=${audience} read=${readRoom} pick=${pickMode} n=${N} ante=[${G.ANTE}] heat=[${G.HEAT.map((h) => h.x)}] ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 let alive = N;
 for (let a = 1; a <= 8; a++) {
   console.log(`  ante ${a}: entered ${((alive / N) * 100).toFixed(0)}%  lost here ${died[a]}`);
