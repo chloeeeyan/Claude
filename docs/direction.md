@@ -99,6 +99,7 @@
      名字可变的句子（「和谐星解约」等）用 `EN_RULES` 正则规则。共约 790 条词条 + 30 条规则。
      英文名：游戏 Tough Crowd，热度 Dead Air / Warm / Hot / On Fire，三场 Warm-up / Feature / Prime Time，艺人 cast，赞助广告 sponsor spot。
      检查：`tools/i18n-scan.cjs` 用英文模式走一遍所有界面，列出还没翻译的字；`tests/i18n.test.js` 保证所有内容都有英文。
+   - ✅ Steam 商店页文案与素材清单：`docs/steam-page.md`（中英简短/详细描述、标签、6 张截图的拍法、胶囊图尺寸与构图、预告片分镜、定价建议）。
 7. **第⑥阶段**：Tauri 外壳、成就、云存档。
 
 ## 已排除

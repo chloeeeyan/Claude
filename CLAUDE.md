@@ -53,7 +53,7 @@ Hand types (对子, 顺子…) keep their poker names on purpose.
 - Reply to the user in Chinese, plainly; verify visual changes in a browser before claiming done.
 
 ## Status and next steps
-Done: playable full run (8 nights, 75 jokers in 10 build styles (incl. crowd and heat), 15 tarots, 12 hand types incl. 3 hidden, 20 bosses, 8 vouchers,
+Done: playable full run (8 nights, 81 jokers in 10 build styles (incl. crowd and heat), 15 tarots, 12 hand types incl. 3 hidden, 20 bosses, 8 vouchers,
 4 joker editions, 5 decks, 3 stakes, 17 spectator types with tastes, pet hates and quips, heat 0–3, 6 crowd jokers), hand guide,
 coach tips, pop-art UI, game-screen layout, seeded RNG, versioned saves, tests, sim.
 
