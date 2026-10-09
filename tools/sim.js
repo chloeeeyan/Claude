@@ -17,6 +17,7 @@ if (args.ante) args.ante.split(',').map(Number).forEach((v, i) => { G.ANTE[i] = 
 // hands=three:35:3:25:2/flush:30:4:15:2 overrides c:m:dc:dm per hand type
 if (args.hands) args.hands.split('/').forEach((h) => { const [k, ...v] = h.split(':'); ['c', 'm', 'dc', 'dm'].forEach((f, i) => { if (v[i]) G.HANDS[k][f] = Number(v[i]); }); });
 if (args.picky) { const [t, p] = args.picky.split(':').map(Number); G.PICKY.tier = t; G.PICKY.pay = p; } // picky=3:1
+if (args.bx) args.bx.split(',').map(Number).forEach((v, i) => { G.BLIND_X[i] = v; }); // bx=1,1.5,2.25
 if (args.heat) args.heat.split(',').map(Number).forEach((v, i) => { G.HEAT[i].x = v; }); // e.g. heat=0.5,1,1.5,2
 
 // all 1–5 card subsets of an n-card hand, cached by n
@@ -138,8 +139,9 @@ function runOne(seed) {
       G.finishHand(st, G.beginHand(st, best.ids));
       if (st.audience.length) { crowd.hands++; crowd.heat += st.heat; if (st.heat === 0) crowd.cold++; }
     } else if (st.phase === 'cashout') {
-      const won = st.audience.filter((a) => a.ok).length;
-      if (st.audience.length) { crowd.shows++; crowd.won += won; if (won === st.audience.length) crowd.ovations++; }
+      const won = st.audience.filter((a) => a.ok && !a.vip).length;
+      if (st.blindIdx === 2) { crowd.heads++; if (st.audience.some((a) => a.vip && a.ok)) crowd.vips++; }
+      if (st.audience.length) { crowd.shows++; crowd.won += won; if (won === 3) crowd.ovations++; }
       G.cashOut(st); shop(st);
     }
     else if (st.phase === 'shop') G.nextBlind(st);
@@ -148,7 +150,7 @@ function runOne(seed) {
   return st;
 }
 
-const crowd = { shows: 0, won: 0, ovations: 0, hands: 0, heat: 0, cold: 0 }; // shows: cleared only; hands: every hand played
+const crowd = { shows: 0, won: 0, ovations: 0, hands: 0, heat: 0, cold: 0, heads: 0, vips: 0 }; // shows: cleared only; hands: every hand played
 const types = {}, winTypes = {}; // hands played per type, and the favourite type of each winning run
 const died = Array(10).fill(0);
 let wins = 0;
@@ -171,5 +173,5 @@ for (let a = 1; a <= 8; a++) {
 const allHands = Object.values(types).reduce((a, b) => a + b, 0);
 console.log('  hands: ' + Object.keys(G.HANDS).filter((k) => types[k]).map((k) => `${G.HANDS[k].n} ${((types[k] / allHands) * 100).toFixed(0)}%`).join(' · '));
 if (wins) console.log('  winners mostly play: ' + Object.entries(winTypes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${G.HANDS[k].n} ${v}`).join(' · '));
-if (crowd.shows) console.log(`  crowd: ${(crowd.won / crowd.shows).toFixed(2)}/3 won per cleared show, ovation ${((crowd.ovations / crowd.shows) * 100).toFixed(0)}%, heat after a hand ${(crowd.heat / crowd.hands).toFixed(2)}, 冷场 ${((crowd.cold / crowd.hands) * 100).toFixed(0)}%`);
+if (crowd.shows) console.log(`  crowd: ${(crowd.won / crowd.shows).toFixed(2)}/3 won per cleared show, ovation ${((crowd.ovations / crowd.shows) * 100).toFixed(0)}%, heat after a hand ${(crowd.heat / crowd.hands).toFixed(2)}, 冷场 ${((crowd.cold / crowd.hands) * 100).toFixed(0)}%, VIP won in ${crowd.heads ? ((crowd.vips / crowd.heads) * 100).toFixed(0) : 0}% of cleared 黄金档`);
 console.log(`  WIN ${((wins / N) * 100).toFixed(1)}%`);

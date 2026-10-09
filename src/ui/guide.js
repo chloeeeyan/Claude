@@ -1,6 +1,6 @@
 // Modal dialogs: how-to-play, the hand guide (four tabs) and the deck viewer.
 import {
-  BOSSES, ENH, HANDS, HEAT, JOKERS, OVATION_TIP, SPECTATORS, tipText, RL, SEALS, SNAME, SUITS, SYM, TAROTS, UNLOCKS, VS, chipVal, curBoss, evaluate, handBase, isRed, isUnlocked,
+  BOSSES, ENH, HANDS, HEAT, JOKERS, SPEC, VIP, OVATION_TIP, SPECTATORS, tipText, RL, SEALS, SNAME, SUITS, SYM, TAROTS, UNLOCKS, VS, chipVal, curBoss, evaluate, handBase, isRed, isUnlocked,
 } from '../core/index.js';
 import { $, fmt } from './dom.js';
 import { cardTitle, jokerFace, miniCard, parseCards } from './components.js';
@@ -66,8 +66,8 @@ function cardsTab() {
 
 function bossTab() {
   return `<div class="gsec">
-    <p class="hint">每一期的第三场是黄金档，目标收视是热场的 2 倍，黄金档嘉宾还带一个刁难规则。选场时就能看到是谁。</p>
-    ${Object.values(BOSSES).map((b) => `<div class="gx"><div class="gx-h"><b>${b.n}</b></div><p>${b.d}。</p></div>`).join('')}
+    <p class="hint">每一期的第三场是黄金档，目标收视是热场的 2.5 倍，黄金档嘉宾还带一个刁难规则。嘉宾坐在前排，也有自己的喜好：一手牌合了嘉宾的口味，规则当场作废（开场扣掉的弃牌、出牌次数和税钱也还给你），再赏 $${VIP.tip}。嘉宾不嘘人，也不影响热度。</p>
+    ${Object.values(BOSSES).map((b) => `<div class="gx"><div class="gx-h"><b>${b.n}</b></div><p>${b.d}。${b.vip ? `喜欢：${SPEC[b.vip].d}。` : ''}</p></div>`).join('')}
   </div>`;
 }
 

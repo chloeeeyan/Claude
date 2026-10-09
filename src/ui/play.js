@@ -105,7 +105,8 @@ export async function playHand() {
     if (s.money) { pop(el, '+$' + s.money, 'cash', k); Sfx.cash(); money += s.money; $('sMoney').textContent = money; }
     if (s.at === 'aud') {
       // a spectator is won over: the seat lights up for good; the last one brings the house down
-      if (el && s.i >= 0) { el.classList.add('ok'); say(el, s.say); if (s.say) Sfx.laugh(); }
+      if (el && s.i >= 0) { el.classList.add('ok'); say(el, s.say); if (s.say && !s.lift) Sfx.laugh(); }
+      if (s.lift) { pop(el, '规则作废！', 'cash', 1); shake($('table'), 10); Sfx.ovation(); await sleep(400); }
       if (s.ovation) {
         const o = document.createElement('div');
         o.className = 'ovation'; o.textContent = '全场起立！';

@@ -1,6 +1,6 @@
 // HTML builders for cards, jokers, tarots and planets.
 import {
-  EDITIONS, ENH, HEAT, JD, RARITY, SEALS, SNAME, SPEC, SYM, TD, VOUCHERS, VS, RL, curBoss, debuffed, descOf, isFace, isRed, tipText,
+  EDITIONS, ENH, HEAT, JD, RARITY, SEALS, SNAME, SPEC, SYM, VIP, TD, VOUCHERS, VS, RL, curBoss, debuffed, descOf, isFace, isRed, tipText,
 } from '../core/index.js';
 import { inRound, state } from './store.js';
 
@@ -89,9 +89,15 @@ export const miniCard = (c, cls = '') =>
 
 // a spectator in the stalls: initial in a face circle, name, taste (♥), pet hate (✕) and tip.
 // st: '' | 'will' (this hand wins them) | 'boo' (this hand annoys them) | 'ok' (won over)
-export function seatHTML(key, i, st = '') {
+export function seatHTML(key, i, st = '', vip = null) {
   const s = SPEC[key];
   if (!s) return '';
+  // the 黄金档 guest: their rule instead of a pet hate; winning them over lifts it
+  if (vip) {
+    return `<div class="seat vip ${st}" data-i="${i}" title="黄金档嘉宾 ${vip.n}　喜欢：${s.d}　征服后：规则作废，打赏 $${VIP.tip}">
+    <span class="sa" aria-hidden="true">★</span><span class="sn"><b>${vip.n}</b><i>♥ ${s.d}</i><i class="no rule">⚑ ${vip.d}</i></span>
+    <span class="tip">${st === 'ok' ? '✔' : '$' + VIP.tip}</span></div>`;
+  }
   return `<div class="seat t${s.tier} ${st}" data-i="${i}" title="${s.n}　喜欢：${s.d}（${tipText(s)}）　讨厌：${s.nd}">
     <span class="sa" aria-hidden="true">${s.n[0]}</span><span class="sn"><b>${s.n}</b><i>♥ ${s.d}</i><i class="no">✕ ${s.nd}</i></span>
     <span class="tip">${st === 'ok' ? '✔' : s.tip.money ? '$' + s.tip.money : '×' + s.tip.xmult}</span></div>`;

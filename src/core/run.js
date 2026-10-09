@@ -4,7 +4,7 @@ import { SUITS, SO } from './cards.js';
 import { BOSSES, DECKS, EDITIONS, ENH, HANDS, REWARD, STAKES, TAGS, TUNE, VOUCHERS, VOUCHER_PRICE } from './rules.js';
 import { JD, JOKERS } from './jokers.js';
 import { TAROTS, TD } from './tarots.js';
-import { computeHand, curBoss, targetFor } from './scoring.js';
+import { bossRule, computeHand, curBoss, targetFor, vipWon } from './scoring.js';
 import { makeSeed, rand, rint, shuffle } from './rng.js';
 import { pickBonus, rollCrowds, seatCrowd } from './audience.js';
 
@@ -24,7 +24,7 @@ export function rollVoucher(st) {
 // jokers in the negative edition do not take a slot
 export const usedSlots = (st) => st.jokers.filter((j) => j.ed !== 'negative').length;
 export const sellJ = (j) => Math.max(1, Math.floor((JD[j.key].price + (j.ed ? EDITIONS[j.ed].add : 0)) / 2));
-const handLimit = (st) => { const b = curBoss(st); return st.handSize + ((b && b.handDelta) || 0); };
+const handLimit = (st) => { const b = bossRule(st); return st.handSize + ((b && b.handDelta) || 0); };
 
 export function newDeck(st, deckKey) {
   const d = [];
@@ -74,7 +74,8 @@ export function startBlind(st) {
   st.target = targetFor(st, st.blindIdx);
   st.hands = b && b.oneHand ? 1 : Math.max(1, 4 + (D.hands || 0) + (hasV(st, 'hand') ? 1 : 0) + ((b && b.handsDelta) || 0));
   st.discards = b && b.noDiscard ? 0 : 3 + (D.disc || 0) + (hasV(st, 'disc') ? 1 : 0);
-  if (b && b.tax) st.money -= Math.min(10, Math.floor(Math.max(0, st.money) / 2));
+  st.taxed = b && b.tax ? Math.min(10, Math.floor(Math.max(0, st.money) / 2)) : 0;
+  st.money -= st.taxed;
   st.deck = shuffle(st, st.deckList.map((c) => ({ ...c })));
   st.hand = []; st.played = []; st.selected = []; st.roundScore = 0; st.roundHands = 0; st.roundTypes = [];
   if (!st.crowds) rollCrowds(st);
@@ -101,13 +102,15 @@ export function finishHand(st, res) {
     const b = new Set(res.broken); st.deckList = st.deckList.filter((c) => !b.has(c.id));
     for (const j of st.jokers) { const d = JD[j.key]; if (d.broke) d.broke(res.broken.length, j); }
   }
-  // spectators won over stay won over for the rest of the show
+  // spectators won over stay won over for the rest of the show; winning the VIP lifts the guest's rule
+  const lifting = !vipWon(st);
   for (const i of res.sat || []) if (st.audience[i]) st.audience[i].ok = true;
+  if (lifting && vipWon(st)) liftRule(st);
   st.heat = res.heat ?? st.heat; st.lastType = res.type;
   s.wonOver = (s.wonOver || 0) + (res.sat || []).length;
   if (res.ovation) s.ovations = (s.ovations || 0) + 1;
   // boss after-effects of a hand
-  const boss = curBoss(st);
+  const boss = bossRule(st);
   if (!(st.roundTypes || (st.roundTypes = [])).includes(res.type)) st.roundTypes.push(res.type);
   if (boss && boss.arm) st.levels[res.type] = Math.max(1, st.levels[res.type] - 1);
   if (boss && boss.tooth) st.money = Math.max(0, st.money - boss.tooth * st.played.length);
@@ -122,6 +125,16 @@ export function finishHand(st, res) {
   } else if (st.hands <= 0 || (!st.hand.length && !st.deck.length)) st.phase = 'over';
   else { drawn = draw(st); st.phase = 'play'; }
   return drawn;
+}
+
+// the VIP is won over: give back what the rule took when the show started
+function liftRule(st) {
+  const b = curBoss(st);
+  if (!b) return;
+  if (b.noDiscard) st.discards += 3;
+  if (b.handsDelta) st.hands -= b.handsDelta;
+  if (b.tax) { st.money += st.taxed || 0; st.taxed = 0; }
+  st.stats.vips = (st.stats.vips || 0) + 1;
 }
 
 export function discardCards(st, ids) {

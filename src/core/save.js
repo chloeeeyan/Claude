@@ -6,7 +6,7 @@ import { TD } from './tarots.js';
 import { makeSeed } from './rng.js';
 import { rollCrowds } from './audience.js';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 // MIGRATIONS[n] turns a version n-1 state into version n (return null to drop the save)
 const MIGRATIONS = {
@@ -22,6 +22,7 @@ const MIGRATIONS = {
   6: (s) => ({ ...s, heat: typeof s.heat === 'number' ? s.heat : 1, lastType: s.lastType || null }),
   // v7: 候场 — each show's queue (old crowds were exactly the three seated) and which of it is picked
   7: (s) => ({ ...s, picks: s.picks || (s.crowds ? s.crowds.map((c) => c.map((_, n) => n).slice(0, 3)) : null) }),
+  8: (s) => ({ ...s, taxed: s.taxed || 0 }), // v8: what the 税官 took (given back if the VIP is won over)
 };
 
 export const packSave = (state) => JSON.stringify({ v: SAVE_VERSION, state });

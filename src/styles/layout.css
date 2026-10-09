@@ -156,6 +156,7 @@
   border: 2.5px solid var(--ink); border-radius: 26px 10px 10px 26px; box-shadow: 3px 3px 0 var(--ink); transition: background .2s, translate .2s;
 }
 .crowd .seat { width: 184px; }
+@media (max-width: 1240px) { .crowd:has(.seat.vip) { gap: 6px; } .crowd:has(.seat.vip) .seat { width: 148px; } }
 .crowd .seat .tip { position: absolute; top: 1px; right: 8px; }
 .crowd .seat .sn { flex: 1; }
 .seat .sa {
@@ -176,6 +177,14 @@
 .seat.ok .tip { color: var(--white); font-size: 18px; }
 .seat.ok .sa { background: var(--white); color: var(--ink); }
 .seat .sn i.no { color: var(--red-ink); }
+/* the 黄金档 guest: front row, pink, their rule struck out once won over */
+.seat.vip { background: var(--pink); color: var(--white); }
+.seat.vip .sa { background: var(--yellow); color: var(--ink); }
+.seat.vip .sn i { color: rgba(255,255,255,.92); }
+.seat.vip .sn i.rule { color: var(--yellow); }
+.seat.vip .tip { color: var(--yellow); }
+.seat.vip.ok { background: var(--green); }
+.seat.vip.ok .sn i.rule { text-decoration: line-through; }
 .seat.ok .sn i.no { color: rgba(255,255,255,.75); }
 /* this hand would annoy them */
 .seat.boo { background: #ffd2d2; translate: 0 -3px; animation: seatBoo calc(.5s / var(--spd)) ease-in-out infinite; }

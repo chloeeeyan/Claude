@@ -10,6 +10,7 @@
 // seated pays $1 extra when the show is cleared, so an easy crowd costs money.
 import { isFace, isRed } from './cards.js';
 import { rint, shuffle } from './rng.js';
+import { BOSSES } from './rules.js';
 
 const has = (c, t) => c.contains.has(t);
 const black = (k) => k.enh === 'wild' || !isRed(k.s);
@@ -42,7 +43,7 @@ export const SPECTATORS = [
     say: ['小牌也有春天！', '又是那帮穿金戴银的。'] },
   { key: 'enhfan', n: '行家', d: '有增强牌计分', nd: '出高牌', tier: 2, tip: { money: 1 }, ok: (c) => c.live.some((k) => k.enh), no: high, foe: ['solo'],
     say: ['有点东西。', '外行看热闹，这连热闹都没有。'] },
-  { key: 'opener', n: '急性子', d: '第一手拿到目标 1/4', nd: '一手不到目标 1/10', tier: 2, tip: { money: 2 }, ok: (c) => c.first && c.total >= c.target / 4, no: weak, foe: ['solo'],
+  { key: 'opener', n: '急性子', d: '第一手拿到目标 1/4', nd: '不到目标 1/10', tier: 2, tip: { money: 2 }, ok: (c) => c.first && c.total >= c.target / 4, no: weak, foe: ['solo'],
     say: ['开门见山，我喜欢！', '快点快点，我车要停到点了。'] },
   { key: 'flushfan', n: '同花迷', d: '出牌含同花', nd: '出顺子', tier: 2, tip: { xmult: 1.25 }, ok: (c) => has(c, 'flush'), no: (c) => has(c, 'straight'), foe: ['strfan'],
     say: ['清一色，赏心悦目。', '顺子？花里胡哨，颜色都不搭。'] },
@@ -56,7 +57,7 @@ export const SPECTATORS = [
   { key: 'fullfan', n: '满堂彩', d: '出牌含葫芦', nd: '出顺子或同花', tier: 3, tip: { xmult: 1.5 }, ok: (c) => has(c, 'full'),
     no: (c) => has(c, 'straight') || has(c, 'flush'), foe: ['flushfan', 'strfan'],
     say: ['满堂红！这才是黄金档！', '花里胡哨，不如一家团圆。'] },
-  { key: 'big', n: '大场面', d: '一手拿到目标一半', nd: '一手不到目标 1/10', tier: 3, tip: { xmult: 1.5 }, ok: (c) => c.total >= c.target / 2, no: weak, foe: ['solo', 'lowfan'],
+  { key: 'big', n: '大场面', d: '一手拿到目标一半', nd: '不到目标 1/10', tier: 3, tip: { xmult: 1.5 }, ok: (c) => c.total >= c.target / 2, no: weak, foe: ['solo', 'lowfan'],
     say: ['炸了！这就是我要的！', '小打小闹，换台了。'] },
 ];
 export const SPEC = Object.fromEntries(SPECTATORS.map((s) => [s.key, s]));
@@ -120,10 +121,16 @@ export function togglePick(st, i, n) {
   return '';
 }
 
+// the 黄金档 guest takes a fourth, front-row seat: their taste is a spectator's; won over, they pay more and lift their
+// rule. They stand apart from the room: they never boo, don't move the heat and aren't needed for the ovation.
+export const VIP = { tip: 3, say: '合作愉快。这条规矩，今晚作废。' };
+
 export const seatCrowd = (st) => {
   const i = st.blindIdx, q = (st.crowds && st.crowds[i]) || [];
   if (st.picks && st.picks[i]) for (let n = 0; st.picks[i].length < SEATS && n < q.length; n++) if (!st.picks[i].includes(n)) st.picks[i].push(n); // fill empty seats
   st.audience = pickedKeys(st, i).map((key) => ({ key, ok: false }));
+  const boss = i === 2 && BOSSES[st.bossKey];
+  if (boss && boss.vip) st.audience.unshift({ key: boss.vip, ok: false, vip: true });
   st.heat = HEAT_START; st.lastType = null;
 };
 export const tipText = (s) => (s.tip.money ? `打赏 $${s.tip.money}` : `收视 ×${s.tip.xmult}`);

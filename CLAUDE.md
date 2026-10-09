@@ -7,7 +7,7 @@ Read `docs/direction.md` before planning work; it holds the direction and the ro
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
-- `npm ci` then `npm test` (Vitest, 67 tests) — run after any change
+- `npm ci` then `npm test` (Vitest, 70 tests) — run after any change
 - `npm run sim -- n=800` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
   (`read=0` ignores the crowd's tastes ≈7%, `aud=0` runs with empty seats ≈4%: the audience is core, not a bonus).
   The bot reads the room (weighs cash tips and heat) and prints spectators won, ovation rate, average heat and how often it went 冷场.
@@ -18,7 +18,8 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
   `scoring.js` computeHand → animation `steps` · `run.js` state machine (select → play ⇄ scoring → cashout → shop → … → over/win) ·
   `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves ·
   `meta.js` cross-run progress (unlocks, collection, daily challenge), stored by the UI as `jn.meta` ·
-  `audience.js` spectators (taste ♥ / pet hate ✕ / quips), per show a queue of 5 (`st.crowds`) with 3 seated (`st.picks`, player can swap), tips and heat 0–3
+  `audience.js` spectators (taste ♥ / pet hate ✕ / quips), per show a queue of 5 (`st.crowds`) with 3 seated (`st.picks`, player can swap), the 黄金档 guest as a VIP 4th seat
+  (`a.vip`; won over → `bossRule()` returns null), tips and heat 0–3
   (scored inside `computeHand` as `at: 'aud'` / `at: 'heat'` steps)
 - `src/ui/` `store.js` (live `state` + `setState`, localStorage via `storage`, keys `jn.*`) · `hud.js` · `shelf.js` · `screens.js` (per-phase table HTML) ·
   `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `orient.js` phone landscape · `tutor.js` first-run tutorial · `tele.js` local playtest log · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
@@ -27,7 +28,7 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Names: code vs. what the player sees
 Code keeps poker/Balatro names; all UI text uses the TV-show names. ante → 第 N 期 (episode) · blind 0/1/2 → 热场 / 正片 / 黄金档
-(boss = 黄金档嘉宾) · score → 收视 · round cleared → 收工 · joker → 艺人, the row → 班底 (selling = 解约) · tarot / cons → 道具,
+(boss = 黄金档嘉宾, seated as a VIP) · score → 收视 · round cleared → 收工 · joker → 艺人, the row → 班底 (selling = 解约) · tarot / cons → 道具,
 tarot pack → 道具箱 · planet → 赞助广告 (names are made-up 1980s brands), planet pack → 赞助包 · shop → 后台 ·
 voucher → 演播室升级 · audience / spectator → 观众, all three won over → 全场起立. Storage keys stay `jn.*`.
 Hand types (对子, 顺子…) keep their poker names on purpose.
