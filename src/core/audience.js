@@ -133,4 +133,12 @@ export const seatCrowd = (st) => {
   if (boss && boss.vip) st.audience.unshift({ key: boss.vip, ok: false, vip: true });
   st.heat = HEAT_START; st.lastType = null;
 };
-export const tipText = (s) => (s.tip.money ? `打赏 $${s.tip.money}` : `收视 ×${s.tip.xmult}`);
+// 熟客: a picky spectator type (tier 2+) won over twice this run. Seated again, they tip more. (Letting regulars stop
+// booing, or counting tier-1 ones, made the game far easier and fed the easy-crowd pick: 17.9% / 14.4% win.)
+export const REGULAR = { after: 2, minTier: 2, money: 1, xmult: 0.25 };
+export const isRegular = (st, key) => !!(st && st.regulars && st.regulars[key] >= REGULAR.after && SPEC[key].tier >= REGULAR.minTier);
+export const tipOf = (st, s) => {
+  if (!isRegular(st, s.key)) return s.tip;
+  return s.tip.money ? { money: s.tip.money + REGULAR.money } : { xmult: s.tip.xmult + REGULAR.xmult };
+};
+export const tipText = (s, st = null) => { const t = tipOf(st, s); return t.money ? `打赏 $${t.money}` : `收视 ×${t.xmult}`; };

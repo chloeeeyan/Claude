@@ -1,6 +1,6 @@
 // HTML builders for cards, jokers, tarots and planets.
 import {
-  EDITIONS, ENH, HEAT, JD, RARITY, SEALS, SNAME, SPEC, SYM, VIP, TD, VOUCHERS, VS, RL, curBoss, debuffed, descOf, isFace, isRed, tipText,
+  EDITIONS, ENH, HEAT, JD, RARITY, SEALS, SNAME, SPEC, SYM, VIP, TD, VOUCHERS, VS, RL, curBoss, debuffed, descOf, isFace, isRed, isRegular, tipOf, tipText,
 } from '../core/index.js';
 import { inRound, state } from './store.js';
 
@@ -98,9 +98,10 @@ export function seatHTML(key, i, st = '', vip = null) {
     <span class="sa" aria-hidden="true">★</span><span class="sn"><b>${vip.n}</b><i>♥ ${s.d}</i><i class="no rule">⚑ ${vip.d}</i></span>
     <span class="tip">${st === 'ok' ? '✔' : '$' + VIP.tip}</span></div>`;
   }
-  return `<div class="seat t${s.tier} ${st}" data-i="${i}" title="${s.n}　喜欢：${s.d}（${tipText(s)}）　讨厌：${s.nd}">
-    <span class="sa" aria-hidden="true">${s.n[0]}</span><span class="sn"><b>${s.n}</b><i>♥ ${s.d}</i><i class="no">✕ ${s.nd}</i></span>
-    <span class="tip">${st === 'ok' ? '✔' : s.tip.money ? '$' + s.tip.money : '×' + s.tip.xmult}</span></div>`;
+  const reg = isRegular(state, key), tip = tipOf(state, s);
+  return `<div class="seat t${s.tier} ${reg ? 'reg' : ''} ${st}" data-i="${i}" title="${reg ? '熟客 · ' : ''}${s.n}　喜欢：${s.d}（${tipText(s, state)}）　讨厌：${s.nd}${reg ? '　熟客：打赏更多' : ''}">
+    <span class="sa" aria-hidden="true">${s.n[0]}</span><span class="sn"><b>${reg ? '<em class="regb">熟</em>' : ''}${s.n}</b><i>♥ ${s.d}</i><i class="no">✕ ${s.nd}</i></span>
+    <span class="tip">${st === 'ok' ? '✔' : tip.money ? '$' + tip.money : '×' + tip.xmult}</span></div>`;
 }
 
 // the room's heat (0–3): three bulbs, the mood and its ×; next = where the selected hand would take it

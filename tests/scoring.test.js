@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OVATION_TIP, SPEC, computeHand, freshState, startBlind } from '../src/core/index.js';
-import { HEAT, HEAT_START, VIP } from '../src/core/audience.js';
+import { HEAT, HEAT_START, REGULAR, VIP } from '../src/core/audience.js';
 import { cards } from './helpers.js';
 
 function round(jokers = []) {
@@ -159,6 +159,17 @@ describe('the audience', () => {
     const won = computeHand(st, cards('KH KD'), [], { preview: true });
     expect(won.sat).toContain(0);
     expect(won.steps.find((x) => x.lift).money).toBe(VIP.tip);
+  });
+
+  it('lets picky regulars (won over twice) tip more', () => {
+    const st = seat(round(), 'threefan', 'solo', 'flushfan');
+    st.regulars = { threefan: 1, solo: 2, pairfan: 5 };
+    expect(computeHand(st, cards('9S 9H 9C'), [], { preview: true }).money).toBe(SPEC.threefan.tip.money); // only once so far
+    st.regulars.threefan = 2;
+    expect(computeHand(st, cards('9S 9H 9C'), [], { preview: true }).money).toBe(SPEC.threefan.tip.money + REGULAR.money);
+    expect(computeHand(st, cards('9S'), [], { preview: true }).mult).toBe(1 * (SPEC.solo.tip.xmult + REGULAR.xmult) * HEAT[2].x);
+    seat(st, 'pairfan', 'flushfan', 'redfan');
+    expect(computeHand(st, cards('KH KC'), [], { preview: true }).money).toBe(SPEC.pairfan.tip.money); // tier 1 never becomes a regular
   });
 
   it('never lets a spectator boo a hand they like (a straight flush pleases both purists)', () => {
