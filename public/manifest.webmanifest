@@ -1,7 +1,7 @@
 {
-  "name": "鬼牌夜场 · Joker Night",
-  "short_name": "鬼牌夜场",
-  "description": "波普漫画风的扑克构筑小游戏：凑牌型、叠倍率、买小丑，打过 8 个底注。",
+  "name": "别冷场！ · Tough Crowd",
+  "short_name": "别冷场！",
+  "description": "波普漫画风的扑克构筑小游戏：读懂台下观众，凑牌型、叠倍率，播满 8 期。",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

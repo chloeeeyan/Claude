@@ -3,30 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>鬼牌夜场</title>
-  <meta name="description" content="波普漫画风的扑克构筑小游戏：凑牌型、叠倍率、买演员，演满 8 夜。">
+  <title>别冷场！</title>
+  <meta name="description" content="波普漫画风的扑克构筑小游戏：你是深夜牌局秀的主持人，读懂台下观众，凑牌型、叠倍率、签艺人，播满 8 期。">
   <meta name="theme-color" content="#1e5bff">
-  <meta property="og:title" content="鬼牌夜场 · DEAL · STACK · KA-BOOM!">
-  <meta property="og:description" content="凑牌型、叠倍率、买演员，演满 8 夜。">
+  <meta property="og:title" content="别冷场！ · TOUGH CROWD">
+  <meta property="og:description" content="读懂台下观众，凑牌型、叠倍率，播满 8 期。">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="鬼牌夜场">
+  <meta name="apple-mobile-web-app-title" content="别冷场！">
 </head>
 <body>
   <div class="app" id="app">
     <header class="hud">
-      <span class="logo">鬼牌夜场</span>
+      <span class="logo">别冷场！</span>
       <div class="hud-blind" id="blindBox"></div>
       <div class="hud-score">
-        <span class="lbl"><i class="en">APPLAUSE</i>本场掌声</span>
+        <span class="lbl"><i class="en">RATINGS</i>本场收视</span>
         <div class="hs-row"><b id="roundScore">0</b><span class="hs-target">/ <em id="hudTarget">300</em></span></div>
         <div class="bar"><i id="bar"></i></div>
       </div>
       <div class="hud-money" title="金钱"><span class="coin" aria-hidden="true">$</span><b id="sMoney">4</b></div>
-      <div class="hud-ante"><span class="lbl"><i class="en">NIGHT</i>夜</span><b id="sAnte">1/8</b></div>
+      <div class="hud-ante"><span class="lbl"><i class="en">EPISODE</i>期</span><b id="sAnte">1/8</b></div>
       <nav class="hud-tools" aria-label="工具">
         <button class="ic" data-act="help"><span>?</span>玩法</button>
         <button class="ic" data-act="guide"><span>▤</span>图鉴</button>
@@ -39,7 +39,7 @@
 
     <div class="shelf">
       <section class="shelf-j">
-        <div class="rowhead"><span><i class="en">CAST</i>演员 <b id="jcount">0/5</b></span><span class="hint">拖动换顺序 · 点开看详情</span></div>
+        <div class="rowhead"><span><i class="en">CREW</i>班底 <b id="jcount">0/5</b></span><span class="hint">拖动换顺序 · 点开看详情</span></div>
         <div class="jrow" id="jrow"></div>
       </section>
       <section class="shelf-c">

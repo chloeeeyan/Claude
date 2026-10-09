@@ -134,7 +134,7 @@ export function discardCards(st, ids) {
 export function cashLines(st) {
   const S = STAKES[st.stake], lines = [];
   const rw = S.noSmall && st.blindIdx === 0 ? 0 : REWARD[st.blindIdx];
-  if (rw) lines.push({ t: '演出成功', v: rw });
+  if (rw) lines.push({ t: '节目收工', v: rw });
   if (st.hands > 0) lines.push({ t: `剩余出牌 ${st.hands} 次`, v: st.hands });
   const cap = (S.intCap != null ? S.intCap : 5) + (hasV(st, 'interest') ? 5 : 0), interest = Math.min(cap, Math.floor(st.money / 5));
   if (interest > 0) lines.push({ t: `利息（每 $5 得 $1，最多 $${cap}）`, v: interest });
@@ -233,24 +233,24 @@ export function buy(st, i) {
   if (st.money < it.price) return { err: '钱不够' };
   let msg;
   if (it.kind === 'joker') {
-    if (it.ed !== 'negative' && usedSlots(st) >= st.maxJokers) return { err: '演员栏满了，先请走一位' };
+    if (it.ed !== 'negative' && usedSlots(st) >= st.maxJokers) return { err: '班底满了，先请走一位' };
     st.jokers.push({ key: it.key, uid: st.uid++, data: {}, ...(it.ed ? { ed: it.ed } : {}) });
     msg = `招来了${it.ed ? EDITIONS[it.ed].n : ''}${JD[it.key].name}`;
   } else if (it.kind === 'voucher') {
-    if (hasV(st, it.key)) return { err: '剧院已经做过这项改造了' };
+    if (hasV(st, it.key)) return { err: '演播室已经做过这项升级了' };
     st.vouchers.push(it.key); st.voucherOffer = null;
     if (it.key === 'slot') st.maxJokers++;
     if (it.key === 'hsize') st.handSize++;
     if (it.key === 'cons') st.maxCons++;
     if (it.key === 'reroll') st.rerollCost = Math.max(1, st.rerollCost - 2);
-    msg = `剧院改造「${VOUCHERS[it.key].n}」：${VOUCHERS[it.key].d}`;
+    msg = `演播室升级「${VOUCHERS[it.key].n}」：${VOUCHERS[it.key].d}`;
   } else if (it.kind === 'planet') {
     st.levels[it.key]++; st.stats.planets++;
     msg = `${HANDS[it.key].n}升到 ${st.levels[it.key]} 级`;
   } else if (it.kind === 'pack') {
     if (st.pack) return { err: '先处理打开的卡包' };
     st.pack = { kind: 'star', opts: it.opts.slice() };
-    msg = '打开了剧本包，选一本';
+    msg = '打开了赞助包，选一家';
   } else if (it.kind === 'tpack') {
     if (st.pack) return { err: '先处理打开的卡包' };
     st.pack = { kind: 'tarot', opts: it.opts.slice(), cards: shuffle(st, st.deckList.map((c) => c.id)).slice(0, PACK_CARDS), pick: null, done: false };
@@ -285,7 +285,7 @@ export function nextBlind(st) {
 
 function applyTag(st, key) {
   if (key === 'cash') { st.money += 8; st.stats.earned += 8; return '得到 $8'; }
-  if (key === 'rare') { st.pendingRare = true; return '下次后台会多一位稀有演员'; }
+  if (key === 'rare') { st.pendingRare = true; return '下次后台会多一位稀有艺人'; }
   if (key === 'planet') {
     const ks = shuffle(st, visibleHands(st)).slice(0, 2);
     ks.forEach((k) => st.levels[k]++);

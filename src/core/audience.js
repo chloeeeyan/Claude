@@ -1,6 +1,6 @@
 // The audience: every show (blind) seats three spectators, each with one taste. The target score is still the only
 // thing that clears a show; a spectator whose taste a hand meets is won over once and tips right away — money, or a
-// ×mult on that hand. Win over all three for a standing ovation (满场喝彩). Crowds for the night's three shows are
+// ×mult on that hand. Win over all three for a standing ovation (全场起立). Crowds for the night's three shows are
 // rolled when the night starts, so the player can plan from the show-select screen.
 import { isFace, isRed, suitIs } from './cards.js';
 import { rint, shuffle } from './rng.js';
@@ -47,4 +47,4 @@ export function rollCrowds(st) {
 }
 
 export const seatCrowd = (st) => { st.audience = ((st.crowds && st.crowds[st.blindIdx]) || []).map((key) => ({ key, ok: false })); };
-export const tipText = (s) => (s.tip.money ? `打赏 $${s.tip.money}` : `掌声 ×${s.tip.xmult}`);
+export const tipText = (s) => (s.tip.money ? `打赏 $${s.tip.money}` : `收视 ×${s.tip.xmult}`);
