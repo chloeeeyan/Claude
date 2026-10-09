@@ -1,5 +1,5 @@
 // Balance simulator: a greedy bot plays N seeded runs and reports how far it gets.
-// Usage: npm run sim -- n=400 deck=red stake=0 tarot=1 ante=300,700,...
+// Usage: npm run sim -- n=400 deck=red stake=0 tarot=1 aud=1 read=1 tip=0.1 ante=300,700,...
 import * as G from '../src/core/index.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.split('=')));
@@ -7,8 +7,10 @@ const N = Number(args.n || 300);
 const deck = args.deck || 'red';
 const stake = Number(args.stake || 0);
 const useTarots = args.tarot !== '0';
-const discardBias = Number(args.agg || 1.15);
-const audience = args.aud !== '0'; // aud=0: empty seats, to measure what the audience adds // discard when best × hands left < need × bias
+const discardBias = Number(args.agg || 1.15); // discard when best × hands left < need × bias
+const audience = args.aud !== '0'; // aud=0: empty seats, to measure what the audience adds
+const readRoom = args.read !== '0'; // read=0: ignore cash tips when picking a hand (the old bot)
+const tipWeight = Number(args.tip || 0.1); // $1 is worth this share of the score still needed per hand
 if (args.ante) args.ante.split(',').map(Number).forEach((v, i) => { G.ANTE[i] = v; });
 
 // all 1–5 card subsets of an n-card hand, cached by n
@@ -25,15 +27,21 @@ function subsets(n) {
   return (SUBSETS[n] = out);
 }
 
+// Reads the room: a hand's value is its score plus the cash it brings (spectator tips, ovation, gold seals),
+// with $1 worth a slice of the score still needed per hand. A hand that clears the show takes the most cash.
 function bestPlay(st) {
-  let top = null;
+  const need = st.target - st.roundScore, perHand = need / Math.max(1, st.hands);
+  let top = null, pick = null;
   for (const s of subsets(st.hand.length)) {
     const played = s.map((i) => st.hand[i]);
     const held = st.hand.filter((_, i) => !s.includes(i));
     const r = G.computeHand(st, played, held, { preview: true });
-    if (!top || r.total > top.total) top = { total: r.total, ids: played.map((c) => c.id), scoring: new Set(r.scoring.map((c) => c.id)) };
+    const c = { total: r.total, money: r.money, ids: played.map((k) => k.id), scoring: new Set(r.scoring.map((k) => k.id)) };
+    c.u = !readRoom ? c.total : c.total >= need ? need * 10 + c.money * need + c.total / 1e6 : c.total + c.money * tipWeight * perHand;
+    if (!top || c.total > top.total) top = c;
+    if (!pick || c.u > pick.u) pick = c;
   }
-  return top;
+  return { ...pick, max: top.total, maxScoring: top.scoring };
 }
 
 function chooseDiscard(st, best) {
@@ -41,7 +49,7 @@ function chooseDiscard(st, best) {
     const m = st.hand.filter((c) => G.suitIs(c, s));
     if (m.length === 4) return st.hand.filter((c) => !G.suitIs(c, s)).sort((a, b) => a.r - b.r).slice(0, 5).map((c) => c.id);
   }
-  return st.hand.filter((c) => !best.scoring.has(c.id)).sort((a, b) => a.r - b.r).slice(0, 5).map((c) => c.id);
+  return st.hand.filter((c) => !best.maxScoring.has(c.id)).sort((a, b) => a.r - b.r).slice(0, 5).map((c) => c.id);
 }
 
 const XMULT = new Set(['last', 'family', 'royal', 'duo', 'trio', 'palette', 'first', 'fullseat', 'smith', 'mono', 'rainbow', 'crown', 'regent',
@@ -110,18 +118,23 @@ function runOne(seed) {
     else if (st.phase === 'play') {
       useTarotsGreedy(st);
       const best = bestPlay(st), need = st.target - st.roundScore;
-      if (best.total < need && st.discards > 0 && best.total * st.hands < need * discardBias) {
+      if (best.max < need && st.discards > 0 && best.max * st.hands < need * discardBias) {
         const ids = chooseDiscard(st, best);
         if (ids.length) { G.discardCards(st, ids); continue; }
       }
       G.finishHand(st, G.beginHand(st, best.ids));
-    } else if (st.phase === 'cashout') { G.cashOut(st); shop(st); }
+    } else if (st.phase === 'cashout') {
+      const won = st.audience.filter((a) => a.ok).length;
+      if (st.audience.length) { crowd.shows++; crowd.won += won; if (won === st.audience.length) crowd.ovations++; }
+      G.cashOut(st); shop(st);
+    }
     else if (st.phase === 'shop') G.nextBlind(st);
     else break;
   }
   return st;
 }
 
+const crowd = { shows: 0, won: 0, ovations: 0 }; // cleared shows only
 const died = Array(10).fill(0);
 let wins = 0;
 const t0 = Date.now();
@@ -129,10 +142,11 @@ for (let i = 1; i <= N; i++) {
   const st = runOne(i);
   if (st.phase === 'win') wins++; else died[st.ante]++;
 }
-console.log(`deck=${deck} stake=${stake} tarot=${useTarots} n=${N} ante=[${G.ANTE}] ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+console.log(`deck=${deck} stake=${stake} tarot=${useTarots} aud=${audience} read=${readRoom} n=${N} ante=[${G.ANTE}] ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 let alive = N;
 for (let a = 1; a <= 8; a++) {
   console.log(`  ante ${a}: entered ${((alive / N) * 100).toFixed(0)}%  lost here ${died[a]}`);
   alive -= died[a];
 }
+if (crowd.shows) console.log(`  crowd: ${(crowd.won / crowd.shows).toFixed(2)}/3 won per cleared show, ovation ${((crowd.ovations / crowd.shows) * 100).toFixed(0)}%`);
 console.log(`  WIN ${((wins / N) * 100).toFixed(1)}%`);
