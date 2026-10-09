@@ -1,15 +1,16 @@
 // Static rule tables: hand types, blinds, bosses, enhancements, decks, stakes, skip tags.
 import { isFace, suitIs } from './cards.js';
 
-// c/m = base chips/mult at level 1, dc/dm = gain per level
+// c/m = base chips/mult at level 1, dc/dm = gain per level. Our own table (2026-10-09, with heat): the mid hands
+// (三条, 顺子, 葫芦) pay more, 两对 a little less, and 顺子 beats 同花 — with 8 cards and discards a flush is the easier chase.
 export const HANDS = {
   high: { n: '高牌', c: 5, m: 1, dc: 10, dm: 1 },
   pair: { n: '对子', c: 10, m: 2, dc: 15, dm: 1 },
-  two: { n: '两对', c: 20, m: 2, dc: 20, dm: 1 },
-  three: { n: '三条', c: 30, m: 3, dc: 20, dm: 2 },
-  straight: { n: '顺子', c: 30, m: 4, dc: 30, dm: 3 },
-  flush: { n: '同花', c: 35, m: 4, dc: 15, dm: 2 },
-  full: { n: '葫芦', c: 40, m: 4, dc: 25, dm: 2 },
+  two: { n: '两对', c: 18, m: 2, dc: 15, dm: 1 },
+  three: { n: '三条', c: 35, m: 3, dc: 25, dm: 2 },
+  straight: { n: '顺子', c: 35, m: 4, dc: 30, dm: 3 },
+  flush: { n: '同花', c: 30, m: 4, dc: 15, dm: 2 },
+  full: { n: '葫芦', c: 45, m: 4, dc: 25, dm: 2 },
   four: { n: '四条', c: 60, m: 7, dc: 30, dm: 3 },
   sflush: { n: '同花顺', c: 100, m: 8, dc: 40, dm: 4 },
   // hidden hands need duplicated cards (the 复刻 tarot); their planets only appear once played

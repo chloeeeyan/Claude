@@ -13,6 +13,8 @@ const readRoom = args.read !== '0'; // read=0: ignore cash tips when picking a h
 const tipWeight = Number(args.tip || 0.1); // $1 is worth this share of the score still needed per hand
 const heatWeight = Number(args.hw || 0.5); // one step of heat is worth this share of it (it scales the hands to come)
 if (args.ante) args.ante.split(',').map(Number).forEach((v, i) => { G.ANTE[i] = v; });
+// hands=three:35:3:25:2/flush:30:4:15:2 overrides c:m:dc:dm per hand type
+if (args.hands) args.hands.split('/').forEach((h) => { const [k, ...v] = h.split(':'); ['c', 'm', 'dc', 'dm'].forEach((f, i) => { if (v[i]) G.HANDS[k][f] = Number(v[i]); }); });
 if (args.heat) args.heat.split(',').map(Number).forEach((v, i) => { G.HEAT[i].x = v; }); // e.g. heat=0.5,1,1.5,2
 
 // all 1–5 card subsets of an n-card hand, cached by n
@@ -139,12 +141,18 @@ function runOne(seed) {
 }
 
 const crowd = { shows: 0, won: 0, ovations: 0, hands: 0, heat: 0, cold: 0 }; // shows: cleared only; hands: every hand played
+const types = {}, winTypes = {}; // hands played per type, and the favourite type of each winning run
 const died = Array(10).fill(0);
 let wins = 0;
 const t0 = Date.now();
 for (let i = 1; i <= N; i++) {
   const st = runOne(i);
-  if (st.phase === 'win') wins++; else died[st.ante]++;
+  for (const [k, v] of Object.entries(st.stats.types)) types[k] = (types[k] || 0) + v;
+  if (st.phase === 'win') {
+    wins++;
+    const fav = Object.entries(st.stats.types).sort((a, b) => b[1] - a[1])[0][0];
+    winTypes[fav] = (winTypes[fav] || 0) + 1;
+  } else died[st.ante]++;
 }
 console.log(`deck=${deck} stake=${stake} tarot=${useTarots} aud=${audience} read=${readRoom} n=${N} ante=[${G.ANTE}] heat=[${G.HEAT.map((h) => h.x)}] ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 let alive = N;
@@ -152,5 +160,8 @@ for (let a = 1; a <= 8; a++) {
   console.log(`  ante ${a}: entered ${((alive / N) * 100).toFixed(0)}%  lost here ${died[a]}`);
   alive -= died[a];
 }
+const allHands = Object.values(types).reduce((a, b) => a + b, 0);
+console.log('  hands: ' + Object.keys(G.HANDS).filter((k) => types[k]).map((k) => `${G.HANDS[k].n} ${((types[k] / allHands) * 100).toFixed(0)}%`).join(' · '));
+if (wins) console.log('  winners mostly play: ' + Object.entries(winTypes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${G.HANDS[k].n} ${v}`).join(' · '));
 if (crowd.shows) console.log(`  crowd: ${(crowd.won / crowd.shows).toFixed(2)}/3 won per cleared show, ovation ${((crowd.ovations / crowd.shows) * 100).toFixed(0)}%, heat after a hand ${(crowd.heat / crowd.hands).toFixed(2)}, 冷场 ${((crowd.cold / crowd.hands) * 100).toFixed(0)}%`);
 console.log(`  WIN ${((wins / N) * 100).toFixed(1)}%`);
