@@ -150,13 +150,13 @@ const ACTIONS = {
   teleexport: () => teleExport(),
   telecopy: async () => toast((await teleCopy()) ? '已复制，粘贴发给开发者即可' : '复制失败，请用「导出文件」'),
   tutorskip: () => skipTutor(),
-  start: () => { startBlind(state).forEach((id) => ui.justDrawn.add(id)); Sfx.deal(); render(); },
+  start: () => { startBlind(state).forEach((id) => ui.justDrawn.add(id)); Sfx.channel(); Sfx.deal(); render(); },
   skip: () => { const m = skipBlind(state); if (m) { Sfx.cash(); toast('跳过这场：' + m); render(); } },
   cashout: () => { if (cashOut(state)) Sfx.cash(); render(); },
   buy: (b) => {
     const r = buy(state, Number(b.dataset.i));
     if (r.err) { toast(r.err); return; }
-    Sfx.cash();
+    if (state.pack) Sfx.pack(); else Sfx.cash();
     toast(r.msg);
     render();
   },

@@ -89,7 +89,7 @@ export async function playHand() {
       const hm = document.getElementById('heat');
       pop(hm, `${HEAT[s.heat].n} ×${s.xmult}`, s.heat === 0 ? 'cold' : s.xmult > 1 ? 'xmult' : 'retrig', 0.5);
       bump(hm, 1);
-      Sfx.heat(s.heat);
+      Sfx.heat(s.heat, state.heat ?? 1);
       if (s.xmult > 1) { pulse($('mult'), 1); shake($('table'), 4 + s.xmult * 4); } else if (s.heat === 0) shake($('stage'), 6);
       setLive(name, s.after.chips, s.after.mult);
       n++;
@@ -105,13 +105,13 @@ export async function playHand() {
     if (s.money) { pop(el, '+$' + s.money, 'cash', k); Sfx.cash(); money += s.money; $('sMoney').textContent = money; }
     if (s.at === 'aud') {
       // a spectator is won over: the seat lights up for good; the last one brings the house down
-      if (el && s.i >= 0) { el.classList.add('ok'); say(el, s.say); }
+      if (el && s.i >= 0) { el.classList.add('ok'); say(el, s.say); if (s.say) Sfx.laugh(); }
       if (s.ovation) {
         const o = document.createElement('div');
         o.className = 'ovation'; o.textContent = '全场起立！';
         $('stage').appendChild(o);
         setTimeout(() => o.remove(), 1300 / ui.speed);
-        shake($('app'), 10); Sfx.win();
+        shake($('app'), 10); Sfx.ovation();
       }
     }
     n++;

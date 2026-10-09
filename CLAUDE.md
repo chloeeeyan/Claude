@@ -40,6 +40,7 @@ Hand types (对子, 顺子…) keep their poker names on purpose.
   when they change zone/order; new cards in `ui.justDrawn` are dealt from `#pile`. Keys must be unique within a root.
   Motion goes through Web Animations with durations `/ ui.speed`, skipped under `prefers-reduced-motion`. Keep core free of DOM.
 - Fonts are self-hosted via `@fontsource` (Google Fonts is unreliable in mainland China). Don't add CDN dependencies.
+- Sound: `ui/sfx.js` plays CC0 clips from `public/sfx/` with synth fallbacks. Only CC0 / commercial-OK assets; log every file in `docs/credits.md`.
 - Style: Pop Art comic — ink outlines, hard offset shadows, Ben-Day dots; Chinese text in ZCOOL KuaiLe, numbers in Luckiest Guy;
   English only as small slanted eyebrows next to Chinese. Essential info must be visible, not hover-only.
 - Desktop must fit one screen (checked at 1366×640 and 1134×734); phones held upright stack and scroll. Phones held sideways
