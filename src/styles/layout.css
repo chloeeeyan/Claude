@@ -155,6 +155,9 @@
   position: relative; display: flex; align-items: center; gap: 6px; width: 168px; padding: 4px 8px 4px 4px; background: var(--white); color: var(--ink);
   border: 2.5px solid var(--ink); border-radius: 26px 10px 10px 26px; box-shadow: 3px 3px 0 var(--ink); transition: background .2s, translate .2s;
 }
+.crowd .seat { width: 184px; }
+.crowd .seat .tip { position: absolute; top: 1px; right: 8px; }
+.crowd .seat .sn { flex: 1; }
 .seat .sa {
   flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-family: var(--comic); font-size: 17px;
   background: var(--paper); border: 2.5px solid var(--ink);
@@ -172,8 +175,41 @@
 .seat.ok .sn i { color: rgba(255,255,255,.9); }
 .seat.ok .tip { color: var(--white); font-size: 18px; }
 .seat.ok .sa { background: var(--white); color: var(--ink); }
+.seat .sn i.no { color: var(--red-ink); }
+.seat.ok .sn i.no { color: rgba(255,255,255,.75); }
+/* this hand would annoy them */
+.seat.boo { background: #ffd2d2; translate: 0 -3px; animation: seatBoo calc(.5s / var(--spd)) ease-in-out infinite; }
+.seat.boo .sn i.no { font-weight: 700; }
+@keyframes seatBoo { 25% { rotate: -1.5deg; } 75% { rotate: 1.5deg; } }
 .crowd .pop { top: -18px; }
+/* a spectator speaks */
+.say {
+  position: absolute; left: 10px; top: calc(100% + 9px); z-index: 8; pointer-events: none; max-width: 230px; width: max-content;
+  padding: 4px 9px; background: var(--white); color: var(--ink); border: 2.5px solid var(--ink); border-radius: 12px; box-shadow: 3px 3px 0 var(--ink);
+  font-family: var(--comic); font-size: 14px; line-height: 1.25; animation: sayIn calc(.25s / var(--spd)) cubic-bezier(.2, 1.6, .4, 1) both;
+}
+.say::before { content: ''; position: absolute; left: 14px; top: -9px; border: 8px solid transparent; border-bottom-color: var(--ink); border-top: 0; }
+@keyframes sayIn { from { scale: .4; opacity: 0; } }
+/* heat: the room's mood, 冷场 → 沸腾 */
+.heat {
+  position: relative; display: grid; grid-template-columns: auto auto; align-items: center; gap: 0 6px; padding: 3px 9px; background: var(--white); color: var(--ink);
+  border: 2.5px solid var(--ink); border-radius: 10px; box-shadow: 3px 3px 0 var(--ink); font-family: var(--comic); line-height: 1.1;
+}
+.heat .hk { font-size: 13px; }
+.heat .hk .en { display: block; font-size: 9px; font-family: var(--pop); color: var(--red-ink); letter-spacing: .5px; }
+.heat .hm { display: flex; gap: 3px; }
+.heat .hm b { width: 12px; height: 16px; border: 2px solid var(--ink); border-radius: 4px; background: var(--paper); }
+.heat .hm b.on { background: var(--red); }
+.heat .hv { grid-column: 1 / -1; font-size: 14px; white-space: nowrap; }
+.heat .hv em { font-style: normal; font-family: var(--pop); color: var(--red-ink); }
+.heat .hn { grid-column: 1 / -1; font-size: 11px; white-space: nowrap; }
+.heat .hn.up { color: var(--green); }
+.heat .hn.down { color: var(--red-ink); }
+.heat.h0 { background: #cfe3ff; }
+.heat.h0 .hv em { color: var(--blue); }
+.heat.h3 { background: var(--yellow); animation: heatBoil calc(.6s / var(--spd)) ease-in-out infinite; }
+@keyframes heatBoil { 50% { box-shadow: 3px 3px 0 var(--ink), 0 0 0 4px rgba(255,61,61,.45); } }
 /* standing ovation banner */
 .ovation { position: absolute; right: 0; top: 40px; z-index: 7; pointer-events: none; font-family: var(--comic); font-size: 34px; color: var(--yellow);
   -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 4px 4px 0 var(--ink); animation: sfx calc(1.3s / var(--spd)) cubic-bezier(.2, 1.5, .4, 1) both; }
-@media (prefers-reduced-motion: reduce) { .seat.will { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .seat.will, .seat.boo, .heat.h3 { animation: none; } .say { animation: none; } }

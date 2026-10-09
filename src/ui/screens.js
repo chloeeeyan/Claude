@@ -4,7 +4,7 @@ import {
   computeHand, packCards, targetFor,
 } from '../core/index.js';
 import { $, fmt } from './dom.js';
-import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, jokerFace, planetFace, seatHTML, tarotFace, voucherFace } from './components.js';
+import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, heatHTML, jokerFace, planetFace, seatHTML, tarotFace, voucherFace } from './components.js';
 import { patch } from './patch.js';
 import { Sfx } from './sfx.js';
 import { inRound, meta, records, state, storage, ui } from './store.js';
@@ -43,18 +43,19 @@ function bossBar() {
   return b ? `<div class="bossbar"><b>黄金档 · ${b.n}</b><span>${b.d}</span></div>` : '';
 }
 
-// the stalls during a show: who is won over, and who the selected cards would win over
+// the stalls during a show: the heat, who is won over, and who the selected cards would win over or annoy
 function crowdHTML() {
   const aud = state.audience || [];
   if (!aud.length) return '';
-  let will = [];
+  let will = [], boos = [], next = null;
   const sel = state.hand.filter((c) => state.selected.includes(c.id));
   if (state.phase === 'play' && sel.length) {
-    will = computeHand(state, sel, state.hand.filter((c) => !state.selected.includes(c.id)), { preview: true }).sat || [];
+    const r = computeHand(state, sel, state.hand.filter((c) => !state.selected.includes(c.id)), { preview: true });
+    will = r.sat || []; boos = r.boos || []; next = r.heat;
   }
   const won = aud.filter((a) => a.ok).length;
-  return `<div class="crowd" aria-label="观众"><span class="cr-k"><i class="en">CROWD</i>观众 ${won}/${aud.length}</span>
-    ${aud.map((a, i) => seatHTML(a.key, i, a.ok ? 'ok' : will.includes(i) ? 'will' : '')).join('')}</div>`;
+  return `<div class="crowd" aria-label="观众">${heatHTML(state.heat ?? 1, next)}<span class="cr-k"><i class="en">CROWD</i>观众 ${won}/${aud.length}</span>
+    ${aud.map((a, i) => seatHTML(a.key, i, boos.includes(i) ? 'boo' : a.ok ? 'ok' : will.includes(i) ? 'will' : '')).join('')}</div>`;
 }
 
 // one-time tips, each shown the first time its situation comes up

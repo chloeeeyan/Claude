@@ -1,6 +1,6 @@
 // HTML builders for cards, jokers, tarots and planets.
 import {
-  EDITIONS, ENH, JD, RARITY, SEALS, SNAME, SPEC, SYM, TD, VOUCHERS, VS, RL, curBoss, debuffed, descOf, isFace, isRed, tipText,
+  EDITIONS, ENH, HEAT, JD, RARITY, SEALS, SNAME, SPEC, SYM, TD, VOUCHERS, VS, RL, curBoss, debuffed, descOf, isFace, isRed, tipText,
 } from '../core/index.js';
 import { inRound, state } from './store.js';
 
@@ -87,11 +87,20 @@ export const parseCards = (str) => str.split(' ').filter(Boolean).map((t, i) => 
 export const miniCard = (c, cls = '') =>
   `<span class="mini ${isRed(c.s) ? 'red' : ''} ${c.enh ? 'e-' + c.enh : ''} ${cls}"><b>${RL(c.r)}</b><i>${SYM[c.s] + VS}</i></span>`;
 
-// a spectator in the stalls: initial in a face circle, name, taste and tip. st: '' | 'will' (this hand wins them) | 'ok' (won over)
+// a spectator in the stalls: initial in a face circle, name, taste (♥), pet hate (✕) and tip.
+// st: '' | 'will' (this hand wins them) | 'boo' (this hand annoys them) | 'ok' (won over)
 export function seatHTML(key, i, st = '') {
   const s = SPEC[key];
   if (!s) return '';
-  return `<div class="seat t${s.tier} ${st}" data-i="${i}" title="${s.n}：${s.d}，${tipText(s)}">
-    <span class="sa" aria-hidden="true">${s.n[0]}</span><span class="sn"><b>${s.n}</b><i>${s.d}</i></span>
+  return `<div class="seat t${s.tier} ${st}" data-i="${i}" title="${s.n}　喜欢：${s.d}（${tipText(s)}）　讨厌：${s.nd}">
+    <span class="sa" aria-hidden="true">${s.n[0]}</span><span class="sn"><b>${s.n}</b><i>♥ ${s.d}</i><i class="no">✕ ${s.nd}</i></span>
     <span class="tip">${st === 'ok' ? '✔' : s.tip.money ? '$' + s.tip.money : '×' + s.tip.xmult}</span></div>`;
+}
+
+// the room's heat (0–3): three bulbs, the mood and its ×; next = where the selected hand would take it
+export function heatHTML(h, next = null) {
+  const H = HEAT[h], N = next == null || next === h ? null : HEAT[next];
+  return `<div class="heat h${h}" id="heat" aria-label="热度：${H.n}，收视 ×${H.x}">
+    <span class="hk"><i class="en">HEAT</i>热度</span><span class="hm" aria-hidden="true">${[1, 2, 3].map((n) => `<b class="${n <= h ? 'on' : ''}"></b>`).join('')}</span>
+    <span class="hv">${H.n} <em>×${H.x}</em></span>${N ? `<span class="hn ${next > h ? 'up' : 'down'}">${next > h ? '▲' : '▼'} ${N.n} ×${N.x}</span>` : ''}</div>`;
 }

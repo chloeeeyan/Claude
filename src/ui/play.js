@@ -1,5 +1,6 @@
 // Playing a hand: score it in the core, then animate every scoring step.
-import { HANDS, beginHand, finishHand } from '../core/index.js';
+import { HANDS, HEAT, beginHand, finishHand } from '../core/index.js';
+import { heatHTML } from './components.js';
 import { $, fmt, sleep } from './dom.js';
 import { pulse, shake } from './fx.js';
 import { setLive } from './hud.js';
@@ -22,6 +23,17 @@ function pop(el, text, cls, k = 0) {
   if (k) p.style.scale = (1 + 0.6 * k).toFixed(2);
   el.appendChild(p);
   setTimeout(() => p.remove(), 1000 / ui.speed);
+}
+
+// a spectator speaks: a comic speech bubble under their seat
+function say(el, text) {
+  if (!el || !text) return;
+  el.querySelectorAll('.say').forEach((b) => b.remove());
+  const b = document.createElement('span');
+  b.className = 'say';
+  b.textContent = text;
+  el.appendChild(b);
+  setTimeout(() => b.remove(), 1900 / ui.speed);
 }
 
 function bump(el, k = 0) {
@@ -69,7 +81,21 @@ export async function playHand() {
   for (const s of res.steps) {
     const el = s.at === 'card' ? playedEl(s.id) : s.at === 'held' ? handEl(s.id) : s.at === 'aud' ? seatEl(s.i) : jokerEl(s.uid);
     const k = Math.min(1, n / 10);
-    if (s.text) { pop(el, s.text, s.cls); if (Sfx[s.cls]) Sfx[s.cls](); await sleep(300); continue; }
+    if (s.text) { pop(el, s.text, s.cls); say(el, s.say); if (Sfx[s.cls]) Sfx[s.cls](); await sleep(s.say ? 520 : 300); continue; }
+    if (s.at === 'heat') {
+      // the room settles on its heat for this hand, and the whole hand is scaled by it
+      const old = document.getElementById('heat');
+      if (old) old.outerHTML = heatHTML(s.heat);
+      const hm = document.getElementById('heat');
+      pop(hm, `${HEAT[s.heat].n} ×${s.xmult}`, s.heat === 0 ? 'cold' : s.xmult > 1 ? 'xmult' : 'retrig', 0.5);
+      bump(hm, 1);
+      Sfx.heat(s.heat);
+      if (s.xmult > 1) { pulse($('mult'), 1); shake($('table'), 4 + s.xmult * 4); } else if (s.heat === 0) shake($('stage'), 6);
+      setLive(name, s.after.chips, s.after.mult);
+      n++;
+      await sleep(520);
+      continue;
+    }
     if (s.chips) { pop(el, '+' + s.chips, 'chips', k); Sfx.chips(n); pulse($('chips'), k); }
     if (s.mult) { pop(el, '+' + s.mult + ' 倍', 'mult', k); Sfx.mult(n); pulse($('mult'), k); }
     if (s.xmult) {
@@ -79,7 +105,7 @@ export async function playHand() {
     if (s.money) { pop(el, '+$' + s.money, 'cash', k); Sfx.cash(); money += s.money; $('sMoney').textContent = money; }
     if (s.at === 'aud') {
       // a spectator is won over: the seat lights up for good; the last one brings the house down
-      if (el && s.i >= 0) el.classList.add('ok');
+      if (el && s.i >= 0) { el.classList.add('ok'); say(el, s.say); }
       if (s.ovation) {
         const o = document.createElement('div');
         o.className = 'ovation'; o.textContent = '全场起立！';
