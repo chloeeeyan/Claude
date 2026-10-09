@@ -2,10 +2,13 @@
 //   card(c, card, j)  per scoring card    held(c, card, j)  per card kept in hand    hand(c, j)  once per hand
 //   before(c, j)  before scoring          discard(cards, j, st) on discard            money(j, st) at cash-out
 //   broke(n, j)   when n glass cards shatter
-// `arch` tags the build a joker belongs to (flush / face / discard / economy / single / deck / hand / scale).
+//   crowd(c, j)   after the audience reacts, before heat scales the hand: c.fans (liked it), c.boos, c.won (newly won over),
+//                 c.heat (before) and c.newHeat (after), c.regulars (熟客 seated)
+// `arch` tags the build a joker belongs to (flush / face / discard / economy / single / deck / hand / scale / crowd / heat).
 // Effects are objects with chips / mult / xmult / money.
 import { SUITS, SNAME, suitIs, isFace } from './cards.js';
 import { rand, rint } from './rng.js';
+import { SPEC } from './audience.js';
 
 const has = (c, t) => c.contains.has(t);
 const SUIT_JOKER = { S: '黑桃骑士', H: '红桃情人', C: '梅花园丁', D: '方片商人' };
@@ -16,20 +19,20 @@ export const JOKERS = [
     key: 'suit' + s, name: SUIT_JOKER[s], r: 1, price: 5,
     desc: `每张计分的${SNAME[s]}牌 <b>+3</b> 倍率`, card: (c, k) => suitIs(k, s) && { mult: 3 },
   })),
-  { key: 'pairM', name: '双生', r: 1, price: 4, desc: '出牌含<b>对子</b>时 +8 倍率', hand: (c) => has(c, 'pair') && { mult: 8 } },
-  { key: 'twoM', name: '双城记', r: 1, price: 4, desc: '出牌含<b>两对</b>时 +10 倍率', hand: (c) => has(c, 'two') && { mult: 10 } },
-  { key: 'threeM', name: '三叉戟', r: 1, price: 5, desc: '出牌含<b>三条</b>时 +12 倍率', hand: (c) => has(c, 'three') && { mult: 12 } },
-  { key: 'strM', name: '长龙', r: 1, price: 4, desc: '出牌含<b>顺子</b>时 +12 倍率', hand: (c) => has(c, 'straight') && { mult: 12 } },
-  { key: 'flM', name: '同色', r: 1, price: 4, desc: '出牌含<b>同花</b>时 +10 倍率', hand: (c) => has(c, 'flush') && { mult: 10 } },
-  { key: 'pairC', name: '机灵鬼', r: 1, price: 4, desc: '出牌含<b>对子</b>时 +50 筹码', hand: (c) => has(c, 'pair') && { chips: 50 } },
+  { key: 'pairM', arch: 'heat', name: '暖场主持', r: 2, price: 6, desc: '热度最低停在<b>暖场</b>，永远不会冷场' },
+  { key: 'twoM', arch: 'heat', name: '罐头笑声', r: 1, price: 4, desc: '一手牌<b>没人喜欢</b>时，热度不降（嘘声照样降）' },
+  { key: 'threeM', arch: 'heat', name: '气氛组', r: 1, price: 5, desc: '这手牌后每档热度 <b>+5</b> 倍率（沸腾 +15）', crowd: (c) => c.newHeat > 0 && { mult: 5 * c.newHeat } },
+  { key: 'strM', arch: 'heat', name: '烟火师', r: 2, price: 7, desc: '这手牌把场子带到<b>沸腾</b>时 ×2 倍率', crowd: (c) => c.newHeat === 3 && { xmult: 2 } },
+  { key: 'flM', arch: 'heat', name: '冷面笑匠', r: 2, price: 6, desc: '这手牌后<b>冷场</b>时 ×3 倍率（抵掉冷场的 ×0.5 还有余）', crowd: (c) => c.newHeat === 0 && { xmult: 3 } },
+  { key: 'pairC', arch: 'crowd', name: '嘘声收集者', r: 1, price: 4, desc: '这手牌每挨一声嘘 <b>+10</b> 倍率', crowd: (c) => c.boos > 0 && { mult: 10 * c.boos } },
   { key: 'even', name: '偶数派', r: 1, price: 4, desc: '每张计分的 10、8、6、4、2 <b>+4</b> 倍率', card: (c, k) => k.r <= 10 && k.r % 2 === 0 && { mult: 4 } },
   { key: 'odd', name: '奇数派', r: 1, price: 4, desc: '每张计分的 A、9、7、5、3 <b>+31</b> 筹码', card: (c, k) => (k.r === 14 || (k.r <= 9 && k.r % 2 === 1)) && { chips: 31 } },
   { key: 'face', name: '宫廷画师', r: 1, price: 5, desc: '每张计分的人头牌 <b>+30</b> 筹码', card: (c, k) => isFace(k.r) && { chips: 30 } },
   { key: 'ace', name: '王牌飞行员', r: 1, price: 5, desc: '每张计分的 A <b>+20</b> 筹码、<b>+4</b> 倍率', card: (c, k) => k.r === 14 && { chips: 20, mult: 4 } },
-  { key: 'half', name: '半副牌', r: 1, price: 5, desc: '出牌不超过 3 张时 <b>+20</b> 倍率', hand: (c) => c.played.length <= 3 && { mult: 20 } },
+  { key: 'half', arch: 'crowd', name: '点歌台', r: 2, price: 7, desc: '每位<b>喜欢这手牌</b>的观众 ×1.2 倍率', crowd: (c) => c.fans > 0 && { xmult: Math.round(Math.pow(1.2, c.fans) * 100) / 100 } },
   { key: 'flag', name: '弃牌旗', r: 1, price: 5, desc: '每剩 1 次弃牌 <b>+30</b> 筹码', hand: (c) => c.discards > 0 && { chips: 30 * c.discards } },
   // previews show the average so the "预计" number stays stable
-  { key: 'misprint', name: '印错的牌', r: 1, price: 4, desc: '随机 <b>+0 ~ 23</b> 倍率', hand: (c) => ({ mult: c.preview ? 11 : rint(c.st, 24) }) },
+  { key: 'misprint', arch: 'heat', name: '即兴演员', r: 1, price: 4, desc: '这手牌让热度<b>上升</b>时得 $1', crowd: (c) => c.newHeat > c.heat && { money: 1 } },
   { key: 'piggy', name: '存钱罐', r: 1, price: 5, desc: '每回合结束时得 <b>$4</b>', money: () => 4 },
   { key: 'abacus', name: '算盘', r: 1, price: 5, desc: '回合结束时每剩 1 次弃牌得 <b>$2</b>', money: (j, st) => 2 * st.discards },
   {
@@ -44,13 +47,16 @@ export const JOKERS = [
     before: (c, j) => { j.data.n = (j.data.n || 0) + 1; },
     hand: (c, j) => ({ mult: j.data.n }),
   },
-  { key: 'collector', name: '收藏家', r: 2, price: 6, desc: '每拥有 1 位艺人 <b>+3</b> 倍率', hand: (c) => ({ mult: 3 * c.jokerCount }) },
-  { key: 'hoard', name: '守财奴', r: 2, price: 6, desc: '每持有 $1 <b>+2</b> 筹码', hand: (c) => c.money > 0 && { chips: 2 * c.money } },
+  { key: 'collector', arch: 'crowd', name: '熟客经理', r: 2, price: 6, desc: '每位在座的<b>熟客</b> ×1.25 倍率', crowd: (c) => c.regulars > 0 && { xmult: Math.round(Math.pow(1.25, c.regulars) * 100) / 100 } },
+  {
+    key: 'hoard', arch: 'economy', name: '票贩子', r: 1, price: 5, desc: '每场结束时，每位在座的<b>很挑剔</b>观众（第 3 档）得 $2',
+    money: (j, st) => 2 * (st.audience || []).filter((a) => !a.vip && SPEC[a.key] && SPEC[a.key].tier === 3).length,
+  },
   { key: 'deep', name: '深牌库', r: 2, price: 6, desc: '牌堆里每剩 1 张 <b>+2</b> 筹码', hand: (c) => c.deckLen > 0 && { chips: 2 * c.deckLen } },
   { key: 'gem', name: '宝石匠', r: 2, price: 6, desc: '每张计分的增强牌 <b>+5</b> 倍率', card: (c, k) => k.enh && { mult: 5 } },
   { key: 'first', name: '开门红', r: 2, price: 6, desc: '每回合第一手牌 <b>×2</b> 倍率', hand: (c) => c.first && { xmult: 2 } },
   { key: 'fullseat', name: '满座', r: 2, price: 6, desc: '出牌恰好 5 张时 <b>×1.5</b> 倍率', hand: (c) => c.played.length === 5 && { xmult: 1.5 } },
-  { key: 'splash', name: '泼墨', r: 2, price: 5, desc: '打出的每一张牌都计分' },
+  { key: 'splash', arch: 'heat', name: '保镖', r: 2, price: 6, desc: '<b>嘘声</b>不再让热度下降' },
   { key: 'fourf', name: '四指', r: 2, price: 6, desc: '同花和顺子只需 <b>4 张</b>' },
   {
     key: 'smith', name: '铁匠', r: 2, price: 7, desc: '牌组里每张铁心牌 <b>×0.25</b> 倍率',
@@ -106,7 +112,7 @@ export const JOKERS = [
   // ---- single-card plays
   { key: 'solo', arch: 'single', name: '独奏', r: 3, price: 8, desc: '只打出 <b>1 张</b>牌时 ×3 倍率', hand: (c) => c.played.length === 1 && { xmult: 3 } },
   { key: 'sniper', arch: 'single', name: '狙击手', r: 1, price: 5, desc: '只打出 <b>1 张</b>牌时 +40 筹码、+8 倍率', hand: (c) => c.played.length === 1 && { chips: 40, mult: 8 } },
-  { key: 'lonely', arch: 'single', name: '孤星', r: 1, price: 4, desc: '打出<b>高牌</b>时 +15 倍率', hand: (c) => c.type === 'high' && { mult: 15 } },
+  { key: 'lonely', arch: 'single', name: '冷笑话', r: 1, price: 4, desc: '打出<b>没人喜欢</b>的牌时 +20 倍率', crowd: (c) => c.fans === 0 && { mult: 20 } },
   // ---- rewriting the deck
   { key: 'thin', arch: 'deck', name: '瘦身', r: 2, price: 6, desc: '牌组每比 52 张<b>少 1 张</b> +3 倍率', hand: (c) => c.deckList.length < 52 && { mult: 3 * (52 - c.deckList.length) } },
   {
@@ -124,9 +130,14 @@ export const JOKERS = [
   },
   { key: 'anvil', arch: 'deck', name: '铁砧', r: 1, price: 5, desc: '留在手里的每张<b>铁心牌</b> +30 筹码', held: (c, k) => k.enh === 'steel' && { chips: 30 } },
   // ---- hand types
-  { key: 'twoC', arch: 'hand', name: '双响炮', r: 1, price: 4, desc: '出牌含<b>两对</b>时 +80 筹码', hand: (c) => has(c, 'two') && { chips: 80 } },
-  { key: 'strC', arch: 'hand', name: '直通车', r: 1, price: 4, desc: '出牌含<b>顺子</b>时 +100 筹码', hand: (c) => has(c, 'straight') && { chips: 100 } },
-  { key: 'threeC', arch: 'hand', name: '三连击', r: 1, price: 4, desc: '出牌含<b>三条</b>时 +100 筹码', hand: (c) => has(c, 'three') && { chips: 100 } },
+  { key: 'twoC', arch: 'heat', name: '暖场歌手', r: 1, price: 5, desc: '每场<b>第一手</b>牌，热度额外 +1' },
+  { key: 'strC', arch: 'crowd', name: '提词员', r: 1, price: 4, desc: '每位<b>喜欢这手牌</b>的观众 +40 筹码', crowd: (c) => c.fans > 0 && { chips: 40 * c.fans } },
+  {
+    key: 'threeC', arch: 'crowd', name: '现场导播', r: 2, price: 6,
+    desc: (j) => `每征服一位观众，永久 +2 倍率<br>（当前 <b>+${2 * (j ? j.data.n || 0 : 0)}</b>）`,
+    hand: (c, j) => (j.data.n || 0) > 0 && { mult: 2 * j.data.n },
+    crowd: (c, j) => { if (!c.preview) j.data.n = (j.data.n || 0) + c.won; },
+  },
   { key: 'quad', arch: 'hand', name: '四重奏', r: 3, price: 8, desc: '出牌含<b>四条</b>时 ×4 倍率', hand: (c) => has(c, 'four') && { xmult: 4 } },
   { key: 'tower', arch: 'hand', name: '长城', r: 3, price: 8, desc: '出牌含<b>顺子</b>时 ×3 倍率', hand: (c) => has(c, 'straight') && { xmult: 3 } },
   { key: 'twin', arch: 'hand', name: '双塔', r: 3, price: 8, desc: '出牌含<b>两对</b>时 ×2.5 倍率', hand: (c) => has(c, 'two') && { xmult: 2.5 } },

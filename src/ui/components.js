@@ -7,16 +7,16 @@ import { inRound, state } from './store.js';
 export const glyph = (s) => s + VS;
 
 export const JICON = {
-  joker: '☻', suitS: '♠', suitH: '♥', suitC: '♣', suitD: '♦', pairM: '⚇', twoM: '⚏', threeM: '♆', strM: '↗', flM: '❖', pairC: '✌',
-  even: '②', odd: '③', face: '♚', ace: '✈', half: '◐', flag: '⚑', misprint: '✎', piggy: '◉', abacus: '⚖', sweeper: '✂', snow: '❄',
-  collector: '✪', hoard: '$', deep: '≋', gem: '◆', first: '☀', fullseat: '⑤', splash: '☔', fourf: '✋', smith: '⚒', last: '⌛',
+  joker: '☻', suitS: '♠', suitH: '♥', suitC: '♣', suitD: '♦', pairM: '☼', twoM: '◑', threeM: '✺', strM: '✹', flM: '☃', pairC: '✖',
+  even: '②', odd: '③', face: '♚', ace: '✈', half: '♬', flag: '⚑', misprint: '✧', piggy: '◉', abacus: '⚖', sweeper: '✂', snow: '❄',
+  collector: '✪', hoard: '✉', deep: '≋', gem: '◆', first: '☀', fullseat: '⑤', splash: '⛉', fourf: '✋', smith: '⚒', last: '⌛',
   family: '⌂', royal: '♛', duo: '☯', trio: '☘', palette: '✿', mirror: '♔', blueprint: '▤',
   inkwell: '✒', mono: '◧', rainbow: '❂', suitbank: '♮', jester: '♟', crown: '♕', regent: '♜', banquet: '♨',
   gale: '☴', lean: '☁', recycle: '☖', scav: '⚓', cat: '☺', bull: '☊', golden: '☉', rocket: '☄',
-  solo: '♪', sniper: '◎', lonely: '✩', thin: '◌', glassblow: '◇', mason: '▦', blush: '❀', sealer: '⊛',
-  grower: '⚘', anvil: '⚙', twoC: '⁂', strC: '⇶', threeC: '☰', quad: '▣', tower: '☷', twin: '☶',
+  solo: '♪', sniper: '◎', lonely: '☂', thin: '◌', glassblow: '◇', mason: '▦', blush: '❀', sealer: '⊛',
+  grower: '⚘', anvil: '⚙', twoC: '♩', strC: '✎', threeC: '☎', quad: '▣', tower: '☷', twin: '☶',
   ladder: '☲', ice: '❆', gambler: '⚂', echo: '⦿',
-  shill: '☝', heckler: '☹', agent: '☏', claque: '♫', encore: '↻', boxoffice: '▤',
+  shill: '☝', heckler: '☹', agent: '☏', claque: '♫', encore: '↻', boxoffice: '⎚',
 };
 export const VICON = { slot: '⊞', hand: '✋', disc: '✂', hsize: '⇔', cons: '☾', shelf: '▥', reroll: '⟳', interest: '%' };
 export const TICON = {

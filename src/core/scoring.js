@@ -3,7 +3,7 @@ import { chipVal, isFace } from './cards.js';
 import { ANTE, BLIND_X, BOSSES, EDITIONS, HANDS, STAKES } from './rules.js';
 import { JD, hasJ } from './jokers.js';
 import { evaluate } from './evaluate.js';
-import { HEAT, HEAT_START, OVATION_TIP, SPEC, VIP, tipOf } from './audience.js';
+import { HEAT, HEAT_START, OVATION_TIP, SPEC, VIP, isRegular, tipOf } from './audience.js';
 import { rand } from './rng.js';
 
 export const curBoss = (st) => (st.blindIdx === 2 ? BOSSES[st.bossKey] : null);
@@ -30,7 +30,7 @@ export function handBase(st, t) {
 // Returns the ordered `steps` the UI animates, plus totals and any glass cards that broke.
 export function computeHand(st, played, held, opt = {}) {
   const preview = !!opt.preview;
-  const ev = evaluate(played, { four: hasJ(st, 'fourf'), splash: hasJ(st, 'splash') });
+  const ev = evaluate(played, { four: hasJ(st, 'fourf') });
   const base = handBase(st, ev.type);
   // bosses that void a whole hand: it scores nothing, but still costs the hand
   const boss = bossRule(st), seen = st.roundTypes || [];
@@ -47,7 +47,8 @@ export function computeHand(st, played, held, opt = {}) {
     live: ev.scoring.filter((c) => !debuffed(st, c)), held,
     handsAfter: st.hands - 1, discards: st.discards, money: st.money, deckLen: st.deck.length,
     jokerCount: st.jokers.length, deckList: st.deckList, first: st.roundHands === 0, preview,
-    audOk: (st.audience || []).filter((a) => a.ok).length, audN: (st.audience || []).length,
+    audOk: (st.audience || []).filter((a) => a.ok && !a.vip).length, audN: (st.audience || []).filter((a) => !a.vip).length,
+    heat: st.heat ?? HEAT_START,
   };
   for (const j of jokers) { const d = JD[j.key]; if (d.before) d.before(ctx, j); }
 
@@ -108,7 +109,7 @@ export function computeHand(st, played, held, opt = {}) {
   if (aud.length) {
     const actx = { ...ctx, total: Math.floor(S.chips * S.mult), target: st.target, roundTypes: st.roundTypes || [], lastType: st.lastType || null };
     const agent = hasJ(st, 'agent') ? 2 : 1, encore = hasJ(st, 'encore') ? 2 : 1;
-    let fans = 0;
+    let fans = 0, won = 0;
     aud.forEach((a, i) => {
       const sp = SPEC[a.key];
       if (!sp) return;
@@ -118,6 +119,7 @@ export function computeHand(st, played, held, opt = {}) {
       else if (!likes && !a.vip && sp.no(actx)) boos.push(i);
       if (a.ok || !likes) return;
       sat.push(i);
+      if (!a.vip) won++;
       if (a.vip) { push({ at: 'aud', i, money: VIP.tip * agent, say: VIP.say, lift: true }); return; }
       const tip = tipOf(st, sp);
       if (tip.money) push({ at: 'aud', i, money: tip.money * agent, say: sp.say[0] });
@@ -127,9 +129,22 @@ export function computeHand(st, played, held, opt = {}) {
       ovation = true;
       push({ at: 'aud', i: -1, money: OVATION_TIP * agent, ovation: true });
     }
-    // heat: up if anyone liked the hand, down if nobody did, down again per boo; then the whole hand is scaled by it
+    // heat: up if anyone liked the hand, down if nobody did, down again per boo; then the whole hand is scaled by it.
+    // Cast members bend it: 罐头笑声 (nobody liking it costs nothing), 保镖 (boos cost nothing), 暖场歌手 (+1 on the show's
+    // first hand), 暖场主持 (never below 暖场)
     for (const i of boos) steps.push({ at: 'aud', i, text: '嘘！', cls: 'boo', say: SPEC[aud[i].key].say[1] });
-    heat = ovation ? HEAT.length - 1 : Math.max(0, Math.min(HEAT.length - 1, heat + (fans ? 1 : -1) - boos.length));
+    const top = HEAT.length - 1, before = heat;
+    let d = fans ? 1 : hasJ(st, 'twoM') ? 0 : -1;
+    if (!hasJ(st, 'splash')) d -= boos.length;
+    if (ctx.first && hasJ(st, 'twoC')) d += 1;
+    heat = ovation ? top : Math.max(hasJ(st, 'pairM') ? 1 : 0, Math.min(top, heat + d));
+    // cast members that play off the room's reaction
+    const cctx = { ...ctx, fans, boos: boos.length, won, heat: before, newHeat: heat, regulars: aud.filter((a) => !a.vip && isRegular(st, a.key)).length };
+    jokers.forEach((j, i) => {
+      const s = src(i); if (!s) return;
+      const dj = JD[s.key];
+      if (dj.crowd) { const e = dj.crowd(cctx, s); if (e) push({ at: 'joker', uid: j.uid, ...e }); }
+    });
     push({ at: 'heat', heat, xmult: HEAT[heat].x });
   }
 

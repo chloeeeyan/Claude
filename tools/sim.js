@@ -62,7 +62,7 @@ function chooseDiscard(st, best) {
 }
 
 const XMULT = new Set(['last', 'family', 'royal', 'duo', 'trio', 'palette', 'first', 'fullseat', 'smith', 'mono', 'rainbow', 'crown', 'regent',
-  'solo', 'glassblow', 'blush', 'quad', 'tower', 'twin', 'gambler', 'claque']);
+  'solo', 'glassblow', 'blush', 'quad', 'tower', 'twin', 'gambler', 'claque', 'strM', 'flM', 'half', 'collector']);
 const orderJokers = (st) => st.jokers.sort((a, b) => (XMULT.has(a.key) ? 1 : 0) - (XMULT.has(b.key) ? 1 : 0));
 
 function useTarotsGreedy(st) {
