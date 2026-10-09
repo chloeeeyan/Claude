@@ -7,14 +7,14 @@ Read `docs/direction.md` before planning work; it holds the direction and the ro
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
-- `npm ci` then `npm test` (Vitest, 71 tests) — run after any change
+- `npm ci` then `npm test` (Vitest, 74 tests) — run after any change
 - `npm run sim -- n=800` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
   (`read=0` ignores the crowd's tastes ≈7%, `aud=0` runs with empty seats ≈4%: the audience is core, not a bonus).
   The bot reads the room (weighs cash tips and heat) and prints spectators won, ovation rate, average heat and how often it went 冷场.
 - `npm run dev` / `npm run build` (output `dist/`, relative paths via `base: './'`)
 
 ## Layout (read only what the task needs)
-- `src/core/` game rules, no DOM: `rules.js` tables · `jokers.js` (hooks: card / held / hand / before / discard / money / broke; `arch` = build style) / `tarots.js` content · `evaluate.js` hand detection ·
+- `src/core/` game rules, no DOM: `rules.js` tables · `jokers.js` (hooks: card / held / hand / before / discard / money / broke / crowd (after the audience reacts); `arch` = build style) / `tarots.js` content · `evaluate.js` hand detection ·
   `scoring.js` computeHand → animation `steps` · `run.js` state machine (select → play ⇄ scoring → cashout → shop → … → over/win) ·
   `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves ·
   `meta.js` cross-run progress (unlocks, collection, daily challenge), stored by the UI as `jn.meta` ·
@@ -49,7 +49,7 @@ Hand types (对子, 顺子…) keep their poker names on purpose.
 - Reply to the user in Chinese, plainly; verify visual changes in a browser before claiming done.
 
 ## Status and next steps
-Done: playable full run (8 nights, 75 jokers in 8 build styles, 15 tarots, 12 hand types incl. 3 hidden, 20 bosses, 8 vouchers,
+Done: playable full run (8 nights, 75 jokers in 10 build styles (incl. crowd and heat), 15 tarots, 12 hand types incl. 3 hidden, 20 bosses, 8 vouchers,
 4 joker editions, 5 decks, 3 stakes, 17 spectator types with tastes, pet hates and quips, heat 0–3, 6 crowd jokers), hand guide,
 coach tips, pop-art UI, game-screen layout, seeded RNG, versioned saves, tests, sim.
 

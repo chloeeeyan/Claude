@@ -47,7 +47,7 @@ describe('computeHand', () => {
   });
 
   it('does not change jokers or consume randomness in a preview', () => {
-    const st = round(['snow', 'misprint']);
+    const st = round(['snow', 'gambler', 'threeC']);
     const rng = st.rng;
     computeHand(st, cards('KH KC'), [], { preview: true });
     expect(st.jokers[0].data.n).toBeUndefined();
@@ -170,6 +170,37 @@ describe('the audience', () => {
     expect(computeHand(st, cards('9S'), [], { preview: true }).mult).toBe(1 * (SPEC.solo.tip.xmult + REGULAR.xmult) * HEAT[2].x);
     seat(st, 'pairfan', 'flushfan', 'redfan');
     expect(computeHand(st, cards('KH KC'), [], { preview: true }).money).toBe(SPEC.pairfan.tip.money); // tier 1 never becomes a regular
+  });
+
+  it('lets heat cast members bend the room', () => {
+    const lone = (jk, ...keys) => { const st = seat(round(jk), ...keys); st.heat = 1; return st; };
+    // nobody likes a lone 9♠ in front of 双双对对 / 同花迷 / 求新鲜: 冷场 without help
+    expect(computeHand(lone([], 'twofan', 'flushfan', 'variety'), cards('9S'), [], { preview: true }).heat).toBe(0);
+    expect(computeHand(lone(['pairM'], 'twofan', 'flushfan', 'variety'), cards('9S'), [], { preview: true }).heat).toBe(1); // 暖场主持
+    expect(computeHand(lone(['twoM'], 'twofan', 'flushfan', 'variety'), cards('9S'), [], { preview: true }).heat).toBe(1); // 罐头笑声
+    // two boos (成双控, 排场控) and nobody liking it: 保镖 takes the boos out
+    expect(computeHand(lone(['splash'], 'pairfan', 'fivefan', 'acefan'), cards('9S'), [], { preview: true }).heat).toBe(0);
+    const g = lone(['splash'], 'pairfan', 'fivefan', 'acefan'); g.heat = 3;
+    expect(computeHand(g, cards('9S'), [], { preview: true }).heat).toBe(2);
+    // 暖场歌手: +1 on the show's first hand
+    expect(computeHand(lone(['twoC'], 'pairfan', 'flushfan', 'redfan'), cards('KH KC'), [], { preview: true }).heat).toBe(3);
+  });
+
+  it('pays cast members off the room: 烟火师 at 沸腾, 冷面笑匠 at 冷场, 嘘声收集者 per boo', () => {
+    const hot = seat(round(['strM']), 'pairfan', 'flushfan', 'redfan'); hot.heat = 2;
+    expect(computeHand(hot, cards('KH KC'), [], { preview: true }).mult).toBe(2 * 2 * HEAT[3].x);
+    const cold = seat(round(['flM']), 'twofan', 'flushfan', 'variety'); cold.heat = 1;
+    expect(computeHand(cold, cards('9S'), [], { preview: true }).mult).toBe(1 * 3 * HEAT[0].x);
+    const boo = seat(round(['pairC']), 'pairfan', 'fivefan', 'acefan'); boo.heat = 3;
+    expect(computeHand(boo, cards('9S'), [], { preview: true }).mult).toBe((1 + 20) * HEAT[0].x);
+  });
+
+  it('lets 现场导播 grow by every spectator won over, outside previews', () => {
+    const st = seat(round(['threeC']), 'pairfan', 'flushfan', 'redfan');
+    computeHand(st, cards('KH KD'), [], { preview: true });
+    expect(st.jokers[0].data.n).toBeUndefined();
+    computeHand(st, cards('KH KD'), []); // 成双控 + 红衣客
+    expect(st.jokers[0].data.n).toBe(2);
   });
 
   it('never lets a spectator boo a hand they like (a straight flush pleases both purists)', () => {
