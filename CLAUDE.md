@@ -2,6 +2,8 @@
 
 Pop-art poker deck-builder for the browser (Balatro-inspired; names, art and cards are original). Chinese UI.
 Theme: a night-club variety troupe (夜场剧团). Core twist: every show seats an audience of three whose tastes you play to.
+**Direction (2026-10-09, `docs/direction.md`):** renaming to *Tough Crowd* ·《别冷场！》, a 1980s US late-night TV card show;
+pop art for the real world, vaporwave only on screens. Read `docs/direction.md` before planning work; it holds the roadmap.
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
@@ -22,6 +24,7 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
 - `tests/`, `tools/sim.js`
 
 ## Names: code vs. what the player sees
+(Current troupe names below; the TV-show names that replace them are in `docs/direction.md`.)
 Code keeps poker/Balatro names; all UI text uses the troupe names. ante → 第 N 夜 (night) · blind 0/1/2 → 暖场 / 正戏 / 压轴
 (boss = 压轴嘉宾) · score → 掌声 · joker → 演员 (selling = 解约) · tarot / cons → 道具, tarot pack → 道具箱 · planet → 剧本
 (names are stage plays) · shop → 后台 · voucher → 剧院改造 · audience / spectator → 观众, all three won over → 满场喝彩.
@@ -58,4 +61,5 @@ Agreed priority list (from the product review), in order:
 8. ✅ Onboarding: teach-by-doing first run.
 9. ✅ Tarot/pack UX: open pack → pick and apply on the spot.
 10. Art & audio plan (`docs/art-audio-plan.md`); ✅ local telemetry (export from 图鉴 → 收藏); playtest plan in `docs/playtest.md`.
+Next (2026-10-09): the roadmap in `docs/direction.md` replaces the rest of this list — step 1 retheme, then 读场 phase ①.
 Commercial notes: 棋牌 themes are blocked for WeChat mini-games (personal accounts can't pick 牌类); Steam-first is the realistic route.
