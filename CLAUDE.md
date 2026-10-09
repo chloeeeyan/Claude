@@ -1,9 +1,9 @@
-# 鬼牌夜场 · Joker Night — notes for Claude
+# 别冷场！ · Tough Crowd — notes for Claude
 
 Pop-art poker deck-builder for the browser (Balatro-inspired; names, art and cards are original). Chinese UI.
-Theme: a night-club variety troupe (夜场剧团). Core twist: every show seats an audience of three whose tastes you play to.
-**Direction (2026-10-09, `docs/direction.md`):** renaming to *Tough Crowd* ·《别冷场！》, a 1980s US late-night TV card show;
-pop art for the real world, vaporwave only on screens. Read `docs/direction.md` before planning work; it holds the roadmap.
+Theme: a 1980s US late-night TV card show; you are the host. Core twist (读场): every show seats an audience of three
+whose tastes you play to. Pop art for the real world, vaporwave only on screens.
+Read `docs/direction.md` before planning work; it holds the direction and the roadmap. (Was 鬼牌夜场 / 夜场剧团 until 2026-10-09.)
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
@@ -24,10 +24,10 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
 - `tests/`, `tools/sim.js`
 
 ## Names: code vs. what the player sees
-(Current troupe names below; the TV-show names that replace them are in `docs/direction.md`.)
-Code keeps poker/Balatro names; all UI text uses the troupe names. ante → 第 N 夜 (night) · blind 0/1/2 → 暖场 / 正戏 / 压轴
-(boss = 压轴嘉宾) · score → 掌声 · joker → 演员 (selling = 解约) · tarot / cons → 道具, tarot pack → 道具箱 · planet → 剧本
-(names are stage plays) · shop → 后台 · voucher → 剧院改造 · audience / spectator → 观众, all three won over → 满场喝彩.
+Code keeps poker/Balatro names; all UI text uses the TV-show names. ante → 第 N 期 (episode) · blind 0/1/2 → 热场 / 正片 / 黄金档
+(boss = 黄金档嘉宾) · score → 收视 · round cleared → 收工 · joker → 艺人, the row → 班底 (selling = 解约) · tarot / cons → 道具,
+tarot pack → 道具箱 · planet → 赞助广告 (names are made-up 1980s brands), planet pack → 赞助包 · shop → 后台 ·
+voucher → 演播室升级 · audience / spectator → 观众, all three won over → 全场起立. Storage keys stay `jn.*`.
 Hand types (对子, 顺子…) keep their poker names on purpose.
 
 ## Rules of thumb

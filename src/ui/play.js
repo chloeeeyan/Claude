@@ -82,7 +82,7 @@ export async function playHand() {
       if (el && s.i >= 0) el.classList.add('ok');
       if (s.ovation) {
         const o = document.createElement('div');
-        o.className = 'ovation'; o.textContent = '满场喝彩！';
+        o.className = 'ovation'; o.textContent = '全场起立！';
         $('stage').appendChild(o);
         setTimeout(() => o.remove(), 1300 / ui.speed);
         shake($('app'), 10); Sfx.win();

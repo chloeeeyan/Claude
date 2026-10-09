@@ -12,11 +12,11 @@ export const emptyMeta = () => ({
 
 // What a new player starts without, and what opens it. Checked whenever a run ends.
 export const UNLOCKS = [
-  { id: 'deck:gold', n: '金色牌组', need: '任意一局撑到第 3 夜', ok: (m) => m.bestAnte >= 3 },
+  { id: 'deck:gold', n: '金色牌组', need: '任意一局撑到第 3 期', ok: (m) => m.bestAnte >= 3 },
   { id: 'deck:paint', n: '彩绘牌组', need: '累计用掉 10 件道具', ok: (m) => m.tarots >= 10 },
-  { id: 'deck:black', n: '黑色牌组', need: '任意一局撑到第 6 夜', ok: (m) => m.bestAnte >= 6 },
-  { id: 'stake:1', n: '困难难度', need: '普通难度撑到第 5 夜', ok: (m) => (m.stakeBest[0] || 0) >= 5 },
-  { id: 'stake:2', n: '噩梦难度', need: '困难难度撑到第 5 夜', ok: (m) => (m.stakeBest[1] || 0) >= 5 },
+  { id: 'deck:black', n: '黑色牌组', need: '任意一局撑到第 6 期', ok: (m) => m.bestAnte >= 6 },
+  { id: 'stake:1', n: '困难难度', need: '普通难度撑到第 5 期', ok: (m) => (m.stakeBest[0] || 0) >= 5 },
+  { id: 'stake:2', n: '噩梦难度', need: '困难难度撑到第 5 期', ok: (m) => (m.stakeBest[1] || 0) >= 5 },
 ];
 export const UNLOCK = Object.fromEntries(UNLOCKS.map((u) => [u.id, u]));
 export const isUnlocked = (m, id) => m.unlocked.includes(id);

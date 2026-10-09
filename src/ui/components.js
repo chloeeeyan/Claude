@@ -30,7 +30,7 @@ export const isPicked = (kind, uid) => !!(state.inspect && state.inspect.kind ==
 
 export function cardTitle(c) {
   const p = [SNAME[c.s] + RL(c.r)];
-  if (inRound() && debuffed(state, c)) p.push(`本场压轴嘉宾「${curBoss(state).n}」：这张牌打出去不计分`);
+  if (inRound() && debuffed(state, c)) p.push(`本场黄金档嘉宾「${curBoss(state).n}」：这张牌打出去不计分`);
   if (c.enh) p.push(`${ENH[c.enh].n}：${ENH[c.enh].d}`);
   if (c.seal) p.push(`${SEALS[c.seal].n}：${SEALS[c.seal].d}`);
   if (c.pc) p.push(`永久额外筹码 +${c.pc}`);
@@ -64,7 +64,7 @@ export function jokerFace(d, j, tag = 'div', attrs = '', ed = j && j.ed) {
     <span class="jn">${d.name}</span><span class="jd">${descOf(d, j)}${E ? `<br><b class="edl">${E.n}：${E.d}</b>` : ''}</span>${E ? `<span class="edtag">${E.n}</span>` : ''}</${tag}>`;
 }
 
-export const voucherFace = (k) => `<div class="tc voucher"><span class="tag">剧院改造</span><span class="ji" aria-hidden="true">${glyph(VICON[k] || '✚')}</span>
+export const voucherFace = (k) => `<div class="tc voucher"><span class="tag">升级</span><span class="ji" aria-hidden="true">${glyph(VICON[k] || '✚')}</span>
   <span class="jn">${VOUCHERS[k].n}</span><span class="jd">${VOUCHERS[k].d}<br>永久有效</span></div>`;
 export const jokerHTML = (j) => jokerFace(JD[j.key], j, 'button', `data-act="joker" data-uid="${j.uid}" data-key="j${j.uid}"`);
 
@@ -75,7 +75,7 @@ export function tarotFace(key, tag = 'div', attrs = '', picked = false) {
 }
 export const tarotHTML = (c) => tarotFace(c.key, 'button', `data-act="cons" data-uid="${c.uid}" data-key="t${c.uid}"`, isPicked('c', c.uid));
 
-export const planetFace = (name, body, label = '剧本') =>
+export const planetFace = (name, body, label = '赞助') =>
   `<div class="planet"><span class="lbl">${label}</span><span class="orb" aria-hidden="true"></span><span class="jn">${name}</span><span class="jd">${body}</span></div>`;
 
 // "KH KC 9S" → card objects, for examples in the guide and the cover

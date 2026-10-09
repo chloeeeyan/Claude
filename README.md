@@ -1,8 +1,8 @@
-# 鬼牌夜场 · Joker Night
+# 别冷场！ · Tough Crowd
 
-波普漫画风的扑克构筑网页游戏，主题是夜场剧团：凑牌型拿筹码 × 倍率赢得掌声，讨好台下 3 位口味各异的观众，谢幕后去后台招演员、买剧本和道具，演满 8 夜。
+波普漫画风的扑克构筑网页游戏，主题是 1980 年代美国深夜电视秀：你是牌局直播秀的主持人，凑牌型拿筹码 × 倍率拉收视，讨好台下 3 位口味各异的观众，收工后去后台签艺人、买赞助广告和道具，播满 8 期。方向见 `docs/direction.md`。
 
-代码里沿用扑克 / Balatro 的叫法（ante、blind、joker、tarot、planet、shop），界面文字用剧团的叫法，对照表见 `CLAUDE.md`。
+代码里沿用扑克 / Balatro 的叫法（ante、blind、joker、tarot、planet、shop），界面文字用深夜电视秀的叫法，对照表见 `CLAUDE.md`。
 
 ## 本地运行
 
@@ -31,7 +31,7 @@ src/
     rng.js         带种子的随机数（同一种子可完整复现一局）
     save.js        带版本号的存档格式与迁移
     meta.js        跨局进度：解锁、收藏、每日挑战
-    audience.js    观众：喜好、每夜的观众席、打赏
+    audience.js    观众：喜好、每期的观众席、打赏
   ui/            界面
     store.js       当前对局与本地偏好（localStorage）
     hud.js         顶部抬头栏与「这一手」计分面板

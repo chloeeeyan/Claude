@@ -9,7 +9,7 @@ export function renderShelf() {
   const used = usedSlots(state);
   $('jcount').textContent = `${used}/${state.maxJokers}`;
   let html = state.jokers.map(jokerHTML).join('');
-  for (let i = used; i < state.maxJokers; i++) html += `<div class="jk empty">${i === 0 && !state.jokers.length ? '去后台招演员' : '空位'}</div>`;
+  for (let i = used; i < state.maxJokers; i++) html += `<div class="jk empty">${i === 0 && !state.jokers.length ? '后台签约' : '空位'}</div>`;
   patch($('jrow'), html);
 
   $('ccount').textContent = `${state.cons.length}/${state.maxCons}`;
@@ -27,7 +27,7 @@ function renderInspector() {
       const d = JD[j.key], idx = state.jokers.indexOf(j);
       ins.hidden = false;
       const E = j.ed && EDITIONS[j.ed];
-      ins.innerHTML = `<div class="in-t"><b>${E ? E.n : ''}${d.name}</b><span class="hint">${RARITY[d.r]}演员 · 第 ${idx + 1} 位（从左往右触发）</span><p>${descOf(d, j).replace(/<br>/g, ' ')}${E ? `　${E.n}：${E.d}` : ''}</p></div>
+      ins.innerHTML = `<div class="in-t"><b>${E ? E.n : ''}${d.name}</b><span class="hint">${RARITY[d.r]}艺人 · 第 ${idx + 1} 位（从左往右触发）</span><p>${descOf(d, j).replace(/<br>/g, ' ')}${E ? `　${E.n}：${E.d}` : ''}</p></div>
         <div class="in-a">
           <button class="chip" data-act="jleft" ${idx === 0 || busy ? 'disabled' : ''}>← 左移</button>
           <button class="chip" data-act="jright" ${idx === state.jokers.length - 1 || busy ? 'disabled' : ''}>右移 →</button>
