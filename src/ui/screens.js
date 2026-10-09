@@ -7,6 +7,7 @@ import { $, fmt } from './dom.js';
 import { DECK_MARK, JICON, STAKE_MARK, cardHTML, glyph, heatHTML, jokerFace, planetFace, seatHTML, tarotFace, voucherFace } from './components.js';
 import { patch } from './patch.js';
 import { Sfx } from './sfx.js';
+import { isEN } from '../i18n/index.js';
 import { inRound, meta, records, state, storage, ui } from './store.js';
 
 function blindCard(i) {
@@ -120,7 +121,7 @@ function menuHTML() {
         <div class="how"><em>1</em><b>选牌出牌</b><span>凑出对子、同花、顺子这些牌型</span></div>
         <div class="how"><em>2</em><b>筹码 × 倍率</b><span>牌型定基础分，计分牌再加点数</span></div>
         <div class="how"><em>3</em><b>签艺人叠效果</b><span>收工后去后台，艺人效果层层叠加</span></div>
-        <div class="cv-tools"><button class="chip" data-act="help">玩法</button><button class="chip" data-act="guide">牌型图鉴</button><button class="chip" data-act="sound">音效 ${Sfx.on ? '开' : '关'}</button><button class="chip rot-only" data-act="landscape">横屏玩</button></div>
+        <div class="cv-tools"><button class="chip" data-act="help">玩法</button><button class="chip" data-act="guide">牌型图鉴</button><button class="chip" data-act="sound">音效 ${Sfx.on ? '开' : '关'}</button><button class="chip rot-only" data-act="landscape">横屏玩</button><button class="chip" data-act="lang" lang="${isEN ? 'zh' : 'en'}">${isEN ? '中文' : 'English'}</button></div>
       </div>
     </aside>
     <section class="cv-main">

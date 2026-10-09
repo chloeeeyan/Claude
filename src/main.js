@@ -3,6 +3,7 @@ import '@fontsource/zcool-kuaile';
 import '@fontsource/luckiest-guy';
 import './styles/index.css';
 
+import { startEnglish } from './i18n/index.js';
 import { bindInput } from './ui/input.js';
 import { bindOrientation } from './ui/orient.js';
 import { render } from './ui/render.js';
@@ -16,4 +17,5 @@ bindOrientation();
 setState(loadRun() || menuState());
 if (state.phase === 'play') state.hand.forEach((c) => ui.justDrawn.add(c.id));
 bindInput();
+startEnglish();
 render();

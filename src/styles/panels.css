@@ -82,7 +82,7 @@
 
 /* who sits in each show, on the show-select cards */
 .bc-h { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
-.bc-crowd { display: grid; gap: 3px; }
+.bc-crowd { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; }
 .bc .vipnote { color: var(--pink); font-weight: 700; }
 .bc-ck { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 12px; }
 .bc-ck b { font-family: var(--comic); font-weight: 400; font-size: 13px; }
@@ -95,5 +95,5 @@
 .pickseat.on .seat { background: var(--yellow); }
 .bc-crowd .seat { width: 100%; box-shadow: 2px 2px 0 var(--ink); padding-block: 1px; gap: 5px; }
 .bc-crowd .seat .sa { width: 22px; height: 22px; font-size: 12px; border-width: 2px; }
-.bc-crowd .seat .sn { display: flex; align-items: baseline; gap: 6px; }
+.bc-crowd .seat .sn { display: flex; align-items: baseline; gap: 6px; min-width: 0; overflow: hidden; }
 .bc-crowd .seat .sn b { font-size: 13px; flex: none; }

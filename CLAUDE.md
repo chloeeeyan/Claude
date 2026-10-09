@@ -7,7 +7,7 @@ Read `docs/direction.md` before planning work; it holds the direction and the ro
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
-- `npm ci` then `npm test` (Vitest, 74 tests) — run after any change
+- `npm ci` then `npm test` (Vitest, 76 tests) — run after any change
 - `npm run sim -- n=800` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
   (`read=0` ignores the crowd's tastes ≈7%, `aud=0` runs with empty seats ≈4%: the audience is core, not a bonus).
   The bot reads the room (weighs cash tips and heat) and prints spectators won, ovation rate, average heat and how often it went 冷场.
@@ -46,6 +46,10 @@ Hand types (对子, 顺子…) keep their poker names on purpose.
   English only as small slanted eyebrows next to Chinese. Essential info must be visible, not hover-only.
 - Desktop must fit one screen (checked at 1366×640 and 1134×734); phones held upright stack and scroll. Phones held sideways
   get the desktop layout: `ui/orient.js` widens the viewport meta so the page lays out ~640px tall and the browser scales it.
+- English UI: `src/i18n/` translates the page in English mode (browser language not zh, or the cover switch). Game code keeps
+  writing Chinese; when you add or change any Chinese text, add its English to `src/i18n/en.js` (key = the Chinese with numbers
+  as {#}), then run `tools/i18n-scan.cjs` against a dev server (it lists anything untranslated). `tests/i18n.test.js` covers content.
+  English mode sets html[lang=en]; `src/styles/en.css` holds the few layout tweaks English needs.
 - Reply to the user in Chinese, plainly; verify visual changes in a browser before claiming done.
 
 ## Status and next steps
