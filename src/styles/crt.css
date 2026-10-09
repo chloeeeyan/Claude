@@ -1,0 +1,62 @@
+/* The screen layer: vaporwave lives only on things that are a TV screen (docs/direction.md).
+   Studio and cast stay pop-art; the heat monitor, the channel flip and the title card glow. */
+:root {
+  --crt: #160b33;
+  --crt-2: #2a0f55;
+  --neon-pink: #ff5ad8;
+  --neon-cyan: #3ef4ff;
+  --sun-1: #ffd60a;
+  --sun-2: #ff4fa3;
+}
+
+/* heat meter as a small CRT monitor */
+.heat {
+  background: radial-gradient(ellipse at 50% 40%, var(--crt-2), var(--crt) 75%);
+  color: var(--neon-cyan); text-shadow: 0 0 6px rgba(62, 244, 255, .6); overflow: hidden;
+}
+.heat::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: repeating-linear-gradient(to bottom, rgba(255,255,255,.06) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 12px rgba(0,0,0,.7);
+}
+.heat .hk .en { color: var(--neon-pink); text-shadow: 0 0 6px rgba(255, 90, 216, .7); }
+.heat .hm b { background: rgba(255,255,255,.08); border-color: rgba(62, 244, 255, .7); }
+.heat .hm b.on { background: var(--neon-pink); border-color: var(--white); box-shadow: 0 0 8px var(--neon-pink); }
+.heat .hv em { color: var(--sun-1); text-shadow: 0 0 6px rgba(255, 214, 10, .6); }
+.heat .hn.up { color: #7dffb0; }
+.heat .hn.down { color: #ff8a8a; }
+.heat.h0 { background: radial-gradient(ellipse at 50% 40%, #0b3b5c, #06162c 75%); }
+.heat.h0 .hv em { color: var(--neon-cyan); }
+.heat.h3 { background: radial-gradient(ellipse at 50% 40%, #5a1170, var(--crt) 80%); animation: crtFlicker calc(1.4s / var(--spd)) steps(2) infinite; }
+@keyframes crtFlicker { 0%, 92% { filter: none; } 96% { filter: brightness(1.35) saturate(1.3); } }
+
+/* a show starts: the channel flips — a burst of static over the stage */
+.static {
+  position: absolute; inset: 0; z-index: 20; pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, rgba(255,255,255,.18) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(97deg, rgba(0,0,0,.55) 0 2px, rgba(255,255,255,.35) 2px 3px, rgba(0,0,0,.4) 3px 7px),
+    linear-gradient(to bottom, var(--neon-pink), var(--crt) 45%, var(--neon-cyan));
+  mix-blend-mode: hard-light; animation: staticBurst calc(.42s / var(--spd)) steps(6) both;
+}
+@keyframes staticBurst {
+  0% { opacity: .95; background-position: 0 0, 0 0, 0 0; clip-path: inset(0 0 0 0); }
+  50% { opacity: .85; background-position: 0 7px, 13px 0, 0 0; clip-path: inset(30% 0 30% 0); }
+  100% { opacity: 0; background-position: 0 2px, -9px 0, 0 0; clip-path: inset(49% 0 49% 0); }
+}
+
+/* the cover is the show's title card: a striped vaporwave sun behind the logo */
+.cv-title { isolation: isolate; }
+.cv-title::before {
+  content: ''; position: absolute; left: 50%; top: clamp(26px, 5vh, 56px); width: clamp(170px, 25vh, 240px); aspect-ratio: 1; translate: -50% 0;
+  border-radius: 50%; z-index: -1; opacity: .9;
+  background: linear-gradient(to bottom, var(--sun-1) 0%, var(--sun-2) 72%);
+  -webkit-mask: linear-gradient(to bottom, #000 0 55%, transparent 55% 59%, #000 59% 67%, transparent 67% 72%, #000 72% 78%, transparent 78% 85%, #000 85% 89%, transparent 89% 100%);
+  mask: linear-gradient(to bottom, #000 0 55%, transparent 55% 59%, #000 59% 67%, transparent 67% 72%, #000 72% 78%, transparent 78% 85%, #000 85% 89%, transparent 89% 100%);
+  filter: drop-shadow(0 0 24px rgba(255, 79, 163, .55));
+}
+
+/* the crowd row sits above the hand-name burst */
+.stagebar { position: relative; z-index: 7; }
+
+@media (prefers-reduced-motion: reduce) { .heat.h3 { animation: none; } .static { display: none; } }
