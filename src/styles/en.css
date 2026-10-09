@@ -1,0 +1,19 @@
+/* English mode (html[lang=en], set by src/i18n): the Chinese labels become English, so the small English eyebrows
+   next to them would repeat; hide those, keep the panel titles' eyebrows (they say something different). */
+html[lang="en"] .lbl .en, html[lang="en"] .rowhead .en, html[lang="en"] .cr-k .en, html[lang="en"] .heat .hk .en,
+html[lang="en"] .cvp-k small, html[lang="en"] .cv-eb small { display: none; }
+html[lang="en"] .scorer::before { content: "THIS HAND"; }
+/* the cover: the English logo is the title, so drop the duplicate English line, and size it for Latin letters */
+html[lang="en"] .cv-en { display: none; }
+html[lang="en"] .cv-logo { font-family: var(--pop); font-size: clamp(46px, 8.5vh, 84px); letter-spacing: .02em; }
+html[lang="en"] .cv-zh { letter-spacing: .08em; }
+html[lang="en"] .recrow { grid-template-columns: 5.6em minmax(0, 1fr) 3.6em; }
+@media (max-width: 899px) {
+  html[lang="en"] .cv-logo { font-size: clamp(38px, 11vw, 60px); }
+}
+@media (max-width: 899px) {
+  html[lang="en"] .hud-tools { flex-wrap: wrap; justify-content: flex-start; row-gap: 6px; }
+  html[lang="en"] .hud-tools .ic { font-size: 12px; }
+  html[lang="en"] .skp b { font-size: 14px; overflow-wrap: anywhere; }
+  html[lang="en"] .skp { min-width: 0; }
+}

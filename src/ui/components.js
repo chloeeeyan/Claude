@@ -3,6 +3,10 @@ import {
   EDITIONS, ENH, HEAT, JD, RARITY, SEALS, SNAME, SPEC, SYM, VIP, TD, VOUCHERS, VS, RL, curBoss, debuffed, descOf, isFace, isRed, isRegular, tipOf, tipText,
 } from '../core/index.js';
 import { inRound, state } from './store.js';
+import { isEN, tr } from '../i18n/index.js';
+
+// a spectator's avatar letter: the first character of their name in the current language
+const initial = (n) => (isEN ? (tr(n) || n) : n)[0];
 
 export const glyph = (s) => s + VS;
 
@@ -100,7 +104,7 @@ export function seatHTML(key, i, st = '', vip = null) {
   }
   const reg = isRegular(state, key), tip = tipOf(state, s);
   return `<div class="seat t${s.tier} ${reg ? 'reg' : ''} ${st}" data-i="${i}" title="${reg ? '熟客 · ' : ''}${s.n}　喜欢：${s.d}（${tipText(s, state)}）　讨厌：${s.nd}${reg ? '　熟客：打赏更多' : ''}">
-    <span class="sa" aria-hidden="true">${s.n[0]}</span><span class="sn"><b>${reg ? '<em class="regb">熟</em>' : ''}${s.n}</b><i>♥ ${s.d}</i><i class="no">✕ ${s.nd}</i></span>
+    <span class="sa" aria-hidden="true">${initial(s.n)}</span><span class="sn"><b>${reg ? '<em class="regb">熟</em>' : ''}${s.n}</b><i>♥ ${s.d}</i><i class="no">✕ ${s.nd}</i></span>
     <span class="tip">${st === 'ok' ? '✔' : tip.money ? '$' + tip.money : '×' + tip.xmult}</span></div>`;
 }
 

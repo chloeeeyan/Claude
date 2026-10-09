@@ -16,6 +16,7 @@ import { renderHud } from './hud.js';
 import { renderShelf } from './shelf.js';
 import { renderStage } from './screens.js';
 import { Sfx } from './sfx.js';
+import { isEN, setLang } from '../i18n/index.js';
 import { endRun, menuState, meta, saveMeta, saveRecord, saveRun, setState, state, storage, ui } from './store.js';
 
 function toggleCard(id) {
@@ -208,6 +209,7 @@ const ACTIONS = {
     b.classList.remove('warn');
     backToMenu();
   },
+  lang: () => setLang(isEN ? 'zh' : 'en'),
   guide: (b) => openModal('guide', b.dataset.tab),
   deck: () => openModal('deck'),
   help: () => openModal('help'),
