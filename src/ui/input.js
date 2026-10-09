@@ -5,7 +5,7 @@ import {
 } from '../core/index.js';
 import { $, toast } from './dom.js';
 import { isPicked } from './components.js';
-import { pulse } from './fx.js';
+import { channelFlip, pulse } from './fx.js';
 import { closeModal, openModal, switchGuideTab } from './guide.js';
 import { goLandscape } from './orient.js';
 import { playHand } from './play.js';
@@ -150,7 +150,7 @@ const ACTIONS = {
   teleexport: () => teleExport(),
   telecopy: async () => toast((await teleCopy()) ? '已复制，粘贴发给开发者即可' : '复制失败，请用「导出文件」'),
   tutorskip: () => skipTutor(),
-  start: () => { startBlind(state).forEach((id) => ui.justDrawn.add(id)); Sfx.channel(); Sfx.deal(); render(); },
+  start: () => { startBlind(state).forEach((id) => ui.justDrawn.add(id)); Sfx.channel(); Sfx.deal(); render(); channelFlip($('stage')); },
   pick: (b) => {
     const [i, n] = b.dataset.v.split(':').map(Number);
     const err = togglePick(state, i, n);

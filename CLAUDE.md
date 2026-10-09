@@ -23,7 +23,7 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
   (scored inside `computeHand` as `at: 'aud'` / `at: 'heat'` steps)
 - `src/ui/` `store.js` (live `state` + `setState`, localStorage via `storage`, keys `jn.*`) · `hud.js` · `shelf.js` · `screens.js` (per-phase table HTML) ·
   `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `orient.js` phone landscape · `tutor.js` first-run tutorial · `tele.js` local playtest log · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
-- `src/styles/` one file per component, imported by `index.css`; tokens in `tokens.css`
+- `src/styles/` one file per component, imported by `index.css`; tokens in `tokens.css`; `crt.css` is the screen layer (vaporwave only on TV screens)
 - `tests/`, `tools/sim.js`
 
 ## Names: code vs. what the player sees

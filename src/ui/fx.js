@@ -20,6 +20,15 @@ export function pulse(el, k = 0) {
     { duration: 240 / ui.speed, easing: 'cubic-bezier(.2, 1.6, .4, 1)' });
 }
 
+// a show starts: the channel flips with a burst of static over el
+export function channelFlip(el) {
+  if (!el || still()) return;
+  const s = document.createElement('div');
+  s.className = 'static';
+  el.appendChild(s);
+  setTimeout(() => s.remove(), 450 / ui.speed);
+}
+
 // new phase on the table: the panel slaps in like the next comic frame
 export function panelIn(el) {
   if (!el || still()) return;
