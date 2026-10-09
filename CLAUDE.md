@@ -7,7 +7,7 @@ Read `docs/direction.md` before planning work; it holds the direction and the ro
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
-- `npm ci` then `npm test` (Vitest, 64 tests) — run after any change
+- `npm ci` then `npm test` (Vitest, 67 tests) — run after any change
 - `npm run sim -- n=800` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
   (`read=0` ignores the crowd's tastes ≈7%, `aud=0` runs with empty seats ≈4%: the audience is core, not a bonus).
   The bot reads the room (weighs cash tips and heat) and prints spectators won, ovation rate, average heat and how often it went 冷场.
@@ -18,7 +18,7 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
   `scoring.js` computeHand → animation `steps` · `run.js` state machine (select → play ⇄ scoring → cashout → shop → … → over/win) ·
   `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves ·
   `meta.js` cross-run progress (unlocks, collection, daily challenge), stored by the UI as `jn.meta` ·
-  `audience.js` spectators (taste ♥ / pet hate ✕ / quips), clashing crowd rolls per episode, tips and heat 0–3
+  `audience.js` spectators (taste ♥ / pet hate ✕ / quips), per show a queue of 5 (`st.crowds`) with 3 seated (`st.picks`, player can swap), tips and heat 0–3
   (scored inside `computeHand` as `at: 'aud'` / `at: 'heat'` steps)
 - `src/ui/` `store.js` (live `state` + `setState`, localStorage via `storage`, keys `jn.*`) · `hud.js` · `shelf.js` · `screens.js` (per-phase table HTML) ·
   `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `orient.js` phone landscape · `tutor.js` first-run tutorial · `tele.js` local playtest log · `input.js` all actions (ACTIONS map) · `components.js` HTML builders

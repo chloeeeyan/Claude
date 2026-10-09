@@ -6,7 +6,7 @@ import { TD } from './tarots.js';
 import { makeSeed } from './rng.js';
 import { rollCrowds } from './audience.js';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 // MIGRATIONS[n] turns a version n-1 state into version n (return null to drop the save)
 const MIGRATIONS = {
@@ -17,9 +17,11 @@ const MIGRATIONS = {
   // v4: vouchers, the ante's voucher on offer, and the hand types played this round (for bosses)
   4: (s) => ({ ...s, vouchers: s.vouchers || [], voucherOffer: s.voucherOffer || null, roundTypes: s.roundTypes || [] }),
   // v5: the audience — crowds for the night's three shows, and who is seated (and won over) in this one
-  5: (s) => ({ ...s, crowds: s.crowds || (s.phase === 'menu' || typeof s.rng !== 'number' ? null : rollCrowds(s)), audience: s.audience || [] }),
+  5: (s) => { if (!s.crowds && s.phase !== 'menu' && typeof s.rng === 'number') rollCrowds(s); return { ...s, crowds: s.crowds || null, audience: s.audience || [] }; },
   // v6: heat (the room's mood this show) and the last hand type played (for 求新鲜)
   6: (s) => ({ ...s, heat: typeof s.heat === 'number' ? s.heat : 1, lastType: s.lastType || null }),
+  // v7: 候场 — each show's queue (old crowds were exactly the three seated) and which of it is picked
+  7: (s) => ({ ...s, picks: s.picks || (s.crowds ? s.crowds.map((c) => c.map((_, n) => n).slice(0, 3)) : null) }),
 };
 
 export const packSave = (state) => JSON.stringify({ v: SAVE_VERSION, state });

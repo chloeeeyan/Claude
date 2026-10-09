@@ -3,7 +3,8 @@ import {
   SAVE_VERSION, SPEC, beginHand, buy, cashOut, finishHand, freshState, nextBlind, packApply, packCards, packKeep, packPick, packSave, startBlind,
   unpackSave, useTarot,
 } from '../src/core/index.js';
-import { hasClash } from '../src/core/audience.js';
+import { cashLines } from '../src/core/run.js';
+import { hasClash, pickBonus, pickedKeys, togglePick } from '../src/core/audience.js';
 
 const snapshot = (st) => ({
   boss: st.bossKey, tags: st.tags, deck: st.deckList.map((c) => c.id + (c.enh || '')),
@@ -162,12 +163,12 @@ describe('save format', () => {
 });
 
 describe('audience across a run', () => {
-  it('rolls three crowds per night, seats them per show and remembers who was won over', () => {
+  it('queues five per show, seats the three picked and remembers who was won over', () => {
     const st = freshState('red', 0, 12);
     expect(st.crowds).toHaveLength(3);
-    st.crowds.forEach((c) => expect(new Set(c).size).toBe(3));
+    st.crowds.forEach((c, i) => { expect(new Set(c).size).toBe(5); expect(st.picks[i]).toHaveLength(3); });
     startBlind(st);
-    expect(st.audience.map((a) => a.key)).toEqual(st.crowds[0]);
+    expect(st.audience.map((a) => a.key)).toEqual(pickedKeys(st, 0));
     st.audience = [{ key: 'pairfan', ok: false }, { key: 'fivefan', ok: false }, { key: 'solo', ok: false }];
     const [a, b] = st.hand; b.r = a.r;
     finishHand(st, beginHand(st, [a.id, b.id]));
@@ -176,7 +177,7 @@ describe('audience across a run', () => {
   });
 
   it('seats a clash in every crowd and carries heat from hand to hand, resetting each show', () => {
-    for (let seed = 1; seed <= 40; seed++) freshState('red', 0, seed).crowds.forEach((c) => expect(hasClash(c)).toBe(true));
+    for (let seed = 1; seed <= 40; seed++) { const s = freshState('red', 0, seed); [0, 1, 2].forEach((i) => expect(hasClash(pickedKeys(s, i))).toBe(true)); }
     const st = freshState('red', 0, 12);
     startBlind(st);
     expect(st.heat).toBe(1);
@@ -187,6 +188,39 @@ describe('audience across a run', () => {
     expect(st.heat).toBe(res.heat);
     expect(st.heat).toBe(2);
     expect(st.lastType).toBe(res.type);
+  });
+
+  it('lets the player swap who is seated before the show, three seats at most, and pays $1 per picky spectator', () => {
+    const st = freshState('red', 0, 15);
+    const out = [0, 1, 2, 3, 4].find((n) => !st.picks[0].includes(n));
+    expect(togglePick(st, 0, out)).toMatch(/座位/); // full
+    const gone = st.picks[0][0];
+    expect(togglePick(st, 0, gone)).toBe('');
+    expect(togglePick(st, 0, out)).toBe('');
+    expect(st.picks[0]).toContain(out);
+    expect(st.picks[0]).not.toContain(gone);
+    expect(pickBonus(st, 0)).toBe(pickedKeys(st, 0).filter((k) => SPEC[k].tier >= 2).length);
+    startBlind(st);
+    expect(st.audience.map((a) => a.key)).toEqual(pickedKeys(st, 0));
+    expect(togglePick(st, 0, gone)).not.toBe(''); // the show has started
+    st.roundScore = st.target; st.cash = null;
+    const lines = cashLines(st);
+    const picky = lines.find((l) => l.t.startsWith('挑剔'));
+    expect(picky ? picky.v : 0).toBe(pickBonus(st, 0));
+  });
+
+  it('fills empty seats when a show starts with fewer than three picked', () => {
+    const st = freshState('red', 0, 16);
+    st.picks[0] = [];
+    startBlind(st);
+    expect(st.audience).toHaveLength(3);
+  });
+
+  it('migrates a v6 save: the old three-person crowds become fully seated queues', () => {
+    const st = freshState('red', 0, 17);
+    st.crowds = st.crowds.map((c) => c.slice(0, 3)); delete st.picks;
+    const back = unpackSave(JSON.stringify({ v: 6, state: st }));
+    expect(back.picks).toEqual([[0, 1, 2], [0, 1, 2], [0, 1, 2]]);
   });
 
   it('migrates a v5 save: heat starts warm, no hand played yet', () => {
@@ -202,5 +236,6 @@ describe('audience across a run', () => {
     const st = freshState('red', 0, 13);
     const tierSum = (crowd) => crowd.reduce((n, k) => n + SPEC[k].tier, 0);
     expect(tierSum(st.crowds[2])).toBeGreaterThan(tierSum(st.crowds[0]));
+    expect(tierSum(pickedKeys(st, 2))).toBeGreaterThan(tierSum(pickedKeys(st, 0)));
   });
 });

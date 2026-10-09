@@ -6,7 +6,7 @@ import { JD, JOKERS } from './jokers.js';
 import { TAROTS, TD } from './tarots.js';
 import { computeHand, curBoss, targetFor } from './scoring.js';
 import { makeSeed, rand, rint, shuffle } from './rng.js';
-import { rollCrowds, seatCrowd } from './audience.js';
+import { pickBonus, rollCrowds, seatCrowd } from './audience.js';
 
 export function pickBoss(st, prev, ante) {
   // the target-doubling wall waits until ante 3; the first ante gets no hand penalty
@@ -46,14 +46,14 @@ export function freshState(deckKey = 'red', stake = 0, seed = makeSeed()) {
     money: 4 + (D.money || 0), hands: 4, discards: 3, handSize: 8, maxJokers: 5 + (D.slots || 0), maxCons: 2,
     roundScore: 0, target: 0, deckList: [], deck: [], hand: [], played: [], selected: [],
     jokers: [], cons: [], levels: Object.fromEntries(Object.keys(HANDS).map((k) => [k, 1])),
-    daily: null, metaDone: false, vouchers: [], voucherOffer: null, roundTypes: [], crowds: null, audience: [], heat: 1, lastType: null, shop: null, pack: null, rerollCost: 5, pendingRare: false, sort: 'rank', inspect: null, cash: null, uid: 1, roundHands: 0,
+    daily: null, metaDone: false, vouchers: [], voucherOffer: null, roundTypes: [], crowds: null, picks: null, audience: [], heat: 1, lastType: null, shop: null, pack: null, rerollCost: 5, pendingRare: false, sort: 'rank', inspect: null, cash: null, uid: 1, roundHands: 0,
     stats: { types: {}, total: 0, best: 0, bestType: null, earned: 0, tarots: 0, planets: 0, handsPlayed: 0, skipped: 0, wonOver: 0, ovations: 0 },
   };
   st.bossKey = pickBoss(st, null, 1);
   st.tags = [rollTag(st), rollTag(st)];
   st.deckList = newDeck(st, deckKey);
   st.voucherOffer = rollVoucher(st);
-  st.crowds = rollCrowds(st);
+  rollCrowds(st);
   return st;
 }
 
@@ -77,7 +77,7 @@ export function startBlind(st) {
   if (b && b.tax) st.money -= Math.min(10, Math.floor(Math.max(0, st.money) / 2));
   st.deck = shuffle(st, st.deckList.map((c) => ({ ...c })));
   st.hand = []; st.played = []; st.selected = []; st.roundScore = 0; st.roundHands = 0; st.roundTypes = [];
-  if (!st.crowds) st.crowds = rollCrowds(st);
+  if (!st.crowds) rollCrowds(st);
   seatCrowd(st);
   st.phase = 'play';
   return draw(st);
@@ -137,6 +137,8 @@ export function cashLines(st) {
   const rw = S.noSmall && st.blindIdx === 0 ? 0 : REWARD[st.blindIdx];
   if (rw) lines.push({ t: '节目收工', v: rw });
   if (st.hands > 0) lines.push({ t: `剩余出牌 ${st.hands} 次`, v: st.hands });
+  const picky = pickBonus(st, st.blindIdx);
+  if (picky) lines.push({ t: `挑剔的观众 ${picky} 位`, v: picky });
   const cap = (S.intCap != null ? S.intCap : 5) + (hasV(st, 'interest') ? 5 : 0), interest = Math.min(cap, Math.floor(st.money / 5));
   if (interest > 0) lines.push({ t: `利息（每 $5 得 $1，最多 $${cap}）`, v: interest });
   st.jokers.forEach((j, i) => {
@@ -279,7 +281,7 @@ export function nextBlind(st) {
     st.bossKey = pickBoss(st, st.bossKey, st.ante);
     st.tags = [rollTag(st), rollTag(st)];
     st.voucherOffer = rollVoucher(st);
-    st.crowds = rollCrowds(st);
+    rollCrowds(st);
   }
   st.shop = null; st.phase = 'select';
 }

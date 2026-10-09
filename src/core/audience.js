@@ -5,7 +5,9 @@
 //   anyone (won over or already won), down 1 if it pleased nobody, and down 1 more per spectator it annoyed.
 //   (A spectator who likes the hand never boos it.) The hand is then multiplied by the new heat: 冷场 ×0.5 … 沸腾 ×2.
 // - Win over all three for a standing ovation (全场起立): $2 and the room boils over (heat 3).
-// Crowds for the episode's three shows are rolled when it starts, so the player can plan from the show-select screen.
+// Each show has 5 spectators waiting (候场) and seats 3. The episode's queues are rolled when it starts, with a suggested
+// three that always clash; the player can swap anyone in on the show-select screen. Every picky spectator (tier 2+)
+// seated pays $1 extra when the show is cleared, so an easy crowd costs money.
 import { isFace, isRed } from './cards.js';
 import { rint, shuffle } from './rng.js';
 
@@ -71,29 +73,57 @@ export const HEAT_START = 1;
 const clashes = (a, b) => SPEC[a].foe.includes(b) || SPEC[b].foe.includes(a);
 export const hasClash = (keys) => keys.some((a, i) => keys.some((b, j) => j > i && clashes(a, b)));
 
-// warm-up shows sit easy crowds, the headline (boss) show the hardest
-const TIERS = [[1, 1, 2], [1, 2, 3], [2, 3, 3]];
+// warm-up shows queue easy crowds, the headline (boss) show the hardest. QUEUE = the 5 waiting, SUGGEST = the 3 seated by default.
+const QUEUE = [[1, 1, 1, 2, 2], [1, 1, 2, 2, 3], [2, 2, 2, 3, 3]];
+const SUGGEST = [[1, 1, 2], [1, 2, 3], [2, 3, 3]];
+export const SEATS = 3;
 
-function rollOne(st, tiers) {
+function rollOne(st, tiers, taken = []) {
   const pick = [];
   for (const t of tiers) {
-    const pool = SPECTATORS.filter((s) => s.tier === t && !pick.includes(s.key));
+    const pool = SPECTATORS.filter((s) => s.tier === t && !pick.includes(s.key) && !taken.includes(s.key));
     pick.push(pool[rint(st, pool.length)].key);
   }
   return pick;
 }
 
-// every crowd seats at least one clashing pair (re-rolled until it does; every tier mix has some)
+// one show: the suggested three (re-rolled until they clash; every tier mix has some), plus two more waiting, shuffled
+function rollShow(st, n) {
+  let seat = rollOne(st, SUGGEST[n]);
+  for (let i = 0; i < 50 && !hasClash(seat); i++) seat = rollOne(st, SUGGEST[n]);
+  const rest = [...QUEUE[n]];
+  for (const k of seat) rest.splice(rest.indexOf(SPEC[k].tier), 1);
+  const queue = shuffle(st, [...seat, ...rollOne(st, rest, seat)]);
+  return { queue, pick: seat.map((k) => queue.indexOf(k)).sort((a, b) => a - b) };
+}
+
+// sets st.crowds (each show's queue of 5 keys) and st.picks (indices of the 3 seated in each)
 export function rollCrowds(st) {
-  return TIERS.map((tiers) => {
-    let pick = rollOne(st, tiers);
-    for (let i = 0; i < 50 && !hasClash(pick); i++) pick = rollOne(st, tiers);
-    return shuffle(st, pick);
-  });
+  const shows = [0, 1, 2].map((n) => rollShow(st, n));
+  st.crowds = shows.map((x) => x.queue);
+  st.picks = shows.map((x) => x.pick);
+  return st.crowds;
+}
+
+export const pickedKeys = (st, i) => ((st.crowds && st.crowds[i]) || []).filter((_, n) => ((st.picks && st.picks[i]) || []).includes(n));
+// paid at the end of show i for every picky spectator seated (tier >= PICKY.tier)
+export const PICKY = { tier: 3, pay: 1 };
+export const pickBonus = (st, i) => PICKY.pay * pickedKeys(st, i).filter((k) => SPEC[k].tier >= PICKY.tier).length;
+
+// seat or unseat waiting spectator n of show i (the current show or a later one, before it starts); returns an error or ''
+export function togglePick(st, i, n) {
+  if (st.phase !== 'select' || i < st.blindIdx || !st.crowds || !st.crowds[i] || n < 0 || n >= st.crowds[i].length) return '现在不能换观众';
+  const p = st.picks[i];
+  if (p.includes(n)) { p.splice(p.indexOf(n), 1); return ''; }
+  if (p.length >= SEATS) return `只有 ${SEATS} 个座位，先请一位离场`;
+  p.push(n); p.sort((a, b) => a - b);
+  return '';
 }
 
 export const seatCrowd = (st) => {
-  st.audience = ((st.crowds && st.crowds[st.blindIdx]) || []).map((key) => ({ key, ok: false }));
+  const i = st.blindIdx, q = (st.crowds && st.crowds[i]) || [];
+  if (st.picks && st.picks[i]) for (let n = 0; st.picks[i].length < SEATS && n < q.length; n++) if (!st.picks[i].includes(n)) st.picks[i].push(n); // fill empty seats
+  st.audience = pickedKeys(st, i).map((key) => ({ key, ok: false }));
   st.heat = HEAT_START; st.lastType = null;
 };
 export const tipText = (s) => (s.tip.money ? `打赏 $${s.tip.money}` : `收视 ×${s.tip.xmult}`);

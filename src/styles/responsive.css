@@ -7,6 +7,13 @@
 
 /* Short desktop windows (laptops around 1366×640): tighten everything a notch. */
 @media (min-width: 900px) and (max-height: 760px) {
+  .sel-intro { display: none; }
+  .blinds .bc { padding: 8px 12px; gap: 4px; }
+  .bc h3 { font-size: 22px; }
+  .bc .tagbox { padding: 3px 8px; }
+  .bc-crowd { gap: 2px; }
+  .bc-crowd .seat { padding-block: 0; }
+  .bc-crowd .seat .sa { width: 20px; height: 20px; font-size: 11px; }
   .foot .keys { display: none; }
   .hud { padding-block: 5px; }
   .hud .logo { font-size: 24px; }

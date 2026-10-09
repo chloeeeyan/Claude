@@ -25,9 +25,9 @@ export const PLANETS = {
   full: '葫芦电视机', four: '四驱越野车', sflush: '彩虹超市', five: '五福微波炉', flushfull: '大团圆家具', flush5: '五彩金卡',
 };
 
-// Tuned with tools/sim.js (n=800): about 9% bot win rate on 普通 (red deck) with the audience and heat in play,
-// ≈7% for a bot that ignores the crowd's tastes, ≈4% with empty seats: reading the room is the game.
-export const ANTE = [250, 650, 1700, 3400, 6800, 13500, 23000, 36000];
+// Tuned with tools/sim.js (n=800): about 8–9% bot win rate on 普通 (red deck) seating the suggested crowd, ~10% always
+// seating the easiest and ~9% the hardest (a real choice), ≈8% ignoring tastes, ≈4.5% with empty seats.
+export const ANTE = [285, 735, 1900, 3800, 7650, 15200, 25800, 40300];
 export const TUNE = { shopJokers: 2, pack: true };
 export const REWARD = [3, 4, 5];
 export const BLIND_NAMES = ['热场', '正片'];
