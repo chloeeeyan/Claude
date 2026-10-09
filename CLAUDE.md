@@ -7,10 +7,10 @@ Read `docs/direction.md` before planning work; it holds the direction and the ro
 Vite + vanilla JS ES modules, no framework. Node 20+.
 
 ## Commands
-- `npm ci` then `npm test` (Vitest, 59 tests) — run after any change
+- `npm ci` then `npm test` (Vitest, 64 tests) — run after any change
 - `npm run sim -- n=800` — balance bot; after rule/number changes, 普通 (stake 0, red deck) should stay around 8–10% win
-  (`aud=0` runs with empty seats, ≈2%: the audience is core, not a bonus). The bot reads the room (weighs cash tips;
-  `read=0` turns that off) and prints spectators won per cleared show and the ovation rate.
+  (`read=0` ignores the crowd's tastes ≈7%, `aud=0` runs with empty seats ≈4%: the audience is core, not a bonus).
+  The bot reads the room (weighs cash tips and heat) and prints spectators won, ovation rate, average heat and how often it went 冷场.
 - `npm run dev` / `npm run build` (output `dist/`, relative paths via `base: './'`)
 
 ## Layout (read only what the task needs)
@@ -18,7 +18,8 @@ Vite + vanilla JS ES modules, no framework. Node 20+.
   `scoring.js` computeHand → animation `steps` · `run.js` state machine (select → play ⇄ scoring → cashout → shop → … → over/win) ·
   `rng.js` seeded RNG kept in `st.rng` · `save.js` versioned saves ·
   `meta.js` cross-run progress (unlocks, collection, daily challenge), stored by the UI as `jn.meta` ·
-  `audience.js` spectators, crowd rolls per night, tips (scored inside `computeHand` as `at: 'aud'` steps)
+  `audience.js` spectators (taste ♥ / pet hate ✕ / quips), clashing crowd rolls per episode, tips and heat 0–3
+  (scored inside `computeHand` as `at: 'aud'` / `at: 'heat'` steps)
 - `src/ui/` `store.js` (live `state` + `setState`, localStorage via `storage`, keys `jn.*`) · `hud.js` · `shelf.js` · `screens.js` (per-phase table HTML) ·
   `guide.js` modals · `play.js` scoring animation · `patch.js` keyed redraw + FLIP · `fx.js` shake / pulse / phase transition · `orient.js` phone landscape · `tutor.js` first-run tutorial · `tele.js` local playtest log · `input.js` all actions (ACTIONS map) · `components.js` HTML builders
 - `src/styles/` one file per component, imported by `index.css`; tokens in `tokens.css`
@@ -47,7 +48,7 @@ Hand types (对子, 顺子…) keep their poker names on purpose.
 
 ## Status and next steps
 Done: playable full run (8 nights, 75 jokers in 8 build styles, 15 tarots, 12 hand types incl. 3 hidden, 20 bosses, 8 vouchers,
-4 joker editions, 5 decks, 3 stakes, 17 spectator types, 6 crowd jokers), hand guide,
+4 joker editions, 5 decks, 3 stakes, 17 spectator types with tastes, pet hates and quips, heat 0–3, 6 crowd jokers), hand guide,
 coach tips, pop-art UI, game-screen layout, seeded RNG, versioned saves, tests, sim.
 
 Agreed priority list (from the product review), in order:

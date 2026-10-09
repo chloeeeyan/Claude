@@ -1,6 +1,6 @@
 // Modal dialogs: how-to-play, the hand guide (four tabs) and the deck viewer.
 import {
-  BOSSES, ENH, HANDS, JOKERS, OVATION_TIP, SPECTATORS, tipText, RL, SEALS, SNAME, SUITS, SYM, TAROTS, UNLOCKS, VS, chipVal, curBoss, evaluate, handBase, isRed, isUnlocked,
+  BOSSES, ENH, HANDS, HEAT, JOKERS, OVATION_TIP, SPECTATORS, tipText, RL, SEALS, SNAME, SUITS, SYM, TAROTS, UNLOCKS, VS, chipVal, curBoss, evaluate, handBase, isRed, isUnlocked,
 } from '../core/index.js';
 import { $, fmt } from './dom.js';
 import { cardTitle, jokerFace, miniCard, parseCards } from './components.js';
@@ -89,9 +89,11 @@ function handsTab() {
 function crowdTab() {
   const tiers = [[1, '好说话'], [2, '要用点心'], [3, '很挑剔']];
   return `<div class="gsec">
-    <p class="hint">每一场台下坐 3 位观众，每人有一个喜好。收工只看收视够不够目标；观众是额外的：某手牌合了谁的口味，谁就被征服，当场打赏（给钱或给这手牌乘倍率），一场只给一次。三位都征服是<b>全场起立</b>，再给 $${OVATION_TIP}。热场的观众好说话，黄金档的最挑剔；选场时就能看到谁会来。</p>
+    <p class="hint">每一场台下坐 3 位观众，每人有一样<b>喜欢</b>（♥）和一样<b>讨厌</b>（✕），而且总有两位口味打架：讨好一个，可能惹恼另一个。</p>
+    <p class="hint"><b>热度</b>：每场从「${HEAT[1].n}」开始。一手牌只要有人喜欢（包括已经被征服的），热度 +1；谁都不喜欢，热度 −1；每有一位观众喝倒彩（嘘），再 −1。这手牌的收视按新的热度乘：${HEAT.map((h) => `${h.n} ×${h.x}`).join(' · ')}。<b>别冷场！</b></p>
+    <p class="hint">第一次合了谁的口味，谁就被征服，当场打赏（给钱或给这手牌乘倍率）。三位都征服是<b>全场起立</b>：再给 $${OVATION_TIP}，热度直接到「${HEAT[3].n}」。选牌时，会被征服的观众亮黄，会喝倒彩的观众变红，热度表会显示这手打出去会变成多少。</p>
     ${tiers.map(([t, n]) => `<div class="gx"><div class="gx-h"><b>${n}</b></div>
-      <p>${SPECTATORS.filter((x) => x.tier === t).map((x) => `<b>${x.n}</b>：${x.d}，${tipText(x)}`).join('<br>')}</p></div>`).join('')}
+      <p>${SPECTATORS.filter((x) => x.tier === t).map((x) => `<b>${x.n}</b>：♥ ${x.d}（${tipText(x)}）　✕ ${x.nd}`).join('<br>')}</p></div>`).join('')}
   </div>`;
 }
 
@@ -148,7 +150,7 @@ const HELP = `<h2>玩法<button class="chip" data-act="close">知道了</button>
     <li>不想要的牌可以<b>弃掉</b>换新牌。弃牌次数有限，用来凑同花、顺子很关键。</li>
     <li>收工拿钱，去后台签<b>艺人</b>。艺人从左到右依次触发，所以「×倍率」的艺人放右边，最后乘，收视更高。可以直接拖动排序。</li>
     <li><b>赞助广告</b>让一个牌型永久升级；<b>道具</b>可以改造牌组里的牌：改花色、加增强、盖印。</li>
-    <li>每存 $5 回合结束多给 $1 利息，最多 $5，攒钱也是策略。每期第三场是<b>黄金档</b>，黄金档嘉宾有刁难规则，选场时就能看到。台下还有 3 位<b>观众</b>，合他们口味会打赏。</li>
+    <li>每存 $5 回合结束多给 $1 利息，最多 $5，攒钱也是策略。每期第三场是<b>黄金档</b>，黄金档嘉宾有刁难规则，选场时就能看到。台下还有 3 位<b>观众</b>：合他们口味会打赏、热度上升；没人喜欢或有人喝倒彩，热度下降，冷场时收视减半。</li>
   </ol>
   <div class="actions" style="margin-top:16px"><button class="btn gold" data-act="guide" data-tab="hands">看牌型图鉴和示例</button></div>`;
 

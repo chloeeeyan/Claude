@@ -3,6 +3,7 @@ import {
   SAVE_VERSION, SPEC, beginHand, buy, cashOut, finishHand, freshState, nextBlind, packApply, packCards, packKeep, packPick, packSave, startBlind,
   unpackSave, useTarot,
 } from '../src/core/index.js';
+import { hasClash } from '../src/core/audience.js';
 
 const snapshot = (st) => ({
   boss: st.bossKey, tags: st.tags, deck: st.deckList.map((c) => c.id + (c.enh || '')),
@@ -172,6 +173,29 @@ describe('audience across a run', () => {
     finishHand(st, beginHand(st, [a.id, b.id]));
     expect(st.audience[0].ok).toBe(true);
     expect(st.stats.wonOver).toBe(1);
+  });
+
+  it('seats a clash in every crowd and carries heat from hand to hand, resetting each show', () => {
+    for (let seed = 1; seed <= 40; seed++) freshState('red', 0, seed).crowds.forEach((c) => expect(hasClash(c)).toBe(true));
+    const st = freshState('red', 0, 12);
+    startBlind(st);
+    expect(st.heat).toBe(1);
+    st.audience = [{ key: 'pairfan', ok: false }, { key: 'twofan', ok: false }, { key: 'acefan', ok: false }];
+    const [a, b] = st.hand; a.r = 7; b.r = 7;
+    const res = beginHand(st, [a.id, b.id]);
+    finishHand(st, res);
+    expect(st.heat).toBe(res.heat);
+    expect(st.heat).toBe(2);
+    expect(st.lastType).toBe(res.type);
+  });
+
+  it('migrates a v5 save: heat starts warm, no hand played yet', () => {
+    const st = freshState('red', 0, 14);
+    startBlind(st);
+    delete st.heat; delete st.lastType;
+    const back = unpackSave(JSON.stringify({ v: 5, state: st }));
+    expect(back.heat).toBe(1);
+    expect(back.lastType).toBeNull();
   });
 
   it('gives the headline show a harder crowd than the warm-up', () => {

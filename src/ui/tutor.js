@@ -31,7 +31,7 @@ const STEPS = [
   {
     key: 'crowd', when: () => playing() && state.roundHands >= 1 && (state.audience || []).length > 0,
     target: () => '.crowd',
-    text: () => '台下坐着 3 位<b>观众</b>，各有各的口味。某手牌合了谁的口味，这位观众就被征服、当场打赏；三位全征服是<b>全场起立</b>。选牌时，会被征服的观众会亮黄。',
+    text: () => '台下 3 位<b>观众</b>各有喜欢（♥）和讨厌（✕）。有人喜欢，<b>热度</b>上升，收视最多 ×2；没人喜欢或有人喝倒彩，热度下降，冷场时只有 ×0.5。选牌时，会被征服的观众亮黄，会嘘你的变红。',
     done: () => state.phase !== 'play' || state.roundHands >= 2, ok: true,
   },
   {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OVATION_TIP, SPEC, computeHand, freshState, startBlind } from '../src/core/index.js';
+import { HEAT, HEAT_START } from '../src/core/audience.js';
 import { cards } from './helpers.js';
 
 function round(jokers = []) {
@@ -122,9 +123,39 @@ describe('the audience', () => {
     st.audience[0].ok = true; st.audience[2].ok = true;
     const res = computeHand(st, cards('9S'), [], { preview: true });
     expect(res.sat).toEqual([1]);
-    expect(res.mult).toBe(1 * SPEC.solo.tip.xmult);
     expect(res.ovation).toBe(true);
+    expect(res.heat).toBe(3); // the room boils over
+    expect(res.mult).toBe(1 * SPEC.solo.tip.xmult * HEAT[3].x);
     expect(res.money).toBe(OVATION_TIP);
+  });
+
+  it('warms the room when a hand pleases anyone, even someone already won over', () => {
+    const st = seat(round(), 'pairfan', 'flushfan', 'redfan');
+    st.audience[0].ok = true;
+    const res = computeHand(st, cards('KH KC'), [], { preview: true });
+    expect(res.sat).toEqual([]);
+    expect(res.boos).toEqual([]);
+    expect(res.heat).toBe(HEAT_START + 1);
+    expect(res.mult).toBe(2 * HEAT[HEAT_START + 1].x);
+  });
+
+  it('cools it when nobody likes the hand, and each boo cools it again', () => {
+    const st = seat(round(), 'flushfan', 'twofan', 'variety');
+    expect(computeHand(st, cards('KH KC'), [], { preview: true }).heat).toBe(HEAT_START - 1); // nobody cares: 冷场
+    seat(st, 'pairfan', 'fivefan', 'acefan');
+    st.heat = 3;
+    const res = computeHand(st, cards('9S'), [], { preview: true }); // a lone black 9: 成双控 and 排场控 boo, nobody likes it
+    expect(res.boos).toEqual([0, 1]);
+    expect(res.heat).toBe(0);
+    expect(res.mult).toBe(1 * HEAT[0].x);
+    expect(res.steps.filter((x) => x.cls === 'boo')).toHaveLength(2);
+  });
+
+  it('never lets a spectator boo a hand they like (a straight flush pleases both purists)', () => {
+    const st = seat(round(), 'flushfan', 'strfan', 'pairfan');
+    const res = computeHand(st, cards('5H 6H 7H 8H 9H'), [], { preview: true });
+    expect(res.sat).toEqual([0, 1]);
+    expect(res.boos).toEqual([]);
   });
 
   it('lets crowd jokers work the room: 经纪人 doubles tips, 返场 repeats ×mult, 托儿 counts the won-over', () => {

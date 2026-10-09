@@ -32,6 +32,8 @@
 .pop.dead { background: #444; color: var(--white); font-family: var(--comic); font-size: 16px; }
 .pop.retrig { background: var(--white); color: var(--ink); font-family: var(--comic); font-size: 16px; }
 .pop.cash { background: var(--yellow); color: var(--ink); }
+.pop.boo { background: var(--red); color: var(--white); font-family: var(--comic); font-size: 18px; }
+.pop.cold { background: #5b8cff; color: var(--white); font-family: var(--comic); font-size: 20px; }
 .pop.break { background: #5bd0ff; color: var(--ink); font-family: var(--comic); font-size: 16px; }
 @keyframes pop {
   0% { opacity: 0; transform: translateY(10px) scale(.5) rotate(-14deg); }

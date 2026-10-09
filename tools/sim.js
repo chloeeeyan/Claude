@@ -1,5 +1,5 @@
 // Balance simulator: a greedy bot plays N seeded runs and reports how far it gets.
-// Usage: npm run sim -- n=400 deck=red stake=0 tarot=1 aud=1 read=1 tip=0.1 ante=300,700,...
+// Usage: npm run sim -- n=400 deck=red stake=0 tarot=1 aud=1 read=1 tip=0.1 hw=0.5 heat=0.5,1,1.5,2 ante=300,700,...
 import * as G from '../src/core/index.js';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.split('=')));
@@ -11,7 +11,9 @@ const discardBias = Number(args.agg || 1.15); // discard when best × hands left
 const audience = args.aud !== '0'; // aud=0: empty seats, to measure what the audience adds
 const readRoom = args.read !== '0'; // read=0: ignore cash tips when picking a hand (the old bot)
 const tipWeight = Number(args.tip || 0.1); // $1 is worth this share of the score still needed per hand
+const heatWeight = Number(args.hw || 0.5); // one step of heat is worth this share of it (it scales the hands to come)
 if (args.ante) args.ante.split(',').map(Number).forEach((v, i) => { G.ANTE[i] = v; });
+if (args.heat) args.heat.split(',').map(Number).forEach((v, i) => { G.HEAT[i].x = v; }); // e.g. heat=0.5,1,1.5,2
 
 // all 1–5 card subsets of an n-card hand, cached by n
 const SUBSETS = {};
@@ -28,7 +30,8 @@ function subsets(n) {
 }
 
 // Reads the room: a hand's value is its score plus the cash it brings (spectator tips, ovation, gold seals),
-// with $1 worth a slice of the score still needed per hand. A hand that clears the show takes the most cash.
+// with $1 worth a slice of the score still needed per hand, plus the heat it leaves for the hands to come.
+// A hand that clears the show takes the most cash.
 function bestPlay(st) {
   const need = st.target - st.roundScore, perHand = need / Math.max(1, st.hands);
   let top = null, pick = null;
@@ -36,8 +39,8 @@ function bestPlay(st) {
     const played = s.map((i) => st.hand[i]);
     const held = st.hand.filter((_, i) => !s.includes(i));
     const r = G.computeHand(st, played, held, { preview: true });
-    const c = { total: r.total, money: r.money, ids: played.map((k) => k.id), scoring: new Set(r.scoring.map((k) => k.id)) };
-    c.u = !readRoom ? c.total : c.total >= need ? need * 10 + c.money * need + c.total / 1e6 : c.total + c.money * tipWeight * perHand;
+    const c = { total: r.total, money: r.money, heat: r.heat, ids: played.map((k) => k.id), scoring: new Set(r.scoring.map((k) => k.id)) };
+    c.u = !readRoom ? c.total : c.total >= need ? need * 10 + c.money * need + c.total / 1e6 : c.total + (c.money * tipWeight + (c.heat - st.heat) * heatWeight) * perHand;
     if (!top || c.total > top.total) top = c;
     if (!pick || c.u > pick.u) pick = c;
   }
@@ -123,6 +126,7 @@ function runOne(seed) {
         if (ids.length) { G.discardCards(st, ids); continue; }
       }
       G.finishHand(st, G.beginHand(st, best.ids));
+      if (st.audience.length) { crowd.hands++; crowd.heat += st.heat; if (st.heat === 0) crowd.cold++; }
     } else if (st.phase === 'cashout') {
       const won = st.audience.filter((a) => a.ok).length;
       if (st.audience.length) { crowd.shows++; crowd.won += won; if (won === st.audience.length) crowd.ovations++; }
@@ -134,7 +138,7 @@ function runOne(seed) {
   return st;
 }
 
-const crowd = { shows: 0, won: 0, ovations: 0 }; // cleared shows only
+const crowd = { shows: 0, won: 0, ovations: 0, hands: 0, heat: 0, cold: 0 }; // shows: cleared only; hands: every hand played
 const died = Array(10).fill(0);
 let wins = 0;
 const t0 = Date.now();
@@ -142,11 +146,11 @@ for (let i = 1; i <= N; i++) {
   const st = runOne(i);
   if (st.phase === 'win') wins++; else died[st.ante]++;
 }
-console.log(`deck=${deck} stake=${stake} tarot=${useTarots} aud=${audience} read=${readRoom} n=${N} ante=[${G.ANTE}] ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+console.log(`deck=${deck} stake=${stake} tarot=${useTarots} aud=${audience} read=${readRoom} n=${N} ante=[${G.ANTE}] heat=[${G.HEAT.map((h) => h.x)}] ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 let alive = N;
 for (let a = 1; a <= 8; a++) {
   console.log(`  ante ${a}: entered ${((alive / N) * 100).toFixed(0)}%  lost here ${died[a]}`);
   alive -= died[a];
 }
-if (crowd.shows) console.log(`  crowd: ${(crowd.won / crowd.shows).toFixed(2)}/3 won per cleared show, ovation ${((crowd.ovations / crowd.shows) * 100).toFixed(0)}%`);
+if (crowd.shows) console.log(`  crowd: ${(crowd.won / crowd.shows).toFixed(2)}/3 won per cleared show, ovation ${((crowd.ovations / crowd.shows) * 100).toFixed(0)}%, heat after a hand ${(crowd.heat / crowd.hands).toFixed(2)}, 冷场 ${((crowd.cold / crowd.hands) * 100).toFixed(0)}%`);
 console.log(`  WIN ${((wins / N) * 100).toFixed(1)}%`);

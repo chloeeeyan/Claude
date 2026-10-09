@@ -46,7 +46,7 @@ export function freshState(deckKey = 'red', stake = 0, seed = makeSeed()) {
     money: 4 + (D.money || 0), hands: 4, discards: 3, handSize: 8, maxJokers: 5 + (D.slots || 0), maxCons: 2,
     roundScore: 0, target: 0, deckList: [], deck: [], hand: [], played: [], selected: [],
     jokers: [], cons: [], levels: Object.fromEntries(Object.keys(HANDS).map((k) => [k, 1])),
-    daily: null, metaDone: false, vouchers: [], voucherOffer: null, roundTypes: [], crowds: null, audience: [], shop: null, pack: null, rerollCost: 5, pendingRare: false, sort: 'rank', inspect: null, cash: null, uid: 1, roundHands: 0,
+    daily: null, metaDone: false, vouchers: [], voucherOffer: null, roundTypes: [], crowds: null, audience: [], heat: 1, lastType: null, shop: null, pack: null, rerollCost: 5, pendingRare: false, sort: 'rank', inspect: null, cash: null, uid: 1, roundHands: 0,
     stats: { types: {}, total: 0, best: 0, bestType: null, earned: 0, tarots: 0, planets: 0, handsPlayed: 0, skipped: 0, wonOver: 0, ovations: 0 },
   };
   st.bossKey = pickBoss(st, null, 1);
@@ -103,6 +103,7 @@ export function finishHand(st, res) {
   }
   // spectators won over stay won over for the rest of the show
   for (const i of res.sat || []) if (st.audience[i]) st.audience[i].ok = true;
+  st.heat = res.heat ?? st.heat; st.lastType = res.type;
   s.wonOver = (s.wonOver || 0) + (res.sat || []).length;
   if (res.ovation) s.ovations = (s.ovations || 0) + 1;
   // boss after-effects of a hand
