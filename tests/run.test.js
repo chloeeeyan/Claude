@@ -175,6 +175,7 @@ describe('audience across a run', () => {
     finishHand(st, beginHand(st, [a.id, b.id]));
     expect(st.audience[0].ok).toBe(true);
     expect(st.stats.wonOver).toBe(1);
+    expect(st.regulars.pairfan).toBe(1); // 成双控 will remember you
   });
 
   it('seats a clash in every crowd and carries heat from hand to hand, resetting each show', () => {

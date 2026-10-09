@@ -18,6 +18,7 @@ if (args.ante) args.ante.split(',').map(Number).forEach((v, i) => { G.ANTE[i] = 
 if (args.hands) args.hands.split('/').forEach((h) => { const [k, ...v] = h.split(':'); ['c', 'm', 'dc', 'dm'].forEach((f, i) => { if (v[i]) G.HANDS[k][f] = Number(v[i]); }); });
 if (args.picky) { const [t, p] = args.picky.split(':').map(Number); G.PICKY.tier = t; G.PICKY.pay = p; } // picky=3:1
 if (args.bx) args.bx.split(',').map(Number).forEach((v, i) => { G.BLIND_X[i] = v; }); // bx=1,1.5,2.25
+if (args.reg) { const [a, t] = args.reg.split(':').map(Number); G.REGULAR.after = a; G.REGULAR.minTier = t; } // reg=2:1
 if (args.heat) args.heat.split(',').map(Number).forEach((v, i) => { G.HEAT[i].x = v; }); // e.g. heat=0.5,1,1.5,2
 
 // all 1–5 card subsets of an n-card hand, cached by n

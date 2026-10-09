@@ -3,7 +3,7 @@ import { chipVal, isFace } from './cards.js';
 import { ANTE, BLIND_X, BOSSES, EDITIONS, HANDS, STAKES } from './rules.js';
 import { JD, hasJ } from './jokers.js';
 import { evaluate } from './evaluate.js';
-import { HEAT, HEAT_START, OVATION_TIP, SPEC, VIP } from './audience.js';
+import { HEAT, HEAT_START, OVATION_TIP, SPEC, VIP, tipOf } from './audience.js';
 import { rand } from './rng.js';
 
 export const curBoss = (st) => (st.blindIdx === 2 ? BOSSES[st.bossKey] : null);
@@ -119,8 +119,9 @@ export function computeHand(st, played, held, opt = {}) {
       if (a.ok || !likes) return;
       sat.push(i);
       if (a.vip) { push({ at: 'aud', i, money: VIP.tip * agent, say: VIP.say, lift: true }); return; }
-      if (sp.tip.money) push({ at: 'aud', i, money: sp.tip.money * agent, say: sp.say[0] });
-      for (let t = 0; sp.tip.xmult && t < encore; t++) push({ at: 'aud', i, xmult: sp.tip.xmult, say: t ? '' : sp.say[0] });
+      const tip = tipOf(st, sp);
+      if (tip.money) push({ at: 'aud', i, money: tip.money * agent, say: sp.say[0] });
+      for (let t = 0; tip.xmult && t < encore; t++) push({ at: 'aud', i, xmult: tip.xmult, say: t ? '' : sp.say[0] });
     });
     if (sat.some((i) => !aud[i].vip) && aud.every((a, i) => a.vip || a.ok || sat.includes(i))) {
       ovation = true;

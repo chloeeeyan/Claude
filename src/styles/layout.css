@@ -177,6 +177,8 @@
 .seat.ok .tip { color: var(--white); font-size: 18px; }
 .seat.ok .sa { background: var(--white); color: var(--ink); }
 .seat .sn i.no { color: var(--red-ink); }
+/* 熟客: a regular — badge before the name */
+.regb { display: inline-block; margin-right: 3px; padding: 0 3px; font-style: normal; font-size: 11px; line-height: 1.3; background: var(--green); color: var(--white); border: 1.5px solid var(--ink); border-radius: 4px; vertical-align: 1px; }
 /* the 黄金档 guest: front row, pink, their rule struck out once won over */
 .seat.vip { background: var(--pink); color: var(--white); }
 .seat.vip .sa { background: var(--yellow); color: var(--ink); }

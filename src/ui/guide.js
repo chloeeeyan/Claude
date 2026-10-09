@@ -1,6 +1,6 @@
 // Modal dialogs: how-to-play, the hand guide (four tabs) and the deck viewer.
 import {
-  BOSSES, ENH, HANDS, HEAT, JOKERS, SPEC, VIP, OVATION_TIP, SPECTATORS, tipText, RL, SEALS, SNAME, SUITS, SYM, TAROTS, UNLOCKS, VS, chipVal, curBoss, evaluate, handBase, isRed, isUnlocked,
+  BOSSES, ENH, HANDS, HEAT, JOKERS, REGULAR, SPEC, VIP, OVATION_TIP, SPECTATORS, tipText, RL, SEALS, SNAME, SUITS, SYM, TAROTS, UNLOCKS, VS, chipVal, curBoss, evaluate, handBase, isRed, isUnlocked,
 } from '../core/index.js';
 import { $, fmt } from './dom.js';
 import { cardTitle, jokerFace, miniCard, parseCards } from './components.js';
@@ -91,6 +91,7 @@ function crowdTab() {
   return `<div class="gsec">
     <p class="hint"><b>候场</b>：每一场有 5 位观众排队，只有 3 个座位。选场时点观众换人入场；默认的三位里总有两位口味打架。每请进一位<b>很挑剔</b>的观众，收工时多给 $1。</p>
     <p class="hint">每位观众有一样<b>喜欢</b>（♥）和一样<b>讨厌</b>（✕）：讨好一个，可能惹恼另一个。</p>
+    <p class="hint"><b>熟客</b>：这一局里征服过 ${REGULAR.after} 次的挑剔观众（第 2、3 档）会记住你。以后再坐进来，名字前有「熟」字，打赏多 $${REGULAR.money}（或倍率多 ×${REGULAR.xmult}）。</p>
     <p class="hint"><b>热度</b>：每场从「${HEAT[1].n}」开始。一手牌只要有人喜欢（包括已经被征服的），热度 +1；谁都不喜欢，热度 −1；每有一位观众喝倒彩（嘘），再 −1。这手牌的收视按新的热度乘：${HEAT.map((h) => `${h.n} ×${h.x}`).join(' · ')}。<b>别冷场！</b></p>
     <p class="hint">第一次合了谁的口味，谁就被征服，当场打赏（给钱或给这手牌乘倍率）。三位都征服是<b>全场起立</b>：再给 $${OVATION_TIP}，热度直接到「${HEAT[3].n}」。选牌时，会被征服的观众亮黄，会喝倒彩的观众变红，热度表会显示这手打出去会变成多少。</p>
     ${tiers.map(([t, n]) => `<div class="gx"><div class="gx-h"><b>${n}</b></div>
